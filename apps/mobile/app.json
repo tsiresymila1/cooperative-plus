@@ -8,7 +8,6 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "icon": "./assets/logo-round.png",
-    "splash": { "image": "./assets/logo-round.png", "resizeMode": "cover" },
     "ios": { "supportsTablet": true, "bundleIdentifier": "mg.cooperativeplus.app" },
     "android": { "package": "mg.cooperativeplus.app", "adaptiveIcon": { "foregroundImage": "./assets/logo-round.png"} },
     "plugins": ["expo-router"],

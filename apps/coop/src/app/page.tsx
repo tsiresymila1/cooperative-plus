@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
-import { db, Button, Card, Logo, notDeleted } from "@cp/ui";
+import { db, Button, Card, Logo, SignInScreen, notDeleted } from "@cp/ui";
 
 export default function HomePage() {
   const { isLoading: authLoading, user } = db.useAuth();
@@ -25,16 +25,11 @@ export default function HomePage() {
 
   if (!user || isGuest) {
     return (
-      <div className="grid min-h-dvh place-items-center bg-sand px-5">
-        <Card className="max-w-md p-8 text-center">
-          <Logo className="justify-center" />
-          <h1 className="mt-6 font-display text-xl font-bold text-ink">Connexion requise</h1>
-          <p className="mt-2 text-sm text-ink-soft">
-            Cet espace est réservé aux coopératives. Connectez-vous depuis l&apos;application client
-            pour accéder à votre tableau de bord (même session InstantDB en développement).
-          </p>
-        </Card>
-      </div>
+      <SignInScreen
+        title="Espace coopérative"
+        subtitle="Connectez-vous pour gérer votre coopérative."
+        allowPassword
+      />
     );
   }
 
