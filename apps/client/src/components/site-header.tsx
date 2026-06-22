@@ -19,7 +19,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-ink/8 bg-[#fcfbf9]/80 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/"><Logo /></Link>
+        <Link href="/logo"><Logo /></Link>
         <nav className="hidden items-center gap-7 text-sm font-medium text-ink-soft md:flex">
           <Link href="/search" className="hover:text-ink">Trajets</Link>
           {authed && <Link href="/account/bookings" className="hover:text-ink">Mes réservations</Link>}
