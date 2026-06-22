@@ -1,0 +1,24 @@
+<svg width="560" height="680" viewBox="0 0 560 680" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@800&amp;display=swap');
+    .wm{font-family:'Baloo 2',system-ui,sans-serif;font-weight:800;font-style:italic}
+  </style>
+  <g transform="translate(24,0)">
+    <path d="M133 164 Q276 67 440 113" fill="none" stroke="#62b22e" stroke-width="28" stroke-linecap="round"/>
+    <path d="M148 200 Q276 123 410 154" fill="none" stroke="#62b22e" stroke-width="18" stroke-linecap="round"/>
+    <ellipse cx="256" cy="372" rx="168" ry="16" fill="#16266b" opacity="0.10"/>
+    <rect x="77" y="215" width="358" height="118" rx="33" fill="#16266b"/>
+    <rect x="100" y="230" width="61" height="41" rx="10" fill="#cfe0f5"/>
+    <rect x="172" y="230" width="61" height="41" rx="10" fill="#cfe0f5"/>
+    <rect x="244" y="230" width="61" height="41" rx="10" fill="#cfe0f5"/>
+    <path d="M320 230 h44 a10 10 0 0 1 10 10 v21 a10 10 0 0 1 -10 10 h-44 z" fill="#cfe0f5"/>
+    <rect x="82" y="292" width="348" height="20" rx="10" fill="#f5821f"/>
+    <rect x="404" y="276" width="23" height="18" rx="5" fill="#ffd9a0"/>
+    <circle cx="164" cy="333" r="38" fill="#16266b"/><circle cx="164" cy="333" r="16" fill="#ffffff"/><circle cx="164" cy="333" r="7" fill="#f5821f"/>
+    <circle cx="358" cy="333" r="38" fill="#16266b"/><circle cx="358" cy="333" r="16" fill="#ffffff"/><circle cx="358" cy="333" r="7" fill="#f5821f"/>
+  </g>
+  <text x="280" y="500" text-anchor="middle" class="wm" font-size="92" fill="#16266b">Cooperative</text>
+  <text x="262" y="595" text-anchor="middle" class="wm" font-size="92" fill="#f5821f">Plus</text>
+  <text x="430" y="560" class="wm" font-size="70" fill="#62b22e">+</text>
+  <path d="M150 625 Q280 660 410 625" fill="none" stroke="#16266b" stroke-width="7" stroke-linecap="round"/>
+</svg>

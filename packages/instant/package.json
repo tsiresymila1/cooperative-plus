@@ -1,0 +1,26 @@
+{
+  "name": "@cp/instant",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts",
+    "./perms": "./src/perms.ts",
+    "./admin": "./src/admin.ts",
+    "./password": "./src/password.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx src/seed.ts",
+    "make-admin": "tsx src/make-admin.ts",
+    "make-owner": "tsx src/make-owner.ts",
+    "grant": "tsx src/grant.ts",
+    "set-password": "tsx src/set-password.ts"
+  },
+  "dependencies": {
+    "@instantdb/core": "^1.0.49",
+    "@instantdb/admin": "^1.0.49"
+  },
+  "devDependencies": { "typescript": "^5.7.0", "tsx": "^4.19.0" }
+}

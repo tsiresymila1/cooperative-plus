@@ -1,0 +1,104 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+/* ── Semantic tokens (shadcn / react-native-reusables) — light ── */
+:root {
+  --background: #ffffff;
+  --foreground: #16266b;
+  --card: #ffffff;
+  --card-foreground: #16266b;
+  --popover: #ffffff;
+  --popover-foreground: #16266b;
+  --primary: #f5821f;
+  --primary-foreground: #ffffff;
+  --secondary: #eef1f7;
+  --secondary-foreground: #16266b;
+  --muted: #eef1f7;
+  --muted-foreground: #4a5680;
+  --accent: #dfe4ef;
+  --accent-foreground: #16266b;
+  --destructive: #e5484d;
+  --destructive-foreground: #ffffff;
+  --border: #dfe4ef;
+  --input: #dfe4ef;
+  --ring: #f5821f;
+  --radius: 0.875rem;
+}
+
+/* ── Dark — brand navy surfaces ── */
+.dark:root {
+  --background: #0f1c52;
+  --foreground: #eef1f7;
+  --card: #16266b;
+  --card-foreground: #eef1f7;
+  --popover: #16266b;
+  --popover-foreground: #eef1f7;
+  --primary: #f5821f;
+  --primary-foreground: #0f1c52;
+  --secondary: #16266b;
+  --secondary-foreground: #eef1f7;
+  --muted: #16266b;
+  --muted-foreground: #aeb6d4;
+  --accent: #1d2f7a;
+  --accent-foreground: #eef1f7;
+  --destructive: #ff6166;
+  --destructive-foreground: #0f1c52;
+  --border: #1d2f7a;
+  --input: #1d2f7a;
+  --ring: #f5821f;
+}
+
+@theme inline {
+  /* semantic colors resolve to the runtime vars above (light/dark aware) */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@theme {
+  /* ── Cooperative Plus brand palette (static) ── */
+  --color-navy: #16266b;
+  --color-navy-deep: #0f1c52;
+  --color-orange: #f5821f;
+  --color-orange-deep: #d96d0f;
+  --color-green: #62b22e;
+  --color-ink: #16266b;
+  --color-ink-soft: #4a5680;
+  --color-sand: #eef1f7;
+  --color-sand-deep: #dfe4ef;
+  --color-paper: #ffffff;
+  --color-laterite: #f5821f;
+  --color-laterite-deep: #d96d0f;
+  --color-clay: #ffa94d;
+  --color-baobab: #62b22e;
+  --color-sky: #2b6f8f;
+
+  --font-display: "Sora_700Bold";
+  --font-sans: "Manrope_500Medium";
+  --font-mono: "JetBrainsMono_400Regular";
+
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+}

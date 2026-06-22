@@ -1,0 +1,90 @@
+/* Admin console — clean, modern, minimal. Light + dark via a `.dark` class on
+   <html> (toggle persisted in localStorage). Tokens below are the LIGHT theme;
+   the `.dark` block overrides the same CSS vars, so every shared @cp/ui
+   component (token-based) switches automatically.
+   Font @imports MUST precede the Tailwind import. */
+@import url("https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Spline+Sans+Mono:wght@400;500;600&display=swap");
+
+@import "tailwindcss";
+
+/* Class-based dark mode (toggle, not just prefers-color-scheme) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* scan shared @cp/ui components for utility classes */
+@source "../../../../packages/ui/src";
+
+@theme {
+  /* brand accent (constant across themes) */
+  --color-orange: #ef7a16;
+  --color-orange-deep: #d6680c;
+
+  /* LIGHT theme surfaces / text */
+  --color-ink: #14182a;
+  --color-ink-soft: #5b6478;
+  --color-sand: #f6f7f9;        /* page background */
+  --color-sand-deep: #eceef2;
+  --color-paper: #ffffff;       /* cards / panels */
+
+  --color-laterite: #ef7a16;    /* primary accent */
+  --color-laterite-deep: #d6680c;
+  --color-clay: #f4a259;        /* light orange */
+  --color-baobab: #2f9e4f;      /* green */
+  --color-sky: #2b7fa6;
+  --color-navy: #14182a;
+
+  --color-success: #2f9e4f;
+  --color-warning: #ef7a16;
+  --color-danger: #e0483f;
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
+
+  --radius: 0.75rem;
+  --shadow-card: 0 1px 2px rgba(18,24,42,.05), 0 1px 1px rgba(18,24,42,.03);
+  --shadow-lift: 0 4px 12px -2px rgba(18,24,42,.10), 0 12px 32px -12px rgba(18,24,42,.16);
+}
+
+/* ── Dark theme overrides ─────────────────────────────────── */
+.dark {
+  --color-ink: #e9ecf5;
+  --color-ink-soft: #969fb5;
+  --color-sand: #0d1018;        /* page background */
+  --color-sand-deep: #090b12;
+  --color-paper: #151a28;       /* cards / panels */
+
+  --color-laterite: #ff8a2a;
+  --color-laterite-deep: #ff7512;
+  --color-clay: #ffb066;
+  --color-baobab: #56cf6c;
+  --color-sky: #56b6d8;
+  --color-navy: #e9ecf5;
+
+  --color-success: #56cf6c;
+  --color-warning: #ff8a2a;
+  --color-danger: #ff5c5c;
+
+  --shadow-card: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 28px -18px rgba(0,0,0,.7);
+  --shadow-lift: 0 1px 0 rgba(255,255,255,.04) inset, 0 24px 48px -20px rgba(0,0,0,.8);
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: var(--color-sand);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--color-orange); color: #fff; }
+  h1, h2, h3 { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 800; }
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .eyebrow { font-family: var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+  @keyframes rise { from { transform: translateY(10px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+  .animate-rise { animation: rise .45s cubic-bezier(.2,.8,.2,1) backwards; }
+}

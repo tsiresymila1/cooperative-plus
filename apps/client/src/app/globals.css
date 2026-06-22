@@ -1,0 +1,73 @@
+/* Distinctive type — Clash Display (display) + Satoshi (body) via Fontshare,
+   Spline Sans Mono for departure-board codes/times. No Inter/Roboto.
+   Font @imports MUST precede the Tailwind import (CSS @import ordering rule). */
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Spline+Sans+Mono:wght@400;500;600&display=swap");
+
+@import "tailwindcss";
+
+/* scan shared @cp/ui components for utility classes */
+@source "../../../../packages/ui/src";
+
+@theme {
+  /* Cooperative Plus brand — navy + orange + green (from the logo) */
+  --color-navy: #16266b;
+  --color-navy-deep: #0f1c52;
+  --color-orange: #f5821f;
+  --color-orange-deep: #d96d0f;
+  --color-green: #62b22e;
+
+  /* Semantic aliases (kept so existing classes stay brand-correct) */
+  --color-ink: #16266b;           /* text + dark surfaces = navy */
+  --color-ink-soft: #4a5680;
+  --color-sand: #eef1f7;          /* cool light page bg */
+  --color-sand-deep: #dfe4ef;
+  --color-paper: #ffffff;
+
+  --color-laterite: #f5821f;      /* primary accent = orange */
+  --color-laterite-deep: #d96d0f;
+  --color-clay: #ffa94d;          /* light orange */
+  --color-baobab: #62b22e;        /* green */
+  --color-sky: #2b6f8f;
+
+  --color-success: #62b22e;
+  --color-warning: #f5821f;
+  --color-danger: #e23b3b;
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-sans: "Satoshi", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
+
+  --radius: 0.875rem;
+  --shadow-card: 0 1px 2px rgba(15,28,82,.04), 0 12px 32px -12px rgba(15,28,82,.18);
+  --shadow-lift: 0 2px 4px rgba(15,28,82,.06), 0 24px 48px -16px rgba(15,28,82,.28);
+}
+
+@layer base {
+  :root { color-scheme: light; }
+  html { scroll-behavior: smooth; }
+  body {
+    background-color: #fcfbf9;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  ::selection { background: var(--color-navy); color: #fff; }
+  h1,h2,h3 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  .grain::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .ticket-edge {
+    -webkit-mask-image: radial-gradient(circle at 0 50%, transparent 9px, #000 10px), radial-gradient(circle at 100% 50%, transparent 9px, #000 10px);
+    -webkit-mask-composite: source-in; mask-composite: intersect;
+  }
+  @keyframes board-flip { 0%{transform:rotateX(-90deg);opacity:0} 100%{transform:rotateX(0);opacity:1} }
+  .animate-flip { animation: board-flip .5s cubic-bezier(.2,.8,.2,1) backwards; }
+  @keyframes rise { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .animate-rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) backwards; }
+}
