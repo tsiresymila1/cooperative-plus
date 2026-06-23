@@ -23,7 +23,7 @@ export function AccountNav() {
         return (
           <Link key={t.href} href={t.href}
             className={cn("flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium transition-colors",
-              active ? "bg-ink text-sand" : "text-ink-soft hover:bg-ink/5")}>
+              active ? "bg-strong text-white" : "text-ink-soft hover:bg-ink/5")}>
             <Icon size={16} /> {t.label}
           </Link>
         );

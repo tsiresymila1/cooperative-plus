@@ -38,7 +38,7 @@ const statusBg: Record<string, string> = {
   boarding: "bg-clay/25 text-[#9a5a16]",
   departed: "bg-sky/15 text-sky",
   arrived: "bg-baobab/15 text-baobab",
-  cancelled: "bg-[#e23b3b]/12 text-[#c42f2f]",
+  cancelled: "bg-danger/12 text-danger",
 };
 const dKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 

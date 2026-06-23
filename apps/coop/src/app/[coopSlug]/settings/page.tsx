@@ -248,7 +248,7 @@ function PaymentMethodsSection({ coop, coopId }: { coop: any; coopId: string }) 
               <button
                 type="button"
                 onClick={() => setMethods((prev) => prev.filter((x) => x !== m))}
-                className="grid h-7 w-7 place-items-center rounded-[--radius] text-ink-soft/60 transition-colors hover:bg-[#e23b3b]/10 hover:text-[#c42f2f]"
+                className="grid h-7 w-7 place-items-center rounded-[--radius] text-ink-soft/60 transition-colors hover:bg-danger/10 hover:text-danger"
                 title="Supprimer"
               >
                 <Trash2 size={15} />

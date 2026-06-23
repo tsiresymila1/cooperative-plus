@@ -182,7 +182,7 @@ export default function BookingViewPage() {
                 />
                 <Button
                   size="sm"
-                  className="bg-[#e23b3b] text-white hover:bg-[#c42f2f]"
+                  className="bg-danger text-white hover:bg-danger"
                   disabled={busy || booking.status === "cancelled"}
                   onClick={cancelBooking}
                 >

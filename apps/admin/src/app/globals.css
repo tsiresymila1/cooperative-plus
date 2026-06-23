@@ -16,8 +16,9 @@
   --color-orange: #ff7a00;
   --color-orange-deep: #e06d00;
 
-  --color-ink: #0f2d5c;           /* deep navy */
+  --color-ink: #0f2d5c;           /* primary text */
   --color-ink-soft: #64748b;      /* slate-500 */
+  --color-strong: #0f2d5c;        /* always-dark panels (avatars, accents) */
   --color-sand: #f3f5f9;          /* soft light gray canvas */
   --color-sand-deep: #e8ecf3;
   --color-paper: #ffffff;
@@ -52,26 +53,31 @@
 }
 
 /* ── Dark theme overrides ─────────────────────────────────── */
+:root { --grid-line: rgba(15,45,92,.045); }
+
+/* ── Dark theme — navy très sombre, flat ── */
 .dark {
-  --color-ink: #e9ecf5;
-  --color-ink-soft: #969fb5;
-  --color-sand: #0d1018;        /* page background */
-  --color-sand-deep: #090b12;
-  --color-paper: #151a28;       /* cards / panels */
+  --color-ink: #ededf0;
+  --color-ink-soft: #9a9aa3;
+  --color-sand: #0a0a0b;        /* canvas */
+  --color-sand-deep: #121214;
+  --color-paper: #161719;       /* cards */
+  --color-strong: #232327;      /* dark panels / avatars */
+  --color-line: #2a2a2f;
 
-  --color-laterite: #ff8a2a;
-  --color-laterite-deep: #ff7512;
+  --color-laterite: #ff8a33;
+  --color-laterite-deep: #ff7a1a;
   --color-clay: #ffb066;
-  --color-baobab: #56cf6c;
-  --color-sky: #56b6d8;
-  --color-navy: #e9ecf5;
+  --color-baobab: #3ddc84;
+  --color-sky: #57aacb;
+  --color-navy: #ededf0;
 
-  --color-success: #56cf6c;
-  --color-warning: #ff8a2a;
-  --color-danger: #ff5c5c;
+  --color-success: #3ddc84;
+  --color-warning: #ff8a33;
+  --color-danger: #ff6363;
 
-  --shadow-card: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 28px -18px rgba(0,0,0,.7);
-  --shadow-lift: 0 1px 0 rgba(255,255,255,.04) inset, 0 24px 48px -20px rgba(0,0,0,.8);
+  --grid-line: rgba(255,255,255,.025);
+  color-scheme: dark;
 }
 
 @layer base {

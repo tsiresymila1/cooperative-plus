@@ -8,7 +8,7 @@ const button = cva(
     variants: {
       variant: {
         primary: "bg-laterite text-paper hover:bg-laterite-deep",
-        ink: "bg-ink text-sand hover:bg-ink-soft",
+        ink: "bg-strong text-white hover:bg-ink-soft",
         outline: "border border-ink/15 bg-paper/60 text-ink hover:bg-paper backdrop-blur",
         ghost: "text-ink hover:bg-ink/5",
       },
@@ -50,7 +50,7 @@ export function FormSection({ index, title, description, children, className }: 
 }
 
 export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-2xl border border-ink/8 bg-paper", className)}>{children}</div>;
+  return <div className={cn("rounded-md border border-ink/8 bg-paper", className)}>{children}</div>;
 }
 
 export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
@@ -105,10 +105,10 @@ export function CoopLogo({ url, name, size = 40, className }: { url?: string | n
   );
 }
 
-export function Logo({ className, withName = false, dark }: { className?: string; withName?: boolean; dark?: boolean }) {
+export function Logo({ className, withName = false, dark, width, height }: { className?: string; withName?: boolean; dark?: boolean; width?: number, height?: number }) {
   return (
     <span className={cn("inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight", dark ? "text-paper" : "text-navy", className)}>
-      <BrandMarkLong />
+      <BrandMarkLong width={width} height={height} />
       {withName && <>Cooperative<span className="text-orange">+</span></>}
     </span>
   );

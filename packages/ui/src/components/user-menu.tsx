@@ -23,7 +23,7 @@ export function UserMenu() {
     <div className="relative">
       <button onClick={() => setOpen((o) => !o)} onBlur={() => setTimeout(() => setOpen(false), 150)}
         className="flex items-center gap-2 rounded-full border border-ink/12 bg-paper py-1 pl-1 pr-2.5 text-sm font-medium hover:border-ink/25">
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-xs font-bold text-sand">{initials}</span>
+        <span className="grid h-7 w-7 place-items-center rounded-full bg-strong text-xs font-bold text-white">{initials}</span>
         <ChevronDown size={14} className="text-ink-soft" />
       </button>
       {open && (

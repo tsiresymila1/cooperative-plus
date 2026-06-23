@@ -5,6 +5,8 @@ import { SiteHeader } from "@/components/site-header";
 import { SearchBar } from "@/components/search-bar";
 import { fmtMoney } from "@cp/ui";
 
+const HERO_IMG = "/hero.png";
+
 const routes = [
   { from: "Antananarivo", to: "Mahajanga", price: 35000, dur: "8h", coops: 6 },
   { from: "Antananarivo", to: "Toamasina", price: 30000, dur: "7h", coops: 9 },
@@ -22,42 +24,41 @@ const steps = [
 export default function Landing() {
   return (
     <main className="relative">
-      {/* Modern layered background behind the hero */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[680px] overflow-hidden">
-        <div className="absolute -left-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-orange/25 blur-[120px]" />
-        <div className="absolute -right-32 top-0 h-[26rem] w-[26rem] rounded-full bg-sky/20 blur-[130px]" />
-        <div className="absolute left-1/2 top-48 h-80 w-80 -translate-x-1/2 rounded-full bg-green/12 blur-[130px]" />
-        <div className="absolute inset-0 [background-image:radial-gradient(rgba(22,38,107,.06)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_75%_55%_at_50%_0%,#000_35%,transparent_78%)]" />
-        <div className="absolute inset-x-0 bottom-0 h-44 bg-gradient-to-b from-transparent to-[#fcfbf9]" />
-      </div>
+      {/* ── Hero — full-bleed image ─────────────────────────── */}
+      <section className="relative isolate flex min-h-[92vh] flex-col overflow-hidden">
+        {/* photo background — blurred to push content forward */}
+        <div aria-hidden className="absolute inset-0 -z-20 scale-110 bg-cover bg-center blur-[2px]" style={{ backgroundImage: `url('${HERO_IMG}')` }} />
+        {/* legibility + blend to page (heavier on dark) */}
+        <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-black/55 via-black/20 to-sand dark:from-black/70 dark:via-black/20" />
+        <div aria-hidden className="absolute -left-40 top-10 -z-10 h-[28rem] w-[28rem] rounded-full bg-orange/20 blur-[140px]" />
 
-      <SiteHeader />
+        <SiteHeader overlay />
 
-      {/* Hero — centered, calm */}
-      <section className="relative mx-auto max-w-4xl px-5 pb-6 pt-16 text-center md:pt-24">
-        <div className="animate-rise inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white px-3.5 py-1.5 text-sm font-medium text-ink-soft">
-          <span className="h-1.5 w-1.5 rounded-full bg-green" /> 47 coopératives · tout Madagascar
-        </div>
-        <h1 className="animate-rise mt-7 text-balance font-display text-[2.75rem] font-bold leading-[1.02] tracking-tight md:text-6xl" style={{ animationDelay: "60ms" }}>
-          Votre place de taxi-brousse,<br className="hidden sm:block" /> réservée en <span className="text-orange">2 minutes</span>.
-        </h1>
-        <p className="animate-rise mx-auto mt-5 max-w-xl text-pretty text-lg text-ink-soft" style={{ animationDelay: "120ms" }}>
-          Comparez les départs, choisissez votre siège, payez par Mobile Money. Billet QR instantané.
-        </p>
-      </section>
-
-      {/* Search — the centerpiece */}
-      <section className="animate-rise mx-auto max-w-4xl px-5" style={{ animationDelay: "180ms" }}>
-        <SearchBar />
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-sm text-ink-soft">
-          <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-green" /> Sièges garantis</span>
-          <span className="inline-flex items-center gap-2"><Wallet size={15} className="text-green" /> MVola · Orange · Airtel · Carte</span>
-          <span className="inline-flex items-center gap-2"><Ticket size={15} className="text-green" /> Billet QR</span>
+        <div className="relative flex flex-1 items-center justify-center px-5 pb-24 pt-14">
+          <div className="w-full max-w-3xl text-center">
+            <div className="animate-rise inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md">
+              <span className="h-1.5 w-1.5 rounded-full bg-green" /> 47 coopératives · tout Madagascar
+            </div>
+            <h1 className="animate-rise mt-7 text-balance font-display text-5xl font-bold leading-[1.02] tracking-tight text-white [text-shadow:0_2px_40px_rgba(0,0,0,.45)] sm:text-6xl md:text-7xl" style={{ animationDelay: "60ms" }}>
+              Votre place de taxi-brousse,<br className="hidden sm:block" /> réservée en <span className="text-orange">2 minutes</span>.
+            </h1>
+            <p className="animate-rise mx-auto mt-6 max-w-xl text-pretty text-lg text-white/85 [text-shadow:0_1px_20px_rgba(0,0,0,.4)]" style={{ animationDelay: "120ms" }}>
+              Comparez les départs, choisissez votre siège, payez par Mobile Money. Billet QR instantané.
+            </p>
+            <div className="animate-rise mt-10" style={{ animationDelay: "180ms" }}>
+              <SearchBar />
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-sm font-medium text-white/85">
+                <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-green" /> Sièges garantis</span>
+                <span className="inline-flex items-center gap-2"><Wallet size={15} className="text-green" /> MVola · Orange · Airtel · Carte</span>
+                <span className="inline-flex items-center gap-2"><Ticket size={15} className="text-green" /> Billet QR</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Popular routes */}
-      <section className="mx-auto max-w-6xl px-5 py-20">
+      <section className="mx-auto max-w-6xl px-5 py-24">
         <div className="mb-8 flex items-end justify-between">
           <h2 className="font-display text-2xl font-bold md:text-3xl">Trajets populaires</h2>
           <Link href="/search" className="group inline-flex items-center gap-1.5 text-sm font-medium text-orange">
@@ -67,7 +68,7 @@ export default function Landing() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {routes.map((r) => (
             <Link key={`${r.from}-${r.to}`} href="/search"
-              className="group rounded-sm border border-ink/8 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-ink/15 hover:shadow-[0_12px_30px_-12px_rgba(15,28,82,.18)]">
+              className="group rounded-sm border border-ink/8 bg-paper p-5 transition-all hover:-translate-y-0.5 hover:border-ink/15 hover:shadow-[0_12px_30px_-12px_rgba(15,28,82,.18)]">
               <div className="flex items-center gap-2 text-[15px] font-semibold">
                 <span>{r.from}</span>
                 <ArrowRight size={15} className="text-orange" />
@@ -86,7 +87,7 @@ export default function Landing() {
       </section>
 
       {/* How it works */}
-      <section id="how" className="border-y border-ink/8 bg-white">
+      <section id="how" className="border-y border-ink/8 bg-paper">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <div className="max-w-lg">
             <h2 className="font-display text-2xl font-bold md:text-3xl">Réserver, simplement</h2>
@@ -98,7 +99,7 @@ export default function Landing() {
               return (
                 <div key={s.title}>
                   <div className="flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-ink text-sand"><Icon size={19} /></div>
+                    <div className="grid h-10 w-10 place-items-center rounded-xl bg-strong text-white"><Icon size={19} /></div>
                     <span className="font-mono text-sm text-ink-soft/50">0{i + 1}</span>
                   </div>
                   <h3 className="mt-4 font-display text-lg font-bold">{s.title}</h3>
@@ -124,17 +125,17 @@ export default function Landing() {
 
       {/* Coop CTA */}
       <section className="mx-auto max-w-6xl px-5 pb-20">
-        <div className="overflow-hidden rounded-3xl bg-ink px-8 py-14 text-sand md:px-16 md:py-20">
+        <div className="overflow-hidden rounded-3xl bg-strong px-8 py-14 text-white md:px-16 md:py-20">
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-3xl font-bold md:text-4xl">Vous gérez une coopérative ?</h2>
-            <p className="mx-auto mt-4 max-w-lg text-lg text-sand/70">Routes, véhicules, horaires, réservations et paiements dans un seul tableau de bord. 14 jours d'essai gratuit.</p>
+            <p className="mx-auto mt-4 max-w-lg text-lg text-white/70">Routes, véhicules, horaires, réservations et paiements dans un seul tableau de bord. 14 jours d'essai gratuit.</p>
             <Link href="/sign-up?role=coop"><Button size="lg" className="mt-7">Démarrer gratuitement <ArrowRight size={18} /></Button></Link>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-ink/8 bg-white">
+      <footer className="border-t border-ink/8 bg-paper">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-10 text-center text-sm text-ink-soft/60">
           <Logo />
           <p>© 2026 Cooperative Plus · Madagascar</p>

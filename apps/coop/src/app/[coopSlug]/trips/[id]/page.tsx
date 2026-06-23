@@ -81,6 +81,7 @@ export default function TripViewPage() {
       route: {},
       vehicle: { seatMaps: {} },
     },
+    vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {} },
   });
 
   const trip = data?.tripInstances?.[0];
@@ -88,10 +89,15 @@ export default function TripViewPage() {
   const tickets = trip?.tickets ?? [];
   const holds = trip?.holds ?? [];
 
+  // Resolve the vehicle from the link; fall back to matching by name (repairs
+  // older duplicated trips whose vehicle link was lost).
+  const vehicle = trip?.vehicle
+    ?? (trip?.vehicleName ? (data?.vehicles ?? []).find((v: any) => v.name === trip.vehicleName) : undefined);
+
   // Prefer the vehicle's current active seat map so the layout matches the
   // vehicle editor exactly; fall back to the booking-time snapshot.
-  const vehicleId = trip?.vehicle?.id as string | undefined;
-  const activeMap = (trip?.vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ?? (trip?.vehicle?.seatMaps ?? [])[0];
+  const vehicleId = vehicle?.id as string | undefined;
+  const activeMap = (vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ?? (vehicle?.seatMaps ?? [])[0];
   const layout: Cell[] = Array.isArray(activeMap?.layout)
     ? (activeMap.layout as Cell[])
     : Array.isArray(trip?.seatMapSnapshot) ? (trip!.seatMapSnapshot as Cell[]) : [];
@@ -174,6 +180,9 @@ export default function TripViewPage() {
     const departureAt = d.getTime();
     const departDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     try {
+      const links: Record<string, string> = { cooperative: coopId };
+      if (trip.route?.id) links.route = trip.route.id;
+      if (vehicle?.id) links.vehicle = vehicle.id;
       const tx = db.tx.tripInstances[newId]
         .update({
           originName: trip.originName,
@@ -191,9 +200,7 @@ export default function TripViewPage() {
           seatsBooked: 0,
           createdAt: Date.now(),
         })
-        .link({ cooperative: coopId });
-      if (trip.route?.id) tx.link({ route: trip.route.id });
-      if (trip.vehicle?.id) tx.link({ vehicle: trip.vehicle.id });
+        .link(links);
       await db.transact(tx);
       toast.success("Trajet dupliqué");
       router.push(`/${slug}/trips/${newId}`);
@@ -550,7 +557,7 @@ export default function TripViewPage() {
                               </Button>
                             )}
                             {!done && (
-                              <Button size="sm" variant="ghost" className="text-[#c42f2f] hover:bg-[#e23b3b]/10" onClick={() => cancelBookingRow(b)}>
+                              <Button size="sm" variant="ghost" className="text-danger hover:bg-danger/10" onClick={() => cancelBookingRow(b)}>
                                 <XCircle size={14} /> Annuler
                               </Button>
                             )}

@@ -3,42 +3,49 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChevronDown, LogOut, Ticket, User } from "lucide-react";
-import { Button, Logo } from "@cp/ui";
+import { Button, Logo, ThemeToggle, cn } from "@cp/ui";
 import { db } from "@cp/ui";
 
 function isReal(user: unknown): user is { id: string; email: string } {
   return !!user && !(user as { isGuest?: boolean }).isGuest;
 }
 
-export function SiteHeader() {
+/** `overlay` = transparent header floating over a hero image (white text). */
+export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const { isLoading, user } = db.useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const authed = isReal(user);
 
+  const navLink = overlay ? "text-white/85 hover:text-white" : "text-ink-soft hover:text-ink";
+
   return (
-    <header className="sticky top-0 z-30 border-b border-ink/8 bg-[#fcfbf9]/80 backdrop-blur-xl">
+    <header className={overlay
+      ? "absolute inset-x-0 top-0 z-30"
+      : "sticky top-0 z-30 border-b border-ink/8 bg-sand/80 backdrop-blur-xl"}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/logo"><Logo /></Link>
-        <nav className="hidden items-center gap-7 text-sm font-medium text-ink-soft md:flex">
-          <Link href="/search" className="hover:text-ink">Trajets</Link>
-          {authed && <Link href="/account/bookings" className="hover:text-ink">Mes réservations</Link>}
+        <Link href="/"><Logo dark={overlay} /></Link>
+        <nav className={cn("hidden items-center gap-7 text-sm font-medium md:flex", navLink)}>
+          <Link href="/search" className="transition-colors">Trajets</Link>
+          {authed && <Link href="/account/bookings" className="transition-colors">Mes réservations</Link>}
         </nav>
 
         <div className="flex items-center gap-2">
+          <ThemeToggle className={overlay ? "h-9 w-9 text-white/85 hover:bg-white/15 hover:text-white" : "h-9 w-9"} />
           {isLoading ? (
             <div className="h-9 w-24 animate-pulse rounded-[--radius] bg-ink/5" />
           ) : authed ? (
             <div className="relative">
               <button onClick={() => setOpen((o) => !o)} onBlur={() => setTimeout(() => setOpen(false), 150)}
-                className="flex items-center gap-2 rounded-full border border-ink/12 bg-white py-1 pl-1 pr-2.5 text-sm font-medium hover:border-ink/25">
-                <span className="grid h-7 w-7 place-items-center rounded-full bg-ink text-xs font-bold text-sand">
+                className={cn("flex items-center gap-2 rounded-full py-1 pl-1 pr-2.5 text-sm font-medium transition-colors",
+                  overlay ? "border border-white/25 bg-white/10 text-white hover:bg-white/20" : "border border-ink/12 bg-paper hover:border-ink/25")}>
+                <span className="grid h-7 w-7 place-items-center rounded-full bg-strong text-xs font-bold text-white">
                   {(user.email[0] ?? "U").toUpperCase()}
                 </span>
-                <ChevronDown size={14} className="text-ink-soft" />
+                <ChevronDown size={14} className={overlay ? "text-white/70" : "text-ink-soft"} />
               </button>
               {open && (
-                <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-[--radius] border border-ink/10 bg-white shadow-[--shadow-lift]">
+                <div className="absolute right-0 mt-2 w-52 overflow-hidden rounded-[--radius] border border-ink/10 bg-paper shadow-[--shadow-lift]">
                   <div className="border-b border-ink/8 px-4 py-3">
                     <p className="truncate text-sm font-medium">{user.email}</p>
                   </div>
@@ -53,7 +60,7 @@ export function SiteHeader() {
             </div>
           ) : (
             <>
-              <Link href="/sign-in"><Button variant="ghost" size="sm">Connexion</Button></Link>
+              <Link href="/sign-in" className={cn("hidden rounded-[--radius] px-3 py-2 text-sm font-medium transition-colors sm:inline-block", navLink)}>Connexion</Link>
               <Link href="/sign-up"><Button size="sm">Créer un compte</Button></Link>
             </>
           )}

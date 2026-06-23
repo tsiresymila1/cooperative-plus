@@ -14,7 +14,7 @@ type Customer = {
 };
 
 const TIERS = [
-  { key: "platinum", label: "Platine", min: 500_000, badge: "bg-ink text-white", dot: "var(--color-ink)" },
+  { key: "platinum", label: "Platine", min: 500_000, badge: "bg-strong text-white", dot: "var(--color-ink)" },
   { key: "gold", label: "Or", min: 200_000, badge: "bg-[#f4c430]/20 text-[#8a6d00]", dot: "#f4c430" },
   { key: "silver", label: "Argent", min: 50_000, badge: "bg-ink/[.06] text-ink-soft", dot: "#94a3b8" },
   { key: "basic", label: "Base", min: 0, badge: "bg-laterite/12 text-laterite-deep", dot: "var(--color-laterite)" },
@@ -100,7 +100,7 @@ export default function CustomersPage() {
             {rows.length === 0 ? (
               <p className="px-6 py-12 text-center text-sm text-ink-soft/60">Aucun client.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto"><table className="w-full min-w-[42rem] text-sm">
                 <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
                   <tr className="border-b border-ink/8">
                     <th className="px-6 py-3.5">Client</th>
@@ -118,7 +118,7 @@ export default function CustomersPage() {
                         className="group cursor-pointer border-b border-ink/[.06] transition-colors last:border-0 hover:bg-ink/[.03]">
                         <td className="px-6 py-3.5">
                           <div className="flex items-center gap-3">
-                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-ink text-sm font-bold text-white">
+                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-strong text-sm font-bold text-white">
                               {(c.name?.[0] ?? "?").toUpperCase()}
                             </span>
                             <div className="min-w-0">
@@ -138,7 +138,7 @@ export default function CustomersPage() {
                     );
                   })}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </Card>
         </div>
@@ -154,7 +154,7 @@ export default function CustomersPage() {
         {selected && (
           <div className="space-y-5">
             <Card className="flex items-center gap-3 p-4">
-              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-ink text-lg font-bold text-white ring-4 ring-ink/10">
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-strong text-lg font-bold text-white ring-4 ring-ink/10">
                 {(selected.name?.[0] ?? "?").toUpperCase()}
               </span>
               <div className="min-w-0 flex-1">

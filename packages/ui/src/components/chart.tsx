@@ -84,7 +84,7 @@ export function BarList({ items, format }: {
             <span className="shrink-0 font-semibold text-ink tabular-nums">{format ? format(it.value) : it.value}</span>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-ink/[.06]">
-            <div className="h-full rounded-full bg-ink transition-[width] duration-700" style={{ width: `${Math.max(3, (it.value / max) * 100)}%` }} />
+            <div className="h-full rounded-full bg-strong transition-[width] duration-700" style={{ width: `${Math.max(3, (it.value / max) * 100)}%` }} />
           </div>
         </div>
       ))}

@@ -3,6 +3,7 @@ export * from "./components/form";
 export * from "./components/toast";
 export * from "./components/dialog";
 export * from "./components/drawer";
+export * from "./components/theme";
 export * from "./components/data-table";
 export * from "./components/chart";
 export * from "./components/dashboard-shell";

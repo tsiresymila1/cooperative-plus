@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { ShieldAlert } from "lucide-react";
 import { db } from "../lib/db";
 import { Button, Card, Logo, FullSpinner } from "./ui";
@@ -137,15 +137,30 @@ export function CoopGuard({ slug, children }: { slug: string; children: React.Re
     userId: user.id,
   };
 
-  // Brand color: override the accent CSS var so the whole coop app follows it.
-  const brand = coop.brandColor as string | undefined;
-  const style = brand ? ({ ["--color-laterite"]: brand, ["--color-laterite-deep"]: brand } as React.CSSProperties) : undefined;
-
   return (
     <Ctx.Provider value={ctx}>
-      <div style={style}>{children}</div>
+      {/* Brand colour on <html> so the whole coop app — incl. the top progress
+          bar rendered at <body> — follows this cooperative's accent. */}
+      <BrandVars color={coop.brandColor as string | undefined} />
+      {children}
     </Ctx.Provider>
   );
+}
+
+function BrandVars({ color }: { color?: string }) {
+  useEffect(() => {
+    if (!color) return;
+    const el = document.documentElement;
+    const prevL = el.style.getPropertyValue("--color-laterite");
+    const prevD = el.style.getPropertyValue("--color-laterite-deep");
+    el.style.setProperty("--color-laterite", color);
+    el.style.setProperty("--color-laterite-deep", color);
+    return () => {
+      el.style.setProperty("--color-laterite", prevL);
+      el.style.setProperty("--color-laterite-deep", prevD);
+    };
+  }, [color]);
+  return null;
 }
 
 type AdminCtx = { userId: string; user: any };

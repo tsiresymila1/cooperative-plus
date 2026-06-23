@@ -19,7 +19,7 @@ export function SeatSelector({ layout, taken, held = [], selected, onToggle, max
   const at = (r: number, c: number) => layout.find((x) => x.row === r && x.col === c);
 
   return (
-    <div className="inline-block">
+    <div className="inline-block max-w-full overflow-x-auto">
       {/* Cabin shell */}
       <div className="relative rounded-[10px] border border-ink/12 bg-gradient-to-b from-paper to-sand-deep/40 p-5 pt-4 shadow-[0_1px_2px_rgba(15,23,42,.04)]">
         {/* nose / driver row */}
@@ -48,7 +48,7 @@ export function SeatSelector({ layout, taken, held = [], selected, onToggle, max
                   <motion.button key={c} whileTap={disabled ? undefined : { scale: 0.88 }} disabled={disabled}
                     onClick={() => onToggle(label)} title={`Siège ${label}`}
                     className={cn(SEAT,
-                      isTaken ? "cursor-not-allowed border-ink bg-ink text-white"
+                      isTaken ? "cursor-not-allowed border-ink bg-strong text-white"
                         : isHeld ? "cursor-not-allowed border-laterite bg-laterite text-white"
                           : isSel ? "border-laterite bg-laterite text-white"
                             : "border-ink/12 bg-paper text-ink-soft hover:border-laterite/60 hover:bg-laterite/[.06] hover:text-ink")}>
@@ -75,7 +75,7 @@ function Legend() {
   const items = [
     ["border-ink/12 bg-paper", "Libre"],
     ["border-laterite bg-laterite", "Choisi / réservé"],
-    ["border-ink bg-ink", "Occupé"],
+    ["border-ink bg-strong", "Occupé"],
   ] as const;
   return (
     <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs font-medium text-ink-soft">

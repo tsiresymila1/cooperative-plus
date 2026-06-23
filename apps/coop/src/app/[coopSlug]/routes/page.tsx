@@ -57,7 +57,7 @@ export default function RoutesPage() {
       header: "Itinéraire",
       render: (r) => (
         <span className="inline-flex items-center gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink text-white"><RouteIcon size={16} /></span>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-strong text-white"><RouteIcon size={16} /></span>
           <span className="font-semibold text-ink">{r.name}</span>
         </span>
       ),

@@ -43,6 +43,8 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     tripInstances: { $: { where: { id: instanceId } }, cooperative: {} },
   });
   const trip = data?.tripInstances?.[0];
+  const { data: meData } = db.useQuery(user?.id ? { $users: { $: { where: { id: user.id } } } } : null);
+  const me = meData?.$users?.[0];
   const accepted: string[] =
     Array.isArray(trip?.cooperative?.paymentMethods) && trip.cooperative.paymentMethods.length
       ? (trip.cooperative.paymentMethods as string[])
@@ -57,6 +59,29 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   }, [accepted.join(","), method]);
 
   const seats = [...draft.seats].sort();
+
+  // Prefill contact from the signed-in client (only empty fields).
+  useEffect(() => {
+    if (!user) return;
+    setContact((c) => ({
+      name: c.name || (me?.name as string) || "",
+      phone: c.phone || (me?.phone as string) || "",
+      email: c.email || user.email || "",
+    }));
+  }, [me?.id, user?.email]);
+
+  // Default each passenger to the client's name (editable).
+  useEffect(() => {
+    const nm = (me?.name as string) || "";
+    if (!nm) return;
+    setPassengers((p) => {
+      let changed = false;
+      const next = { ...p };
+      for (const s of seats) if (!next[s]) { next[s] = nm; changed = true; }
+      return changed ? next : p;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [me?.id, seats.join(",")]);
 
   if (!seats.length) {
     return (<><SiteHeader /><main className="mx-auto max-w-3xl px-5 py-20 text-center">

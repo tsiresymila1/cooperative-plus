@@ -81,7 +81,7 @@ export default function VehiclesPage() {
                 {/* banner */}
                 <button
                   onClick={() => router.push(`/${slug}/vehicles/${v.id}/edit`)}
-                  className="relative flex h-28 items-center justify-center bg-gradient-to-br from-ink to-[#1c3f7a] text-white/90"
+                  className="relative flex h-28 items-center justify-center bg-strong text-white/90"
                 >
                   <Bus size={40} className="opacity-80 transition-transform group-hover:scale-110" />
                   <span className="absolute left-3 top-3"><Badge tone={s.tone}>{s.label}</Badge></span>
@@ -102,7 +102,7 @@ export default function VehiclesPage() {
                     <Button size="sm" variant="ghost" className="flex-1" onClick={() => router.push(`/${slug}/vehicles/${v.id}/edit`)}>
                       <Pencil size={14} /> Modifier
                     </Button>
-                    <Button size="sm" variant="ghost" className="text-[#c42f2f] hover:bg-[#e23b3b]/10" onClick={() => del(v)}>
+                    <Button size="sm" variant="ghost" className="text-danger hover:bg-danger/10" onClick={() => del(v)}>
                       <Trash2 size={14} />
                     </Button>
                   </div>

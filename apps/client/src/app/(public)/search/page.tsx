@@ -70,7 +70,7 @@ function SearchInner() {
           </Cell>
           <div className="relative flex items-center justify-center md:w-0">
             <button onClick={swap} aria-label="Inverser"
-              className="z-10 grid h-10 place-items-center  border-ink/12 bg-white text-ink-soft transition-all hover:rotate-180 hover:border-orange hover:text-orange">
+              className="z-10 grid h-10 place-items-center  border-ink/12 bg-paper text-ink-soft transition-all hover:rotate-180 hover:border-orange hover:text-orange">
               <ArrowRightLeft size={14} />
             </button>
           </div>

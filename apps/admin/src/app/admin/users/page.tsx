@@ -183,7 +183,7 @@ export default function UsersPage() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#c42f2f] hover:bg-[#e23b3b]/10"
+              className="text-danger hover:bg-danger/10"
               disabled={isSelf}
               title={isSelf ? "Vous ne pouvez pas supprimer votre propre compte" : undefined}
               onClick={() => handleDelete(u)}

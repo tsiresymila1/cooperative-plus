@@ -25,19 +25,19 @@ export default function AccountDashboard() {
       </div>
 
       {next?.tripInstance ? (
-        <Card className="flex flex-col items-start justify-between gap-4 bg-ink p-6 text-sand sm:flex-row sm:items-center">
+        <Card className="flex flex-col items-start justify-between gap-4 bg-strong p-6 text-white sm:flex-row sm:items-center">
           <div>
             <h2 className="font-display text-xl font-bold">Prochain départ</h2>
-            <p className="mt-1 text-sand/70">
+            <p className="mt-1 text-white/70">
               {next.tripInstance.originName} → {next.tripInstance.destName} · {new Date(next.tripInstance.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} · sièges {(next.tickets ?? []).map((t) => t.seatLabel).sort().join(", ")}
             </p>
           </div>
           <Link href={`/bookings/${next.reference}`}><Button variant="primary">Voir le billet <ArrowRight size={16} /></Button></Link>
         </Card>
       ) : (
-        <Card className="bg-ink p-6 text-sand">
+        <Card className="bg-strong p-6 text-white">
           <h2 className="font-display text-xl font-bold">Aucun trajet à venir</h2>
-          <p className="mt-1 text-sand/70">Réservez votre prochain voyage.</p>
+          <p className="mt-1 text-white/70">Réservez votre prochain voyage.</p>
         </Card>
       )}
 

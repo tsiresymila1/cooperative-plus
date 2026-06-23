@@ -150,7 +150,7 @@ export default function DashboardPage() {
                 {todayDepartures.length === 0 ? (
                   <p className="px-6 py-10 text-center text-sm text-ink-soft/60">Aucun départ à venir.</p>
                 ) : (
-                  <table className="w-full text-sm">
+                  <div className="overflow-x-auto"><table className="w-full min-w-[42rem] text-sm">
                     <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
                       <tr className="border-b border-ink/8">
                         <th className="px-6 py-3">Trajet</th>
@@ -169,7 +169,7 @@ export default function DashboardPage() {
                             className="group cursor-pointer border-b border-ink/[.06] transition-colors last:border-0 hover:bg-ink/[.03]">
                             <td className="px-6 py-3.5">
                               <div className="flex items-center gap-3">
-                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink text-[11px] font-bold text-white">
+                                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-strong text-[11px] font-bold text-white">
                                   {String(t.originName ?? "?").slice(0, 2).toUpperCase()}
                                 </span>
                                 <span className="font-medium text-ink">{t.originName} → {t.destName}</span>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                         );
                       })}
                     </tbody>
-                  </table>
+                  </table></div>
                 )}
               </Card>
             </div>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
             {/* right rail */}
             <div className="col-span-12 space-y-5 lg:col-span-4">
               {/* quick actions */}
-              <Card className="relative overflow-hidden border-0 bg-ink p-6 text-white">
+              <Card className="relative overflow-hidden border-0 bg-strong p-6 text-white">
                 <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl" />
                 <h3 className="relative font-display text-lg font-bold">Actions rapides</h3>
                 <p className="relative mt-1 text-sm text-white/60">Créez et gérez en un clic.</p>

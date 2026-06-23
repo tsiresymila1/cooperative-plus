@@ -3,6 +3,9 @@
    Font @imports MUST precede the Tailwind import (CSS @import ordering rule). */
 @import "tailwindcss";
 
+/* Class-based dark mode (.dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* scan shared @cp/ui components for utility classes */
 @source "../../../../packages/ui/src";
 
@@ -15,8 +18,9 @@
   --color-green: #62b22e;
 
   /* Semantic aliases (kept so existing classes stay brand-correct) */
-  --color-ink: #16266b;           /* text + dark surfaces = navy */
+  --color-ink: #16266b;           /* primary text */
   --color-ink-soft: #4a5680;
+  --color-strong: #16266b;        /* always-dark panels (avatars, accents) */
   --color-sand: #eef1f7;          /* cool light page bg */
   --color-sand-deep: #dfe4ef;
   --color-paper: #ffffff;
@@ -40,11 +44,33 @@
   --shadow-lift: 0 2px 4px rgba(15,28,82,.06), 0 24px 48px -16px rgba(15,28,82,.28);
 }
 
+:root { --grid-line: rgba(15,45,92,.045); }
+
+/* ── Dark theme — navy très sombre, flat ── */
+.dark {
+  --color-ink: #ededf0;
+  --color-ink-soft: #9a9aa3;
+  --color-sand: #0a0a0b;
+  --color-sand-deep: #121214;
+  --color-paper: #161719;
+  --color-strong: #232327;
+  --color-line: #2a2a2f;
+  --color-laterite: #ff8a33;
+  --color-laterite-deep: #ff7a1a;
+  --color-baobab: #3ddc84;
+  --color-sky: #57aacb;
+  --color-success: #3ddc84;
+  --color-warning: #ff8a33;
+  --color-danger: #ff6363;
+  --grid-line: rgba(255,255,255,.025);
+  color-scheme: dark;
+}
+
 @layer base {
   :root { color-scheme: light; }
   html { scroll-behavior: smooth; }
   body {
-    background-color: #fcfbf9;
+    background-color: var(--color-sand);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

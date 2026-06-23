@@ -424,7 +424,7 @@ export default function RecurringTripPage() {
                           <button
                             type="button"
                             onClick={() => setExactDates((p) => p.filter((x) => x !== d))}
-                            className="text-ink-soft/60 hover:text-[#c42f2f]"
+                            className="text-ink-soft/60 hover:text-danger"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -481,7 +481,7 @@ export default function RecurringTripPage() {
                       <button
                         type="button"
                         onClick={() => setTimes((p) => p.filter((x) => x !== t))}
-                        className="text-ink-soft/60 hover:text-[#c42f2f]"
+                        className="text-ink-soft/60 hover:text-danger"
                       >
                         <Trash2 size={12} />
                       </button>
@@ -513,7 +513,7 @@ export default function RecurringTripPage() {
                       onClick={() => toggle(excludedWeekdays, d.value, setExcludedWeekdays)}
                       className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
                         on
-                          ? "border-[#c42f2f] bg-[#e23b3b]/10 text-[#c42f2f]"
+                          ? "border-danger bg-danger/10 text-danger"
                           : "border-ink/10 text-ink-soft hover:bg-ink/5"
                       }`}
                     >
@@ -545,7 +545,7 @@ export default function RecurringTripPage() {
                         <button
                           type="button"
                           onClick={() => setExcludedDates((p) => p.filter((x) => x !== d))}
-                          className="hover:text-[#c42f2f]"
+                          className="hover:text-danger"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -569,7 +569,7 @@ export default function RecurringTripPage() {
             </Badge>
           </div>
           {total > MAX_TRIPS && (
-            <p className="mb-3 text-sm text-[#c42f2f]">
+            <p className="mb-3 text-sm text-danger">
               Trop de trajets, réduisez la période ou les heures (max {MAX_TRIPS}).
             </p>
           )}

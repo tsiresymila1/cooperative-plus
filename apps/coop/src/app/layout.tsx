@@ -3,6 +3,7 @@ import {  Bricolage_Grotesque, Spline_Sans_Mono, Inter } from "next/font/google"
 import "./globals.css";
 import { Providers } from "@cp/ui";
 import { Toaster } from "@cp/ui";
+import { Progress } from "@/components/progress";
 
 const sans = Inter({ subsets: ["latin"], variable: "--font-sans-next", display: "swap", weight: ["400", "500", "600", "700", "800", "900"] });
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display-next", display: "swap" });
@@ -16,9 +17,10 @@ export const viewport: Viewport = { themeColor: "#0f2d5c" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+    <html lang="fr" suppressHydrationWarning className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="min-h-dvh antialiased">
-        <Providers>{children}</Providers>
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('cp-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})();" }} />
+        <Providers><Progress>{children}</Progress></Providers>
         <Toaster />
       </body>
     </html>

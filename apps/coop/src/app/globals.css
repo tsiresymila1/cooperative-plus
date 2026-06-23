@@ -3,6 +3,9 @@
    Font @imports MUST precede the Tailwind import (CSS @import ordering rule). */
 @import "tailwindcss";
 
+/* Class-based dark mode (.dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* scan shared @cp/ui components for utility classes */
 @source "../../../../packages/ui/src";
 
@@ -15,8 +18,9 @@
   --color-green: #62b22e;
 
   /* Semantic aliases — deep-navy authority + action-orange (Stitch spec) */
-  --color-ink: #0f2d5c;           /* text + dark surfaces = deep navy */
+  --color-ink: #0f2d5c;           /* primary text */
   --color-ink-soft: #64748b;      /* slate-500 */
+  --color-strong: #0f2d5c;        /* always-dark panels (avatars, accents) */
   --color-sand: #f3f5f9;          /* soft light gray — white cards pop, still close to white */
   --color-sand-deep: #e8ecf3;
   --color-paper: #ffffff;
@@ -50,6 +54,28 @@
   --shadow-card: 0 1px 1px rgba(15,23,42,.03);
   --shadow-float: 0 2px 8px rgba(15,23,42,.04);
   --shadow-lift: 0 8px 22px -10px rgba(15,23,42,.16);
+}
+
+:root { --grid-line: rgba(15,45,92,.045); }
+
+/* ── Dark theme — navy très sombre, flat ── */
+.dark {
+  --color-ink: #ededf0;
+  --color-ink-soft: #9a9aa3;
+  --color-sand: #0a0a0b;        /* canvas */
+  --color-sand-deep: #121214;
+  --color-paper: #161719;       /* cards */
+  --color-strong: #232327;      /* dark panels / avatars */
+  --color-line: #2a2a2f;
+  --color-laterite: #ff8a33;
+  --color-laterite-deep: #ff7a1a;
+  --color-baobab: #3ddc84;
+  --color-sky: #57aacb;
+  --color-success: #3ddc84;
+  --color-warning: #ff8a33;
+  --color-danger: #ff6363;
+  --grid-line: rgba(255,255,255,.025);
+  color-scheme: dark;
 }
 
 @layer base {

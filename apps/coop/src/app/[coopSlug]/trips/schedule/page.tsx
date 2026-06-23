@@ -21,7 +21,7 @@ const addDays = (d: Date, n: number) => { const x = new Date(d); x.setDate(x.get
 const startOfWeek = (d: Date) => addDays(d, -wdIdx(d));
 
 const chipBg: Record<string, string> = {
-  scheduled: "bg-ink text-white",
+  scheduled: "bg-strong text-white",
   boarding: "bg-laterite text-white",
   departed: "bg-sky text-white",
   arrived: "bg-success text-white",
@@ -92,7 +92,7 @@ export default function SchedulePage() {
     const ratio = t.seatsTotal ? booked / t.seatsTotal : 0;
     return (
       <button onClick={() => openTrip(t)}
-        className={`block w-full rounded-md px-1.5 py-1 text-left transition-opacity hover:opacity-90 ${chipBg[t.status] ?? "bg-ink text-white"}`}>
+        className={`block w-full rounded-md px-1.5 py-1 text-left transition-opacity hover:opacity-90 ${chipBg[t.status] ?? "bg-strong text-white"}`}>
         <span className="block truncate text-[10.5px] font-bold leading-tight">{fmtTime(t.departureAt)} · {t.originName}→{t.destName}</span>
         <span className="mt-0.5 block h-0.5 w-full overflow-hidden rounded-full bg-white/25">
           <span className="block h-full rounded-full bg-white/80" style={{ width: `${Math.max(8, ratio * 100)}%` }} />
@@ -136,7 +136,8 @@ export default function SchedulePage() {
 
             {view === "week" && (
               <Card className="overflow-hidden">
-                <div className="grid grid-cols-7">
+                <div className="overflow-x-auto">
+                <div className="grid min-w-[44rem] grid-cols-7">
                   {Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)).map((d, i) => {
                     const k = dk(d); const trips = byDay.get(k) ?? []; const isToday = k === todayKey;
                     return (
@@ -153,11 +154,14 @@ export default function SchedulePage() {
                     );
                   })}
                 </div>
+                </div>
               </Card>
             )}
 
             {view === "month" && (
               <Card className="overflow-hidden">
+                <div className="overflow-x-auto">
+                <div className="min-w-[44rem]">
                 <div className="grid grid-cols-7 border-b border-ink/8 bg-ink/[.02]">
                   {WD.map((d) => <div key={d} className="px-3 py-2.5 text-center text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">{d}</div>)}
                 </div>
@@ -177,6 +181,8 @@ export default function SchedulePage() {
                     );
                   })}
                 </div>
+                </div>
+                </div>
               </Card>
             )}
           </div>
@@ -188,7 +194,7 @@ export default function SchedulePage() {
             <Card className="p-5">
               <p className="mb-3 text-sm font-semibold text-ink">Légende</p>
               <div className="space-y-2 text-sm text-ink-soft">
-                {[["bg-ink", "Programmé"], ["bg-laterite", "Embarquement"], ["bg-sky", "Parti"], ["bg-success", "Arrivé"], ["bg-ink/20", "Annulé"]].map(([c, l]) => (
+                {[["bg-strong", "Programmé"], ["bg-laterite", "Embarquement"], ["bg-sky", "Parti"], ["bg-success", "Arrivé"], ["bg-ink/20", "Annulé"]].map(([c, l]) => (
                   <span key={l} className="flex items-center gap-2"><span className={`h-3 w-3 rounded ${c}`} />{l}</span>
                 ))}
               </div>
@@ -302,7 +308,7 @@ function DayView({ trips, onOpen, isToday }: { trips: any[]; onOpen: (t: any) =>
                   <span className="font-semibold text-ink">{fmtMoney(t.price)}</span>
                 </p>
               </div>
-              <div className="hidden w-40 shrink-0 sm:block">
+              <div className="hidden w-40 shrink-0 md:block">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/[.08]">
                     <div className={`h-full rounded-full ${c}`} style={{ width: `${Math.max(5, ratio * 100)}%` }} />

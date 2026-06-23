@@ -76,7 +76,7 @@ export default function Page() {
           <FormSection index="01" title="Identité" description="Vos informations personnelles affichées dans l'application.">
             <div className="grid gap-4">
               <div className="flex items-center gap-3.5">
-                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-ink text-lg font-bold text-white">
+                <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-strong text-lg font-bold text-white">
                   {(name || user.email || "?").slice(0, 2).toUpperCase()}
                 </span>
                 <div className="min-w-0">

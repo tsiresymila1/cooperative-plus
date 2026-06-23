@@ -32,22 +32,22 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
 
         <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }} className="mt-8">
           <Card className="overflow-hidden p-0">
-            <div className="bg-ink p-5 text-sand">
+            <div className="bg-strong p-5 text-white">
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-widest text-sand/60">Référence</span>
+                <span className="text-xs uppercase tracking-widest text-white/60">Référence</span>
                 <span className="font-mono text-lg font-bold tracking-wider text-clay">{reference}</span>
               </div>
               <div className="mt-3 font-display text-2xl font-bold">
                 {trip ? `${trip.originName} → ${trip.destName}` : (isLoading ? "Chargement…" : "—")}
               </div>
-              {trip && <p className="mt-1 font-mono text-sm text-sand/70">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} · {trip.coopName}</p>}
+              {trip && <p className="mt-1 font-mono text-sm text-white/70">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} · {trip.coopName}</p>}
             </div>
             <div className="relative border-y border-dashed border-ink/15">
-              <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#fcfbf9]" />
-              <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-[#fcfbf9]" />
+              <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-sand" />
+              <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-sand" />
             </div>
             <div className="flex items-center gap-5 p-5">
-              <div className="grid shrink-0 place-items-center rounded-xl border border-ink/10 bg-white p-2">
+              <div className="grid shrink-0 place-items-center rounded-xl border border-ink/10 bg-paper p-2">
                 <QRCodeSVG value={reference} size={96} level="M" />
               </div>
               <div className="flex-1 space-y-1.5 text-sm">

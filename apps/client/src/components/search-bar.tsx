@@ -16,7 +16,7 @@ export function SearchBar() {
   const swap = () => { setFrom(to); setTo(from); };
 
   return (
-    <div className="rounded-sm border border-ink/10 bg-white p-2 shadow-[0_1px_3px_rgba(15,28,82,.04),0_20px_50px_-20px_rgba(15,28,82,.18)]">
+    <div className="rounded-sm border border-ink/10 bg-paper p-2 shadow-[0_1px_3px_rgba(15,28,82,.04),0_20px_50px_-20px_rgba(15,28,82,.18)]">
       <div className="flex flex-col gap-1 md:flex-row md:items-stretch">
         {/* From */}
         <Cell label="Départ" icon={<MapPin size={15} />}>
@@ -28,7 +28,7 @@ export function SearchBar() {
 
         <div className="relative flex items-center justify-center md:w-0">
           <button onClick={swap} aria-label="Inverser"
-            className="z-10 grid h-9 w-9 place-items-center bg-white text-ink-soft transition-all hover:rotate-180 hover:border-orange hover:text-orange">
+            className="z-10 grid h-9 w-9 place-items-center bg-paper text-ink-soft transition-all hover:rotate-180 hover:border-orange hover:text-orange">
             <ArrowRightLeft size={14} />
           </button>
         </div>

@@ -156,7 +156,7 @@ export default function BookingsPage() {
               </Button>
             )}
             {!done && (
-              <Button size="sm" variant="ghost" className="text-[#c42f2f] hover:bg-[#e23b3b]/10" onClick={() => cancelBooking(r)} title="Annuler">
+              <Button size="sm" variant="ghost" className="text-danger hover:bg-danger/10" onClick={() => cancelBooking(r)} title="Annuler">
                 <XCircle size={14} /> Annuler
               </Button>
             )}
@@ -240,7 +240,7 @@ export default function BookingsPage() {
                   <Button size="sm" onClick={() => markPaid(selected)}><Wallet size={14} /> Marquer payé</Button>
                 )}
                 {selected.status !== "cancelled" && selected.status !== "refunded" && (
-                  <Button size="sm" variant="ghost" className="text-[#c42f2f] hover:bg-[#e23b3b]/10" onClick={() => cancelBooking(selected)}>
+                  <Button size="sm" variant="ghost" className="text-danger hover:bg-danger/10" onClick={() => cancelBooking(selected)}>
                     <XCircle size={14} /> Annuler
                   </Button>
                 )}
@@ -263,7 +263,7 @@ function BookingDrawerBody({ b, checkIn }: { b: any; checkIn: (id: string, cur?:
     <div className="space-y-5">
       {/* passenger */}
       <Card className="flex items-center gap-3 p-4">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-ink text-base font-bold text-white">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-strong text-base font-bold text-white">
           {(b.contactName?.[0] ?? "?").toUpperCase()}
         </span>
         <div className="min-w-0 flex-1">
@@ -320,7 +320,7 @@ function BookingDrawerBody({ b, checkIn }: { b: any; checkIn: (id: string, cur?:
       </div>
 
       {b.cancelledAt && (
-        <p className="rounded-xl bg-[#e23b3b]/8 px-3 py-2 text-sm text-[#c42f2f]">Annulée le {fmtDateTime(b.cancelledAt)}</p>
+        <p className="rounded-xl bg-danger/8 px-3 py-2 text-sm text-danger">Annulée le {fmtDateTime(b.cancelledAt)}</p>
       )}
     </div>
   );

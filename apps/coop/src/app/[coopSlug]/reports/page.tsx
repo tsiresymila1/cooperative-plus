@@ -133,7 +133,7 @@ export default function ReportsPage() {
               {perf.length === 0 ? (
                 <p className="px-6 py-10 text-center text-sm text-ink-soft/60">Aucune donnée.</p>
               ) : (
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto"><table className="w-full min-w-[42rem] text-sm">
                   <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
                     <tr className="border-b border-ink/8">
                       <th className="px-6 py-3">Itinéraire</th>
@@ -167,7 +167,7 @@ export default function ReportsPage() {
                       );
                     })}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </Card>
           </div>

@@ -32,7 +32,7 @@ export default function Profile() {
       <h1 className="font-display text-2xl font-bold">Profil</h1>
       <Card className="p-6">
         <div className="mb-6 flex items-center gap-4">
-          <div className="grid h-16 w-16 place-items-center rounded-full bg-ink text-xl font-bold text-sand">{initials}</div>
+          <div className="grid h-16 w-16 place-items-center rounded-full bg-strong text-xl font-bold text-white">{initials}</div>
           <div><p className="font-display text-lg font-bold">{name || "Sans nom"}</p><p className="text-sm text-ink-soft">{user?.email}</p></div>
         </div>
         <form className="space-y-4" onSubmit={save}>
