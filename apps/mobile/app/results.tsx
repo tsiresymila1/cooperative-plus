@@ -7,7 +7,7 @@ import { Badge, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
-import { fmtDateKey, fmtTime } from "@/lib/domain";
+import { fmtDateKey, fmtTime, toMs } from "@/lib/domain";
 
 export default function Results() {
   const insets = useSafeAreaInsets();
@@ -31,7 +31,11 @@ export default function Results() {
   // Availability is derived from issued tickets (the booking source of truth).
   const seatsLeft = (t: { seatsTotal: number; tickets?: unknown[] }) =>
     t.seatsTotal - (t.tickets?.length ?? 0);
-  const trips = (data?.tripInstances ?? []).filter((t) => seatsLeft(t) >= 1);
+  const nowMs = Date.now();
+  // Only seats left AND departure still in the future (hide departed trips).
+  const trips = (data?.tripInstances ?? []).filter(
+    (t) => seatsLeft(t) >= 1 && toMs(t.departureAt) > nowMs,
+  );
 
   return (
     <View className="flex-1 bg-sand">

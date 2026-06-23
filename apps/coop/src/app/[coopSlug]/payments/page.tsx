@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Wallet, Undo2, ChevronRight } from "lucide-react";
+import { Plus, Wallet, Undo2, ChevronRight, Clock, Hash } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
@@ -9,6 +9,7 @@ import {
   db,
   Button,
   Badge,
+  StatCard,
   DataTable,
   FilterBar,
   type Column,
@@ -36,7 +37,7 @@ const METHOD_LABEL: Record<string, string> = {
 const STATUSES = ["pending", "paid", "succeeded", "failed", "refunded", "partially_refunded"];
 
 export default function PaymentsPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
 
   const { data, isLoading } = db.useQuery({
@@ -44,6 +45,11 @@ export default function PaymentsPage() {
   });
 
   const all = data?.payments ?? [];
+
+  const sum = (pred: (p: any) => boolean) => all.filter(pred).reduce((s: number, p: any) => s + (p.amount ?? 0), 0);
+  const collected = sum((p) => p.status === "paid" || p.status === "succeeded");
+  const pending = sum((p) => p.status === "pending");
+  const refunded = sum((p) => p.status === "refunded" || p.status === "partially_refunded");
 
   const [methodF, setMethodF] = useState("all");
   const [statusF, setStatusF] = useState("all");
@@ -92,8 +98,9 @@ export default function PaymentsPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "payments")}
+      nav={coopNav(slug, "payments", { role, permissions, isPlatformAdmin })}
       title="Paiements"
+      subtitle="Encaissements, remboursements et transactions."
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
       breadcrumb={
@@ -109,6 +116,13 @@ export default function PaymentsPage() {
         </Button>
       }
     >
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Total encaissé" value={fmtMoney(collected)} tone="baobab" icon={<Wallet size={16} />} />
+        <StatCard label="En attente" value={fmtMoney(pending)} tone="laterite" icon={<Clock size={16} />} />
+        <StatCard label="Remboursé" value={fmtMoney(refunded)} icon={<Undo2 size={16} />} />
+        <StatCard label="Transactions" value={String(all.length)} icon={<Hash size={16} />} />
+      </div>
+
       <FilterBar>
         <Select value={methodF} onValueChange={setMethodF}>
           <SelectTrigger className="h-9 w-44">

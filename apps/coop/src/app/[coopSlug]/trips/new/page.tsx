@@ -33,7 +33,7 @@ import {
 const dKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export default function NewTripPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
 
@@ -105,7 +105,7 @@ export default function NewTripPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "trips")}
+      nav={coopNav(slug, "trips", { role, permissions, isPlatformAdmin })}
       title="Nouveau trajet"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}

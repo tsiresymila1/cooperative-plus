@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { db } from "../lib/db";
-import { Button, Card, Logo, FormSection } from "./ui";
+import { Button, Card, Logo, FormSection, FullSpinner } from "./ui";
 import { Field, Input } from "./form";
 import { toast } from "./toast";
 
@@ -16,7 +16,7 @@ export function ProfilePage({ backHref = "/" }: { backHref?: string }) {
   const [saving, setSaving] = useState(false);
   useEffect(() => { if (me) { setName((me.name as string) ?? ""); setPhone((me.phone as string) ?? ""); } }, [me?.id]);
 
-  if (isLoading) return <div className="grid min-h-dvh place-items-center text-ink-soft">Chargement…</div>;
+  if (isLoading) return <FullSpinner />;
   if (!user) return <div className="grid min-h-dvh place-items-center text-ink-soft">Connexion requise.</div>;
 
   const save = async () => {

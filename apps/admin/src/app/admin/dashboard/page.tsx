@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { AdminShell } from "@/components/admin-shell";
 import { Building2, Wallet, CalendarCheck, Users, ArrowRight } from "lucide-react";
-import { adminNav, db, Badge, fmtMoney, fmtDate, notDeleted, subStatus } from "@cp/ui";
+import { adminNav, db, Badge, Spinner, fmtMoney, fmtDate, notDeleted, subStatus } from "@cp/ui";
 
 function startOfTodayMs() {
   const d = new Date();
@@ -124,7 +124,7 @@ function Panel({
         )}
       </div>
       {loading ? (
-        <p className="px-2.5 py-8 text-center text-sm text-ink-soft/50">Chargement…</p>
+        <div className="flex justify-center py-8"><Spinner size={18} /></div>
       ) : empty ? (
         <p className="px-2.5 py-8 text-center text-sm text-ink-soft/50">Aucune donnée.</p>
       ) : (

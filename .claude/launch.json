@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "coop",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@cp/coop", "dev"],
+      "port": 3001
+    }
+  ]
+}

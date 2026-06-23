@@ -8,9 +8,21 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "icon": "./assets/logo-round.png",
+    "backgroundColor": "#ffffff",
     "ios": { "supportsTablet": true, "bundleIdentifier": "mg.cooperativeplus.app" },
-    "android": { "package": "mg.cooperativeplus.app", "adaptiveIcon": { "foregroundImage": "./assets/logo-round.png"} },
-    "plugins": ["expo-router"],
+    "android": { "package": "mg.cooperativeplus.app", "adaptiveIcon": { "foregroundImage": "./assets/logo-round.png", "backgroundColor": "#ffffff" } },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/logo-round.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
     "experiments": { "typedRoutes": true }
   }
 }

@@ -1,7 +1,7 @@
 "use client";
 import { AdminShell } from "@/components/admin-shell";
 import { useMemo, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Pencil, Trash2, Shield, ShieldOff } from "lucide-react";
 import {
   adminNav,
   db,
@@ -9,6 +9,8 @@ import {
   useAdmin,
   DataTable,
   FilterBar,
+  Drawer,
+  Field,
   useConfirm,
   Button,
   Badge,
@@ -45,6 +47,43 @@ export default function UsersPage() {
 
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [edit, setEdit] = useState<User | null>(null);
+  const [form, setForm] = useState({ name: "", phone: "" });
+  const [saving, setSaving] = useState(false);
+
+  const openEdit = (u: User) => { setEdit(u); setForm({ name: u.name ?? "", phone: u.phone ?? "" }); };
+  const saveEdit = async () => {
+    if (!edit) return;
+    setSaving(true);
+    try {
+      await db.transact(tx.$users[edit.id].update({ name: form.name || undefined, phone: form.phone || undefined }));
+      toast.success("Utilisateur mis à jour.");
+      setEdit(null);
+    } catch (e: any) { toast.error(e?.message ?? "Échec."); }
+    finally { setSaving(false); }
+  };
+
+  // $users can't be deleted (system entity) — revoke access: drop login + memberships.
+  const handleDelete = async (u: User) => {
+    if (u.id === myId) { toast.error("Vous ne pouvez pas supprimer votre propre compte."); return; }
+    const ok = await confirm({
+      title: "Supprimer cet utilisateur ?",
+      message: `${u.email} — ses identifiants et adhésions seront supprimés, l'accès révoqué. Irréversible.`,
+      confirmLabel: "Supprimer",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      const cred = await db.queryOnce({ credentials: { $: { where: { email: u.email } } } });
+      const mem = await db.queryOnce({ memberships: { $: { where: { "user.id": u.id } } } });
+      const txs: any[] = [];
+      for (const c of cred.data?.credentials ?? []) txs.push(tx.credentials[c.id].delete());
+      for (const m of mem.data?.memberships ?? []) txs.push(tx.memberships[m.id].delete());
+      if (u.isPlatformAdmin) txs.push(tx.$users[u.id].update({ isPlatformAdmin: false }));
+      if (txs.length) await db.transact(txs);
+      toast.success("Utilisateur supprimé (accès révoqué).");
+    } catch (e: any) { toast.error(e?.message ?? "Échec."); }
+  };
 
   const rows = useMemo(() => {
     const list = (data?.$users ?? []) as User[];
@@ -126,17 +165,32 @@ export default function UsersPage() {
       header: "",
       className: "text-right",
       render: (u) => {
-        const isSelfAdmin = u.id === myId && u.isPlatformAdmin;
+        const isSelf = u.id === myId;
         return (
-          <Button
-            variant={u.isPlatformAdmin ? "outline" : "ink"}
-            size="sm"
-            disabled={isSelfAdmin}
-            title={isSelfAdmin ? "Vous ne pouvez pas retirer votre propre accès" : undefined}
-            onClick={() => handleToggle(u)}
-          >
-            {u.isPlatformAdmin ? "Retirer admin" : "Promouvoir admin"}
-          </Button>
+          <div className="flex justify-end gap-1">
+            <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
+              <Pencil size={14} /> Modifier
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isSelf && u.isPlatformAdmin}
+              title={isSelf && u.isPlatformAdmin ? "Vous ne pouvez pas retirer votre propre accès" : undefined}
+              onClick={() => handleToggle(u)}
+            >
+              {u.isPlatformAdmin ? <><ShieldOff size={14} /> Retirer admin</> : <><Shield size={14} /> Admin</>}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[#c42f2f] hover:bg-[#e23b3b]/10"
+              disabled={isSelf}
+              title={isSelf ? "Vous ne pouvez pas supprimer votre propre compte" : undefined}
+              onClick={() => handleDelete(u)}
+            >
+              <Trash2 size={14} />
+            </Button>
+          </div>
         );
       },
     },
@@ -177,6 +231,34 @@ export default function UsersPage() {
       </FilterBar>
 
       <DataTable columns={columns} rows={rows} loading={isLoading} empty="Aucun utilisateur." />
+
+      <Drawer
+        open={!!edit}
+        onClose={() => setEdit(null)}
+        eyebrow={edit?.email}
+        title="Modifier l'utilisateur"
+        width="max-w-md"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setEdit(null)} disabled={saving}>Annuler</Button>
+            <Button size="sm" onClick={saveEdit} disabled={saving}>{saving ? "…" : "Enregistrer"}</Button>
+          </div>
+        }
+      >
+        {edit && (
+          <div className="grid gap-4">
+            <Field label="Nom">
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom complet" />
+            </Field>
+            <Field label="Téléphone">
+              <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="034 00 000 00" />
+            </Field>
+            <Field label="Email" hint="Non modifiable">
+              <Input value={edit.email} disabled className="opacity-60" />
+            </Field>
+          </div>
+        )}
+      </Drawer>
     </AdminShell>
   );
 }

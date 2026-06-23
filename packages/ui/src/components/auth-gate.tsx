@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "../lib/db";
+import { Spinner } from "./ui";
 
 /** Gate client pages behind a real (non-guest) session. */
 export function AuthGate({ children }: { children: React.ReactNode }) {
@@ -13,7 +14,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     if (!isLoading && (!user || isGuest)) router.replace("/sign-in");
   }, [isLoading, user, isGuest, router]);
 
-  if (isLoading) return <div className="mx-auto max-w-5xl px-5 py-20 text-ink-soft">Chargement…</div>;
+  if (isLoading) return <div className="grid place-items-center py-20"><Spinner /></div>;
   if (!user || isGuest) return null;
   return <>{children}</>;
 }

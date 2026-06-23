@@ -5,26 +5,26 @@
 
 /* ── Semantic tokens (shadcn / react-native-reusables) — light ── */
 :root {
-  --background: #ffffff;
-  --foreground: #16266b;
+  --background: #f8fafc;
+  --foreground: #0f2d5c;
   --card: #ffffff;
-  --card-foreground: #16266b;
+  --card-foreground: #0f2d5c;
   --popover: #ffffff;
-  --popover-foreground: #16266b;
-  --primary: #f5821f;
+  --popover-foreground: #0f2d5c;
+  --primary: #ff7a00;
   --primary-foreground: #ffffff;
-  --secondary: #eef1f7;
-  --secondary-foreground: #16266b;
-  --muted: #eef1f7;
-  --muted-foreground: #4a5680;
-  --accent: #dfe4ef;
-  --accent-foreground: #16266b;
-  --destructive: #e5484d;
+  --secondary: #f1f3ff;
+  --secondary-foreground: #0f2d5c;
+  --muted: #f1f5f9;
+  --muted-foreground: #475569;
+  --accent: #eaedff;
+  --accent-foreground: #0f2d5c;
+  --destructive: #ef4444;
   --destructive-foreground: #ffffff;
-  --border: #dfe4ef;
-  --input: #dfe4ef;
-  --ring: #f5821f;
-  --radius: 0.875rem;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #ff7a00;
+  --radius: 0.25rem;
 }
 
 /* ── Dark — brand navy surfaces ── */
@@ -78,27 +78,27 @@
 }
 
 @theme {
-  /* ── Cooperative Plus brand palette (static) ── */
-  --color-navy: #16266b;
-  --color-navy-deep: #0f1c52;
-  --color-orange: #f5821f;
-  --color-orange-deep: #d96d0f;
-  --color-green: #62b22e;
-  --color-ink: #16266b;
-  --color-ink-soft: #4a5680;
-  --color-sand: #eef1f7;
-  --color-sand-deep: #dfe4ef;
+  /* ── Cooperative Plus — Premium Transit palette (Stitch) ── */
+  --color-navy: #0f2d5c;
+  --color-navy-deep: #00183d;
+  --color-orange: #ff7a00;
+  --color-orange-deep: #e06d00;
+  --color-green: #34c759;
+  --color-ink: #0f2d5c;        /* primary navy text */
+  --color-ink-soft: #475569;   /* slate */
+  --color-sand: #f8fafc;       /* page background */
+  --color-sand-deep: #eaedff;  /* tinted surface */
   --color-paper: #ffffff;
-  --color-laterite: #f5821f;
-  --color-laterite-deep: #d96d0f;
-  --color-clay: #ffa94d;
-  --color-baobab: #62b22e;
-  --color-sky: #2b6f8f;
+  --color-laterite: #ff7a00;   /* CTA orange */
+  --color-laterite-deep: #e06d00;
+  --color-clay: #f59e0b;       /* warning */
+  --color-baobab: #34c759;     /* success / available */
+  --color-sky: #0f2d5c;
 
-  --font-display: "Sora_700Bold";
-  --font-sans: "Manrope_500Medium";
+  --font-display: "Inter_700Bold";
+  --font-sans: "Montserrat_500Medium";
   --font-mono: "JetBrainsMono_400Regular";
 
-  --radius-xl: 14px;
-  --radius-2xl: 18px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
 }

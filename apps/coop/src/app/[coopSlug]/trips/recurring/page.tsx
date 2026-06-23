@@ -73,7 +73,7 @@ const FREQ_OPTIONS: { value: Freq; label: string }[] = [
 ];
 
 export default function RecurringTripPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
   const currency = coop.currency ?? "MGA";
@@ -264,7 +264,7 @@ export default function RecurringTripPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "trips")}
+      nav={coopNav(slug, "trips", { role, permissions, isPlatformAdmin })}
       title="Trajet récurrent"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}

@@ -2,13 +2,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight, Mail, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, ChevronRight, Mail } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
   useCoop,
-  db,
-  id,
   Button,
   FormSection,
   Field,
@@ -18,18 +16,14 @@ import {
 import { Input } from "@cp/ui/shadcn";
 
 export default function NewTeamMemberPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
-  const [lookupEmail, setLookupEmail] = useState("");
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
   const [perms, setPerms] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-
-  const { data } = db.useQuery(
-    lookupEmail ? { $users: { $: { where: { email: lookupEmail } } } } : null,
-  );
-  const found = lookupEmail ? data?.$users?.[0] : null;
 
   const togglePerm = (key: string) =>
     setPerms((p) => (p.includes(key) ? p.filter((x) => x !== key) : [...p, key]));
@@ -40,28 +34,20 @@ export default function NewTeamMemberPage() {
       toast.error("Email requis");
       return;
     }
-    if (lookupEmail !== target) {
-      setLookupEmail(target);
-      toast.info("Vérification de l'utilisateur, réessayez.");
-      return;
-    }
-    if (!found) {
-      toast.error("Utilisateur introuvable, il doit créer un compte d'abord");
+    if (password.length < 6) {
+      toast.error("Mot de passe: 6 caractères minimum");
       return;
     }
     setSaving(true);
     try {
-      await db.transact(
-        db.tx.memberships[id()]
-          .update({
-            role: "assistant",
-            status: "active",
-            permissions: perms,
-            createdAt: Date.now(),
-          })
-          .link({ cooperative: coopId, user: found.id }),
-      );
-      toast.success("Assistant ajouté");
+      const res = await fetch("/api/team", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ coopId, email: target, name, password, permissions: perms }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Échec");
+      toast.success("Compte assistant créé");
       router.push(`/${slug}/team`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
@@ -71,7 +57,7 @@ export default function NewTeamMemberPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "team")}
+      nav={coopNav(slug, "team", { role, permissions, isPlatformAdmin })}
       title="Inviter un assistant"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -93,36 +79,32 @@ export default function NewTeamMemberPage() {
       }
     >
       <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Compte" description="L'utilisateur doit déjà avoir un compte Cooperative Plus.">
+        <FormSection index="01" title="Compte" description="Un compte assistant avec mot de passe sera créé.">
         <div className="grid gap-4">
+          <Field label="Nom">
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom de l'assistant" />
+          </Field>
           <Field label="Email">
             <div className="relative">
               <Mail size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
               <Input
                 type="email"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setLookupEmail(e.target.value.trim().toLowerCase());
-                }}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="assistant@exemple.com"
                 className="pl-9"
               />
             </div>
           </Field>
-          {lookupEmail && (
-            <p className="flex items-center gap-1.5 text-xs">
-              {found ? (
-                <span className="inline-flex items-center gap-1.5 text-baobab">
-                  <CheckCircle2 size={14} /> Utilisateur trouvé: {found.name ?? found.email}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1.5 text-laterite">
-                  <XCircle size={14} /> Aucun compte avec cet email.
-                </span>
-              )}
-            </p>
-          )}
+          <Field label="Mot de passe" hint="6 caractères minimum">
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
+          </Field>
         </div>
         </FormSection>
 

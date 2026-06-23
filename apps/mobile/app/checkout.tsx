@@ -13,13 +13,25 @@ import { useAuth } from "@/lib/auth";
 import { useSelection } from "@/lib/selection";
 import { fmtCountdown, makeQrToken, makeReference } from "@/lib/domain";
 
-type PayMethod = "mobile_money" | "card" | "cash";
+type MethodMeta = { label: string; desc: string; Icon: typeof Smartphone; provider: string };
 
-const METHODS: { key: PayMethod; label: string; desc: string; Icon: typeof Smartphone; provider: string }[] = [
-  { key: "mobile_money", label: "Mobile Money", desc: "MVola · Orange Money · Airtel", Icon: Smartphone, provider: "mvola" },
-  { key: "card", label: "Carte bancaire", desc: "Visa · Mastercard", Icon: CreditCard, provider: "stripe" },
-  { key: "cash", label: "Espèces", desc: "Payez au chauffeur, à bord", Icon: Wallet, provider: "cash" },
-];
+// Known methods get rich meta; custom coop methods fall back to a generic tile.
+const METHOD_META: Record<string, MethodMeta> = {
+  mobile_money: { label: "Mobile Money", desc: "MVola · Orange Money · Airtel", Icon: Smartphone, provider: "mvola" },
+  card: { label: "Carte bancaire", desc: "Visa · Mastercard", Icon: CreditCard, provider: "stripe" },
+  cash: { label: "Espèces", desc: "Payez au chauffeur, à bord", Icon: Wallet, provider: "cash" },
+};
+
+function metaFor(key: string): MethodMeta {
+  return (
+    METHOD_META[key] ?? {
+      label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, " "),
+      desc: "Paiement auprès de la coopérative",
+      Icon: Wallet,
+      provider: key,
+    }
+  );
+}
 
 export default function Checkout() {
   const insets = useSafeAreaInsets();
@@ -29,7 +41,7 @@ export default function Checkout() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState(user?.email ?? "");
-  const [method, setMethod] = useState<PayMethod>("mobile_money");
+  const [method, setMethod] = useState<string>("mobile_money");
   // Init from the real hold so the countdown never starts at 0 (which used to
   // trigger a false "expired" alert on the first render).
   const [remaining, setRemaining] = useState(() =>
@@ -39,12 +51,34 @@ export default function Checkout() {
   const [notice, setNotice] = useState<Notice | null>(null);
   const expiredRef = useRef(false);
   const completedRef = useRef(false);
+  const prefilledRef = useRef(false);
 
-  // Trip context for the summary (coop logo + occupancy).
+  // Trip context for the summary (coop logo + occupancy + accepted payments).
   const { data: tripData } = db.useQuery(
     selection ? { tripInstances: { $: { where: { id: selection.tripInstanceId } }, cooperative: {}, tickets: {} } } : null,
   );
   const summaryTrip = tripData?.tripInstances?.[0];
+
+  // Logged-in user's profile → prefill the passenger fields once.
+  const { data: profileData } = db.useQuery(user?.id ? { $users: { $: { where: { id: user.id } } } } : null);
+  const profile = profileData?.$users?.[0];
+  useEffect(() => {
+    if (!profile || prefilledRef.current) return;
+    prefilledRef.current = true;
+    if (profile.name) setName(profile.name);
+    if (profile.phone) setPhone(profile.phone);
+    if (profile.email) setEmail(profile.email);
+  }, [profile]);
+
+  // Payment methods accepted by the cooperative (incl. custom keys); fallback to all.
+  const accepted: string[] =
+    Array.isArray(summaryTrip?.cooperative?.paymentMethods) && (summaryTrip!.cooperative!.paymentMethods as string[]).length
+      ? (summaryTrip!.cooperative!.paymentMethods as string[])
+      : ["mobile_money", "card", "cash"];
+  const methods = accepted.map((key) => ({ key, ...metaFor(key) }));
+  useEffect(() => {
+    if (methods.length && !accepted.includes(method)) setMethod(methods[0]!.key);
+  }, [accepted.join(",")]);
 
   // Release the server-side seat holds (so the seats free up immediately).
   function releaseHolds() {
@@ -114,7 +148,7 @@ export default function Checkout() {
     const reference = makeReference();
     const now = Date.now();
     const isCash = method === "cash";
-    const chosen = METHODS.find((m) => m.key === method)!;
+    const chosen = metaFor(method);
 
     try {
       // Booking (+ customer / cooperative links).
@@ -270,7 +304,7 @@ export default function Checkout() {
         <Animated.View entering={FadeInDown.delay(160).duration(420)} className="mt-5">
           <Text className="mb-2 font-display text-lg text-ink">Mode de paiement</Text>
           <View className="gap-2">
-            {METHODS.map((m) => {
+            {methods.map((m) => {
               const active = method === m.key;
               return (
                 <Pressable
@@ -305,12 +339,12 @@ export default function Checkout() {
 
       <View className="absolute inset-x-0 bottom-0 border-t border-ink/10 bg-paper px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         <View className="mb-2 flex-row items-center justify-between">
-          <Text className="font-sans text-sm text-ink-soft">Total</Text>
-          <Text className="font-mono text-xl text-ink">{fmtMoney(total, selection.currency)}</Text>
+          <Text className="font-sans font-bold text-sm text-ink-soft">Total</Text>
+          <Text className="font-mono  font-bold text-xl text-ink">{fmtMoney(total, selection.currency)}</Text>
         </View>
-        <Button onPress={confirm} disabled={!canSubmit}>
+        <Button onPress={confirm} loading={submitting} disabled={!canSubmit}>
           <Text className="font-sans font-medium text-paper">
-            {submitting ? "Traitement…" : method === "cash" ? "Réserver (payer à bord)" : "Payer maintenant"}
+            {method === "cash" ? "Réserver (payer à bord)" : "Payer maintenant"}
           </Text>
         </Button>
       </View>

@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ import {
 const STATUSES = ["active", "inactive"];
 
 export default function EditRoutePage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const routeId = params.id;
@@ -61,6 +62,7 @@ export default function EditRoutePage() {
 
   const [hydrated, setHydrated] = useState(false);
   const [name, setName] = useState("");
+  const [nameEdited, setNameEdited] = useState(false);
   const [originId, setOriginId] = useState("");
   const [destId, setDestId] = useState("");
   const [price, setPrice] = useState("");
@@ -78,9 +80,18 @@ export default function EditRoutePage() {
       setDist(route.distanceKm ? String(route.distanceKm) : "");
       setDur(route.durationMin ? String(route.durationMin) : "");
       setStatus(route.status ?? "active");
+      setNameEdited(!!route.name); // keep existing name; auto only if empty
       setHydrated(true);
     }
   }, [route, hydrated]);
+
+  // Auto-fill name "Origine → Destination" until the user types their own.
+  useEffect(() => {
+    if (!hydrated || nameEdited) return;
+    const o = destinations.find((d: any) => d.id === originId)?.name;
+    const d = destinations.find((x: any) => x.id === destId)?.name;
+    setName(o && d ? `${o} → ${d}` : "");
+  }, [originId, destId, nameEdited, hydrated, destinations]);
 
   const submit = async () => {
     if (!originId || !destId) {
@@ -110,7 +121,7 @@ export default function EditRoutePage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "routes")}
+      nav={coopNav(slug, "routes", { role, permissions, isPlatformAdmin })}
       title="Modifier l'itinéraire"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -132,41 +143,28 @@ export default function EditRoutePage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !route ? (
         <p className="text-ink-soft">Itinéraire introuvable.</p>
-      ) : hasTrips ? (
-        <div className="mx-auto max-w-2xl">
-          <Card className="p-8 text-center">
-            <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-laterite/10 text-laterite">
-              <Lock size={22} />
-            </div>
-            <h3 className="font-display text-lg font-bold text-ink">
-              Modification impossible
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm text-ink-soft">
-              Cet itinéraire est utilisé par des trajets et ne peut pas être modifié.
-              Supprimez ou terminez les trajets associés d'abord.
-            </p>
-            <div className="mt-6 flex justify-center">
-              <Link href={`/${slug}/routes`}>
-                <Button size="sm">
-                  <ArrowLeft size={16} /> Retour aux itinéraires
-                </Button>
-              </Link>
-            </div>
-          </Card>
-        </div>
       ) : (
         <div className="mx-auto max-w-4xl">
+          {hasTrips && (
+            <Card className="mb-6 flex items-start gap-3 border-laterite/30 bg-laterite/5 p-4">
+              <Lock size={18} className="mt-0.5 shrink-0 text-laterite" />
+              <p className="text-sm text-ink-soft">
+                Cet itinéraire a des trajets associés. L'origine et la destination sont
+                verrouillées, mais vous pouvez modifier le nom, le tarif et le statut.
+              </p>
+            </Card>
+          )}
           <FormSection index="01" title="Trajet" description="Origine, destination et nom affiché de l'itinéraire.">
           <div className="grid gap-4">
-            <Field label="Nom" hint="Laissez vide pour générer automatiquement">
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Origine → Destination" />
+            <Field label="Nom" hint="Auto-rempli depuis Origine → Destination">
+              <Input value={name} onChange={(e) => { setName(e.target.value); setNameEdited(true); }} placeholder="Origine → Destination" />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Origine">
-                <Select value={originId} onValueChange={setOriginId}>
+                <Select value={originId} onValueChange={setOriginId} disabled={hasTrips}>
                   <SelectTrigger>
                     <span className="inline-flex items-center gap-2">
                       <MapPin size={15} className="text-ink-soft/60" />
@@ -183,7 +181,7 @@ export default function EditRoutePage() {
                 </Select>
               </Field>
               <Field label="Destination">
-                <Select value={destId} onValueChange={setDestId}>
+                <Select value={destId} onValueChange={setDestId} disabled={hasTrips}>
                   <SelectTrigger>
                     <span className="inline-flex items-center gap-2">
                       <MapPin size={15} className="text-ink-soft/60" />

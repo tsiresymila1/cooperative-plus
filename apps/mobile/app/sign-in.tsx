@@ -107,8 +107,8 @@ export default function SignIn() {
 
             {err && <Text className="mt-2 px-1 font-sans text-sm text-laterite-deep">{err}</Text>}
 
-            <Button size="lg" className="mt-4" onPress={sendCode} disabled={busy}>
-              <Text className="font-sans font-medium text-paper">{busy ? "Envoi…" : "Envoyer le code"}</Text>
+            <Button size="md" className="mt-4" onPress={sendCode} loading={busy}>
+              <Text className="font-sans font-medium text-paper">Envoyer le code</Text>
               {!busy && <ArrowRight size={18} color="#ffffff" />}
             </Button>
           </Animated.View>
@@ -150,8 +150,8 @@ export default function SignIn() {
 
             {err && <Text className="mt-3 px-1 text-center font-sans text-sm text-laterite-deep">{err}</Text>}
 
-            <Button size="lg" className="mt-5" onPress={() => verify()} disabled={busy}>
-              <Text className="font-sans font-medium text-paper">{busy ? "Vérification…" : "Se connecter"}</Text>
+            <Button size="md" className="mt-5" onPress={() => verify()} loading={busy}>
+              <Text className="font-sans font-medium text-paper">Se connecter</Text>
             </Button>
 
             <Pressable onPress={() => { setStep("email"); setCode(""); setErr(null); }} className="mt-4">

@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, CalendarClock, Pencil, XCircle, Bus, ArrowRight, ExternalLink, ChevronRight, CalendarPlus } from "lucide-react";
+import { Plus, CalendarClock, Pencil, XCircle, Bus, ArrowRight, ExternalLink, ChevronRight, CalendarPlus, Users, Route as RouteIcon } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
@@ -11,6 +11,7 @@ import {
   Badge,
   DataTable,
   FilterBar,
+  KpiCard,
   useConfirm,
   toast,
   type Column,
@@ -42,7 +43,7 @@ const statusBg: Record<string, string> = {
 const dKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export default function TripsPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
   const today = todayISO();
@@ -58,7 +59,7 @@ export default function TripsPage() {
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState("all");
   const [routeF, setRouteF] = useState("all");
-  const [from, setFrom] = useState("");
+  const [from, setFrom] = useState(today); // default: from today onward
   const [to, setTo] = useState("");
 
   const rows = useMemo(() => {
@@ -79,11 +80,19 @@ export default function TripsPage() {
         }
         return true;
       })
-      .sort((a: any, b: any) => new Date(b.departureAt).getTime() - new Date(a.departureAt).getTime());
+      .sort((a: any, b: any) => new Date(a.departureAt).getTime() - new Date(b.departureAt).getTime());
   }, [allInstances, statusF, routeF, from, to, search]);
 
   const todayRows = useMemo(() => rows.filter((t: any) => t.departDate === today), [rows, today]);
   const otherRows = useMemo(() => rows.filter((t: any) => t.departDate !== today), [rows, today]);
+
+  // KPI metrics (across all instances, not just filtered rows)
+  const nowMs = Date.now();
+  const upcoming = allInstances.filter((t: any) => new Date(t.departureAt).getTime() >= nowMs && t.status !== "cancelled");
+  const enRoute = allInstances.filter((t: any) => t.status === "boarding" || t.status === "departed").length;
+  const passengers = upcoming.reduce((s: number, t: any) => s + (t.tickets?.length ?? 0), 0);
+  const kSeatsTotal = upcoming.reduce((s: number, t: any) => s + (t.seatsTotal ?? 0), 0);
+  const kOcc = kSeatsTotal ? Math.round((passengers / kSeatsTotal) * 100) : 0;
 
   const setStatus = async (r: any, next: string) => {
     try { await db.transact(db.tx.tripInstances[r.id].update({ status: next })); toast.success("Statut mis à jour"); }
@@ -165,12 +174,21 @@ export default function TripsPage() {
 
   const seatsColumn: Column<any> = {
     key: "seats",
-    header: "Places",
+    header: "Places libres",
     render: (r) => {
       const booked = r.tickets?.length ?? 0;
-      const avail = (r.seatsTotal ?? 0) - booked;
-      const tone = avail <= 0 ? "danger" : avail <= 3 ? "warning" : "success";
-      return <Badge tone={tone}>{avail <= 0 ? "Complet" : `${booked}/${r.seatsTotal}`}</Badge>;
+      const total = r.seatsTotal ?? 0;
+      const free = total - booked;
+      const ratio = total ? booked / total : 0;
+      const c = ratio >= 1 ? "bg-danger" : ratio >= 0.8 ? "bg-laterite" : "bg-success";
+      return (
+        <div className="flex items-center gap-2">
+          <div className="h-1.5 w-16 overflow-hidden rounded-full bg-ink/[.08]">
+            <div className={`h-full rounded-full ${c}`} style={{ width: `${Math.max(5, ratio * 100)}%` }} />
+          </div>
+          <span className="text-xs font-bold text-ink tabular-nums">{free}/{total}</span>
+        </div>
+      );
     },
   };
 
@@ -190,7 +208,7 @@ export default function TripsPage() {
   ];
 
   const columns: Column<any>[] = [
-    { key: "date", header: "Départ", render: (r) => fmtDateTime(r.departureAt) },
+    { key: "date", header: "Départ", render: (r) => <span className="font-mono font-semibold text-ink">{fmtDateTime(r.departureAt)}</span>},
     routeColumn,
     vehicleColumn,
     { key: "price", header: "Prix", render: (r) => fmtMoney(r.price) },
@@ -201,8 +219,9 @@ export default function TripsPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "trips")}
-      title="Trajets"
+      nav={coopNav(slug, "trips", { role, permissions, isPlatformAdmin })}
+      title="Planning des trajets"
+      subtitle="Départs, occupation et statuts en temps réel."
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
       breadcrumb={
@@ -214,6 +233,9 @@ export default function TripsPage() {
       }
       action={
         <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => router.push(`/${slug}/trips/schedule`)}>
+            <CalendarClock size={16} /> Calendrier
+          </Button>
           <Button size="sm" variant="outline" onClick={() => router.push(`/${slug}/trips/recurring`)}>
             <CalendarPlus size={16} /> Trajet récurrent
           </Button>
@@ -223,6 +245,13 @@ export default function TripsPage() {
         </div>
       }
     >
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Trajets à venir" value={String(upcoming.length)} icon={<CalendarClock size={18} />} />
+        <KpiCard label="En circulation" value={String(enRoute)} icon={<RouteIcon size={18} />} pill={{ text: "embarquement / parti", tone: "neutral" }} />
+        <KpiCard label="Passagers" value={String(passengers)} icon={<Users size={18} />} pill={{ text: "places réservées", tone: "neutral" }} />
+        <KpiCard label="Occupation moyenne" value={`${kOcc}%`} progress={kOcc} />
+      </div>
+
       <FilterBar>
         <Input
           placeholder="Rechercher…"
@@ -271,36 +300,15 @@ export default function TripsPage() {
       </FilterBar>
 
       <section>
-        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold text-ink">
-          <CalendarClock size={18} className="text-laterite" /> Départs du jour
-        </h2>
-        <DataTable
-          columns={todayColumns}
-          rows={todayRows}
-          loading={isLoading}
-          onRowClick={(r) => router.push(`/${slug}/trips/${r.id}`)}
-          empty={
-            <span className="inline-flex flex-col items-center gap-2 text-ink-soft/60">
-              <CalendarClock size={28} className="text-ink-soft/30" />
-              Aucun départ aujourd'hui.
-            </span>
-          }
-        />
-      </section>
-
-      <section className="mt-8">
-        <h2 className="mb-3 flex items-center gap-2 font-display text-lg font-bold text-ink">
-          <Bus size={18} className="text-laterite" /> Tous les trajets
-        </h2>
         <DataTable
           columns={columns}
-          rows={otherRows}
+          rows={rows}
           loading={isLoading}
           onRowClick={(r) => router.push(`/${slug}/trips/${r.id}`)}
           empty={
             <span className="inline-flex flex-col items-center gap-2 text-ink-soft/60">
               <CalendarClock size={28} className="text-ink-soft/30" />
-              Aucun trajet. Créez-en un pour commencer.
+              Aucun trajet pour ce filtre.
             </span>
           }
         />

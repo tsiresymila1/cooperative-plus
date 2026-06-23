@@ -34,7 +34,7 @@ const METHODS = [
 ];
 
 export default function NewPaymentPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
 
@@ -84,7 +84,7 @@ export default function NewPaymentPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "payments")}
+      nav={coopNav(slug, "payments", { role, permissions, isPlatformAdmin })}
       title="Enregistrer un paiement"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}

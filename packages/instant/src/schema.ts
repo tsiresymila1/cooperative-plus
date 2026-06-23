@@ -35,6 +35,7 @@ const schema = i.schema({
       timezone: i.string(),
       subscriptionStatus: i.string().indexed(),
       cutoffHours: i.number(),
+      cutoffMinutes: i.number().optional(), // booking cutoff before departure (minutes)
       refundPct: i.number(),
       createdAt: i.date().indexed(),
       deletedAt: i.date().optional(),

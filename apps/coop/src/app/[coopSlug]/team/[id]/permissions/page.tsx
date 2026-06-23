@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -15,7 +16,7 @@ import {
 } from "@cp/ui";
 
 export default function MemberPermissionsPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const membershipId = params.id;
@@ -53,7 +54,7 @@ export default function MemberPermissionsPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "team")}
+      nav={coopNav(slug, "team", { role, permissions, isPlatformAdmin })}
       title="Permissions"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -75,7 +76,7 @@ export default function MemberPermissionsPage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !member ? (
         <p className="text-ink-soft">Membre introuvable.</p>
       ) : (

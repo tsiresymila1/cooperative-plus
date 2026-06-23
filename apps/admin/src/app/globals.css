@@ -3,9 +3,6 @@
    the `.dark` block overrides the same CSS vars, so every shared @cp/ui
    component (token-based) switches automatically.
    Font @imports MUST precede the Tailwind import. */
-@import url("https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Spline+Sans+Mono:wght@400;500;600&display=swap");
-
 @import "tailwindcss";
 
 /* Class-based dark mode (toggle, not just prefers-color-scheme) */
@@ -15,35 +12,43 @@
 @source "../../../../packages/ui/src";
 
 @theme {
-  /* brand accent (constant across themes) */
-  --color-orange: #ef7a16;
-  --color-orange-deep: #d6680c;
+  /* Same design tokens as the coop app — navy authority + action orange. */
+  --color-orange: #ff7a00;
+  --color-orange-deep: #e06d00;
 
-  /* LIGHT theme surfaces / text */
-  --color-ink: #14182a;
-  --color-ink-soft: #5b6478;
-  --color-sand: #f6f7f9;        /* page background */
-  --color-sand-deep: #eceef2;
-  --color-paper: #ffffff;       /* cards / panels */
+  --color-ink: #0f2d5c;           /* deep navy */
+  --color-ink-soft: #64748b;      /* slate-500 */
+  --color-sand: #f3f5f9;          /* soft light gray canvas */
+  --color-sand-deep: #e8ecf3;
+  --color-paper: #ffffff;
 
-  --color-laterite: #ef7a16;    /* primary accent */
-  --color-laterite-deep: #d6680c;
-  --color-clay: #f4a259;        /* light orange */
-  --color-baobab: #2f9e4f;      /* green */
-  --color-sky: #2b7fa6;
-  --color-navy: #14182a;
+  --color-laterite: #ff7a00;      /* primary action = orange */
+  --color-laterite-deep: #e06d00;
+  --color-clay: #ffa94d;
+  --color-baobab: #34c759;        /* success green */
+  --color-sky: #2b6f8f;
+  --color-navy: #0f2d5c;
 
-  --color-success: #2f9e4f;
-  --color-warning: #ef7a16;
+  --color-success: #34c759;
+  --color-warning: #ff7a00;
   --color-danger: #e0483f;
 
-  --font-display: "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
+  --color-line: #e2e8f0;
 
-  --radius: 0.75rem;
-  --shadow-card: 0 1px 2px rgba(18,24,42,.05), 0 1px 1px rgba(18,24,42,.03);
-  --shadow-lift: 0 4px 12px -2px rgba(18,24,42,.10), 0 12px 32px -12px rgba(18,24,42,.16);
+  --font-display: var(--font-display-next), "Bricolage Grotesque", ui-sans-serif, sans-serif;
+  --font-sans: var(--font-sans-next), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-mono-next), "Spline Sans Mono", ui-monospace, monospace;
+
+  /* Sharp, minimal — every radius small (rounded-full stays circular). */
+  --radius: 0.25rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.25rem;
+  --radius-2xl: 0.25rem;
+  --radius-3xl: 0.25rem;
+  --shadow-card: 0 1px 1px rgba(15,23,42,.03);
+  --shadow-lift: 0 8px 22px -10px rgba(15,23,42,.16);
 }
 
 /* ── Dark theme overrides ─────────────────────────────────── */
@@ -87,4 +92,20 @@
   .eyebrow { font-family: var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
   @keyframes rise { from { transform: translateY(10px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
   .animate-rise { animation: rise .45s cubic-bezier(.2,.8,.2,1) backwards; }
+
+  /* Hierarchical staggered fade-up for direct children. */
+  @keyframes fade-up { from { opacity:0; transform: translateY(12px) } to { opacity:1; transform: none } }
+  .stagger-children > * { animation: fade-up .5s cubic-bezier(.2,.8,.2,1) backwards; }
+  .stagger-children > *:nth-child(1){ animation-delay: 40ms }
+  .stagger-children > *:nth-child(2){ animation-delay: 100ms }
+  .stagger-children > *:nth-child(3){ animation-delay: 160ms }
+  .stagger-children > *:nth-child(4){ animation-delay: 220ms }
+  .stagger-children > *:nth-child(5){ animation-delay: 280ms }
+  .stagger-children > *:nth-child(6){ animation-delay: 340ms }
+  .stagger-children > *:nth-child(7){ animation-delay: 400ms }
+  .stagger-children > *:nth-child(8){ animation-delay: 460ms }
+  .stagger-children > *:nth-child(n+9){ animation-delay: 520ms }
+  @media (prefers-reduced-motion: reduce) {
+    .stagger-children > *, .animate-rise { animation: none !important; }
+  }
 }

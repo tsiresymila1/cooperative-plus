@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -34,7 +35,7 @@ const TYPES = ["minibus_15", "minibus_18", "bus_30", "bus_50", "taxi_brousse"];
 const STATUSES = ["active", "maintenance", "inactive"];
 
 export default function EditVehiclePage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const vehicleId = params.id;
@@ -139,7 +140,7 @@ export default function EditVehiclePage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "vehicles")}
+      nav={coopNav(slug, "vehicles", { role, permissions, isPlatformAdmin })}
       title="Modifier le véhicule"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -161,7 +162,7 @@ export default function EditVehiclePage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !vehicle ? (
         <p className="text-ink-soft">Véhicule introuvable.</p>
       ) : (

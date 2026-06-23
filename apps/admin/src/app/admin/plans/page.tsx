@@ -8,7 +8,7 @@ import {
   id,
   tx,
   DataTable,
-  Dialog,
+  Drawer,
   Button,
   Badge,
   Field,
@@ -219,20 +219,20 @@ export default function PlansPage() {
     >
       <DataTable columns={columns} rows={rows} loading={isLoading} empty="Aucun plan." />
 
-      <Dialog
+      <Drawer
         open={open}
         onClose={() => setOpen(false)}
         title={editId ? "Modifier le plan" : "Nouveau plan"}
-        size="lg"
+        width="max-w-lg"
         footer={
-          <>
+          <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={saving}>
               Annuler
             </Button>
             <Button size="sm" onClick={handleSave} disabled={saving}>
               {saving ? "…" : "Enregistrer"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="grid gap-4 sm:grid-cols-2">
@@ -310,7 +310,7 @@ export default function PlansPage() {
             />
           </Field>
         </div>
-      </Dialog>
+      </Drawer>
     </AdminShell>
   );
 }

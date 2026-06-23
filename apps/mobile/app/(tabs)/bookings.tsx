@@ -39,7 +39,7 @@ export default function Bookings() {
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
       <View className="px-5 pb-1 pt-3">
-        <Text className="font-display text-3xl text-ink">Mes billets</Text>
+        <Text className="font-display text-3xl text-ink">Mes réservations</Text>
       </View>
 
       {user && (
@@ -104,8 +104,8 @@ function TicketCard({ booking: b, expired }: { booking: any; expired: boolean })
         <View className="flex-1 flex-row items-center gap-2">
           <CoopLogo url={trip?.cooperative?.logoUrl} brandColor={trip?.cooperative?.brandColor} name={trip?.coopName ?? ""} size={30} />
           <View className="flex-1">
-            <Text className="font-sans text-xs font-semibold text-laterite" numberOfLines={1}>{trip?.coopName ?? "—"}</Text>
-            <Text className="font-mono text-[10px] text-ink-soft/55">{b.reference}</Text>
+            <Text className="font-sans text-xs font-bold text-laterite" numberOfLines={1}>{trip?.coopName ?? "—"}</Text>
+            <Text className="font-mono text-[10px] text-ink-soft/90 font-bold">{b.reference}</Text>
           </View>
         </View>
         <Badge {...bookingStatusFr(b.status)} />
@@ -181,7 +181,7 @@ function EmptyState({
       </View>
       <Text className="mt-5 font-display text-xl text-ink">{title}</Text>
       <Text className="mt-1.5 text-center font-sans text-sm text-ink-soft/70">{message}</Text>
-      <Button size="lg" className="mt-6 w-full" onPress={onAction}>
+      <Button size="md" className="mt-6 w-full" onPress={onAction}>
         <Text className="font-sans font-medium text-paper">{actionLabel}</Text>
       </Button>
     </View>

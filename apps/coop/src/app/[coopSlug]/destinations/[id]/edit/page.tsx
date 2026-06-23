@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -16,7 +17,7 @@ import {
 import { Input } from "@cp/ui/shadcn";
 
 export default function EditDestinationPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const destinationId = params.id;
@@ -69,7 +70,7 @@ export default function EditDestinationPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "destinations")}
+      nav={coopNav(slug, "destinations", { role, permissions, isPlatformAdmin })}
       title="Modifier la destination"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -91,7 +92,7 @@ export default function EditDestinationPage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !dest ? (
         <p className="text-ink-soft">Destination introuvable ou en lecture seule.</p>
       ) : (

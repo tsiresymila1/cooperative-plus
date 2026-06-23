@@ -202,7 +202,7 @@ export default function TripDetail() {
                   <Text className="font-mono text-sm text-ink-soft">{fmtDateKey(trip.departDate)}</Text>
                 </View>
                 <View className="mt-3 flex-row items-center justify-between">
-                  <Text className="font-mono text-xl text-ink">{fmtMoney(trip.price, trip.currency)} / place</Text>
+                  <Text className="font-mono font-bold text-xl text-ink">{fmtMoney(trip.price, trip.currency)} / place</Text>
                   <Badge
                     tone={(trip.tickets?.length ?? 0) >= trip.seatsTotal ? "danger" : "success"}
                     label={`${trip.tickets?.length ?? 0}/${trip.seatsTotal} places`}
@@ -235,11 +235,11 @@ export default function TripDetail() {
               <Text className="font-sans text-sm text-ink-soft">
                 {selectedLabels.length > 0 ? selectedLabels.join(", ") : "Aucun siège"}
               </Text>
-              <Text className="font-mono text-lg text-ink">{fmtMoney(total, trip.currency)}</Text>
+              <Text className="font-mono font-bold text-lg text-ink">{fmtMoney(total, trip.currency)}</Text>
             </View>
-            <Button onPress={proceed} disabled={selectedLabels.length === 0 || holding}>
+            <Button onPress={proceed} loading={holding} disabled={selectedLabels.length === 0}>
               <Text className="font-sans font-medium text-paper">
-                {holding ? "Réservation…" : user ? "Continuer vers le paiement" : "Se connecter pour réserver"}
+                {user ? "Continuer vers le paiement" : "Se connecter pour réserver"}
               </Text>
             </Button>
           </View>

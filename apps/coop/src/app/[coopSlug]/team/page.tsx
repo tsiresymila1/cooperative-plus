@@ -16,7 +16,7 @@ import {
 } from "@cp/ui";
 
 export default function TeamPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -104,7 +104,7 @@ export default function TeamPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "team")}
+      nav={coopNav(slug, "team", { role, permissions, isPlatformAdmin })}
       title="Équipe"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}

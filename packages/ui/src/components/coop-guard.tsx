@@ -1,10 +1,23 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createContext, useContext } from "react";
 import { ShieldAlert } from "lucide-react";
 import { db } from "../lib/db";
-import { Button, Card, Logo } from "./ui";
+import { Button, Card, Logo, FullSpinner } from "./ui";
 import { SignInScreen } from "./sign-in";
+
+// Section (first path segment after the slug) → required membership permission.
+const SECTION_PERM: Record<string, string | null> = {
+  dashboard: null, profile: null,
+  bookings: "bookings", customers: "bookings",
+  trips: "trips",
+  vehicles: "vehicles",
+  routes: "routes", destinations: "routes",
+  payments: "payments", reports: "payments",
+  team: "team",
+  settings: "settings",
+};
 
 type CoopCtx = {
   coopId: string;
@@ -47,15 +60,14 @@ function Denied({ title, message }: { title: string; message: string }) {
 }
 
 function Loading() {
-  return (
-    <div className="grid min-h-dvh place-items-center bg-sand text-ink-soft">Chargement…</div>
-  );
+  return <FullSpinner className="bg-sand" />;
 }
 
 /** Gate a cooperative back-office page to active members (owner|assistant) or platform admins. */
 export function CoopGuard({ slug, children }: { slug: string; children: React.ReactNode }) {
   const { isLoading: authLoading, user } = db.useAuth();
   const isGuest = (user as { isGuest?: boolean } | null)?.isGuest;
+  const pathname = usePathname();
 
   const { data, isLoading } = db.useQuery(
     user && !isGuest
@@ -100,6 +112,20 @@ export function CoopGuard({ slug, children }: { slug: string; children: React.Re
         message="Vous n'êtes pas membre de cette coopérative. Demandez une invitation au propriétaire."
       />
     );
+
+  // Per-section permission gate (assistants only). Owners + platform admins pass.
+  const isAssistant = !isPlatformAdmin && myMembership?.role === "assistant";
+  if (isAssistant) {
+    const section = (pathname ?? "").split("/").filter(Boolean)[1];
+    const needed = section ? SECTION_PERM[section] : null;
+    if (needed && !((myMembership!.permissions as string[]) ?? []).includes(needed))
+      return (
+        <Denied
+          title="Accès non autorisé"
+          message="Vous n'avez pas la permission d'accéder à cette section. Contactez le propriétaire de la coopérative."
+        />
+      );
+  }
 
   const ctx: CoopCtx = {
     coopId: coop.id,

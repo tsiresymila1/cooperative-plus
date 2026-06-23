@@ -14,8 +14,8 @@ const rules = {
     allow: {
       view: `(auth.id == data.id || ${admin})`,
       create: "true",
-      update: "auth.id == data.id",
-      delete: "false",
+      update: `(auth.id == data.id || ${admin})`,
+      delete: "false", // $users system entity — cannot be deleted; revoke access instead
     },
   },
 
@@ -26,7 +26,7 @@ const rules = {
 
   // Password hashes — only the server (admin token) touches these.
   credentials: {
-    allow: { view: "false", create: "false", update: "false", delete: "false" },
+    allow: { view: "false", create: "false", update: "false", delete: admin },
   },
 
   // Public, read-only network data (search needs these open)

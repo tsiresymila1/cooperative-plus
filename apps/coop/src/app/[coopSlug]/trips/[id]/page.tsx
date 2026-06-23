@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -20,6 +21,9 @@ import {
   Activity,
   CreditCard,
   ChevronRight,
+  XCircle,
+  Search,
+  Printer,
 } from "lucide-react";
 import {
   DashboardShell,
@@ -57,7 +61,7 @@ const methodLabel = (m: string) =>
   m.charAt(0).toUpperCase() + m.slice(1);
 
 export default function TripViewPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
   const params = useParams<{ id: string }>();
@@ -105,6 +109,39 @@ export default function TripViewPage() {
   const [booking, setBooking] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [mSearch, setMSearch] = useState("");
+
+  const visibleBookings = useMemo(() => {
+    const q = mSearch.trim().toLowerCase();
+    if (!q) return bookings;
+    return bookings.filter((b: any) => {
+      const inTickets = (b.tickets ?? []).some((t: any) =>
+        `${t.passengerName ?? ""} ${t.passengerPhone ?? ""} ${t.seatLabel ?? ""}`.toLowerCase().includes(q),
+      );
+      return `${b.reference} ${b.contactName} ${b.contactPhone}`.toLowerCase().includes(q) || inTickets;
+    });
+  }, [bookings, mSearch]);
+
+  const setBookingStatus = async (bId: string, status: string, extra: Record<string, any> = {}) => {
+    try {
+      await db.transact(db.tx.bookings[bId].update({ status, ...extra }));
+      toast.success("Réservation mise à jour");
+    } catch (e: any) {
+      toast.error("Erreur: " + (e?.message ?? "inconnue"));
+    }
+  };
+  const confirmBooking = async (b: any) => {
+    if (await confirm({ title: "Confirmer la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Confirmer" }))
+      await setBookingStatus(b.id, "confirmed");
+  };
+  const markPaid = async (b: any) => {
+    if (await confirm({ title: "Marquer comme payé ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Marquer payé" }))
+      await setBookingStatus(b.id, "paid");
+  };
+  const cancelBookingRow = async (b: any) => {
+    if (await confirm({ title: "Annuler la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" }))
+      await setBookingStatus(b.id, "cancelled", { cancelledAt: Date.now() });
+  };
 
   const occupiedForSelector = useMemo(
     () => Array.from(new Set([...takenSeats, ...heldSeats])),
@@ -267,7 +304,7 @@ export default function TripViewPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "trips")}
+      nav={coopNav(slug, "trips", { role, permissions, isPlatformAdmin })}
       title="Détail du trajet"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -288,6 +325,11 @@ export default function TripViewPage() {
             </Button>
           </Link>
           {trip && (
+            <Button size="sm" variant="outline" onClick={() => router.push(`/${slug}/trips/${tripId}/manifest`)}>
+              <Printer size={16} /> Manifeste
+            </Button>
+          )}
+          {trip && (
             <Button size="sm" variant="outline" onClick={duplicate} disabled={duplicating}>
               <Copy size={16} /> {duplicating ? "…" : "Dupliquer"}
             </Button>
@@ -301,7 +343,7 @@ export default function TripViewPage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !trip ? (
         <p className="text-ink-soft">Trajet introuvable.</p>
       ) : (
@@ -384,7 +426,8 @@ export default function TripViewPage() {
                 <div className="flex justify-center">
                   <SeatSelector
                     layout={layout}
-                    taken={occupiedForSelector}
+                    taken={takenSeats}
+                    held={heldSeats}
                     selected={selected}
                     onToggle={toggleSeat}
                   />
@@ -455,19 +498,33 @@ export default function TripViewPage() {
 
           {/* ---- Manifest ---- */}
           <Card className="p-6">
-            <div className="mb-4 flex items-center gap-2 text-ink">
-              <Users size={18} className="text-laterite" />
-              <h3 className="font-display text-lg font-bold">
-                Manifeste des réservations ({bookings.length})
-              </h3>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-ink">
+              <div className="flex items-center gap-2">
+                <Users size={18} className="text-laterite" />
+                <h3 className="font-display text-lg font-bold">
+                  Manifeste des réservations ({visibleBookings.length}/{bookings.length})
+                </h3>
+              </div>
+              <div className="relative">
+                <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
+                <Input
+                  value={mSearch}
+                  onChange={(e) => setMSearch(e.target.value)}
+                  placeholder="Référence, nom, téléphone, siège…"
+                  className="h-9 w-72 pl-9"
+                />
+              </div>
             </div>
             {bookings.length === 0 ? (
               <p className="text-sm text-ink-soft">Aucune réservation pour ce trajet.</p>
+            ) : visibleBookings.length === 0 ? (
+              <p className="text-sm text-ink-soft">Aucune réservation ne correspond.</p>
             ) : (
               <div className="grid gap-4">
-                {bookings.map((b: any) => {
+                {visibleBookings.map((b: any) => {
                   const bs = bookingStatus[b.status] ?? { label: b.status, tone: "neutral" as const };
                   const bTickets = b.tickets ?? [];
+                  const done = b.status === "cancelled" || b.status === "refunded";
                   return (
                     <div key={b.id} className="rounded-[--radius] border border-ink/8">
                       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/8 px-4 py-3">
@@ -477,10 +534,27 @@ export default function TripViewPage() {
                             {b.contactName} · {b.contactPhone}
                           </p>
                         </div>
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex flex-wrap items-center gap-3 text-sm">
                           <span className="text-ink-soft">{b.seatCount} place(s)</span>
                           <span className="font-semibold text-ink">{fmtMoney(b.totalAmount)}</span>
                           <Badge tone={bs.tone}>{bs.label}</Badge>
+                          <div className="flex items-center gap-1">
+                            {b.status === "pending" && (
+                              <Button size="sm" variant="ghost" onClick={() => confirmBooking(b)}>
+                                <Check size={14} /> Confirmer
+                              </Button>
+                            )}
+                            {!done && b.status !== "paid" && (
+                              <Button size="sm" variant="ghost" onClick={() => markPaid(b)}>
+                                <Wallet size={14} /> Payé
+                              </Button>
+                            )}
+                            {!done && (
+                              <Button size="sm" variant="ghost" className="text-[#c42f2f] hover:bg-[#e23b3b]/10" onClick={() => cancelBookingRow(b)}>
+                                <XCircle size={14} /> Annuler
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="grid gap-1.5 px-4 py-3">

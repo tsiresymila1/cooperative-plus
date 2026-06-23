@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -19,7 +20,7 @@ import {
 import { Input } from "@cp/ui/shadcn";
 
 export default function RefundPaymentPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const paymentId = params.id;
@@ -66,7 +67,7 @@ export default function RefundPaymentPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "payments")}
+      nav={coopNav(slug, "payments", { role, permissions, isPlatformAdmin })}
       title="Rembourser"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -88,7 +89,7 @@ export default function RefundPaymentPage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !payment ? (
         <p className="text-ink-soft">Paiement introuvable.</p>
       ) : (

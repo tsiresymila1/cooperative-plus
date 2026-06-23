@@ -5,6 +5,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
 import { LogOut, Ticket as TicketIcon } from "lucide-react-native";
 import { Button, Card, Field, Input, Spinner } from "@/components/ui";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 
@@ -19,6 +20,7 @@ export default function Profile() {
   const [phone, setPhone] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [confirmOut, setConfirmOut] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -84,8 +86,8 @@ export default function Profile() {
                 <Input value={phone} onChangeText={setPhone} placeholder="034 12 345 67" keyboardType="phone-pad" />
               </Field>
             </Card>
-            <Button className="mt-3" onPress={save} disabled={saving}>
-              <Text className="font-sans font-medium text-paper">{saving ? "Enregistrement…" : "Enregistrer"}</Text>
+            <Button className="mt-3" onPress={save} loading={saving}>
+              <Text className="font-sans font-medium text-paper">Enregistrer</Text>
             </Button>
             {saved && <Text className="mt-2 text-center font-sans text-sm text-baobab">Enregistré ✓</Text>}
           </Animated.View>
@@ -95,13 +97,31 @@ export default function Profile() {
               <TicketIcon size={18} color="#16266b" />
               <Text className="font-sans font-medium text-ink">Mes réservations</Text>
             </Button>
-            <Button variant="ghost" className="mt-2" onPress={signOut}>
+            <Button variant="ghost" className="mt-2" onPress={() => setConfirmOut(true)}>
               <LogOut size={18} color="#d96d0f" />
               <Text className="font-sans font-medium text-laterite-deep">Se déconnecter</Text>
             </Button>
           </Animated.View>
         </ScrollView>
       )}
+
+      <Dialog open={confirmOut} onOpenChange={setConfirmOut}>
+        <DialogContent showClose={false} className="gap-3">
+          <DialogTitle className="font-display text-xl text-ink">Se déconnecter ?</DialogTitle>
+          <Text className="font-sans text-base text-ink-soft">
+            Vous devrez vous reconnecter pour accéder à vos réservations.
+          </Text>
+          <View className="mt-1 flex-row gap-2">
+            <Button variant="outline" className="flex-1" onPress={() => setConfirmOut(false)}>
+              <Text className="font-sans font-medium text-ink">Annuler</Text>
+            </Button>
+            <Button className="flex-1" onPress={() => { setConfirmOut(false); signOut(); }}>
+              <LogOut size={18} color="#ffffff" />
+              <Text className="font-sans font-medium text-paper">Déconnexion</Text>
+            </Button>
+          </View>
+        </DialogContent>
+      </Dialog>
     </View>
   );
 }

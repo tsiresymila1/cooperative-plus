@@ -17,7 +17,7 @@ import {
 import { Input } from "@cp/ui/shadcn";
 
 export default function NewDestinationPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
 
   const [name, setName] = useState("");
@@ -58,7 +58,7 @@ export default function NewDestinationPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "destinations")}
+      nav={coopNav(slug, "destinations", { role, permissions, isPlatformAdmin })}
       title="Nouvelle destination"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}

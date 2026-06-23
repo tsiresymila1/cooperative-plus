@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Trash2 } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
@@ -21,7 +21,7 @@ import {
 import { Input } from "@cp/ui/shadcn";
 
 export default function SettingsPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
 
   // Subscription + plan, and quota usage counts.
   const { data } = db.useQuery({
@@ -46,8 +46,9 @@ export default function SettingsPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "settings")}
+      nav={coopNav(slug, "settings", { role, permissions, isPlatformAdmin })}
       title="Paramètres"
+      subtitle="Identité, réservation, paiements et abonnement."
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
       breadcrumb={
@@ -73,7 +74,7 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
-  const [cutoffHours, setCutoffHours] = useState("0");
+  const [cutoffMinutes, setCutoffMinutes] = useState("0");
   const [refundPct, setRefundPct] = useState("0");
   const [brandColor, setBrandColor] = useState("#f5821f");
   const [saving, setSaving] = useState(false);
@@ -83,7 +84,7 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
     setPhone(coop.phone ?? "");
     setEmail(coop.email ?? "");
     setAddress(coop.address ?? "");
-    setCutoffHours(String(coop.cutoffHours ?? 0));
+    setCutoffMinutes(String(coop.cutoffMinutes ?? (coop.cutoffHours ?? 0) * 60));
     setRefundPct(String(coop.refundPct ?? 0));
     setBrandColor(coop.brandColor ?? "#f5821f");
   }, [coop]);
@@ -98,7 +99,7 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
           email: email || undefined,
           address: address || undefined,
           brandColor,
-          cutoffHours: toInt(cutoffHours),
+          cutoffMinutes: toInt(cutoffMinutes),
           refundPct: toFloat(refundPct),
         }),
       );
@@ -155,8 +156,8 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
       <FormSection index="02" title="Réservation" description="Délai limite avant départ et politique de remboursement.">
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Heures limite avant départ" hint="Cutoff pour la réservation">
-              <Input inputMode="numeric" value={cutoffHours} onChange={(e) => setCutoffHours(e.target.value)} />
+            <Field label="Minutes limite avant départ" hint="Cutoff pour la réservation (en minutes)">
+              <Input inputMode="numeric" value={cutoffMinutes} onChange={(e) => setCutoffMinutes(e.target.value)} />
             </Field>
             <Field label="% de remboursement" hint="Politique d'annulation">
               <Input inputMode="numeric" value={refundPct} onChange={(e) => setRefundPct(e.target.value)} />
@@ -241,16 +242,18 @@ function PaymentMethodsSection({ coop, coopId }: { coop: any; coopId: string }) 
             </label>
           ))}
           {customMethods.map((m) => (
-            <label key={m} className="flex cursor-pointer items-center gap-3 text-sm text-ink">
-              <input
-                type="checkbox"
-                checked
-                onChange={() => toggle(m)}
-                className="h-4 w-4 accent-laterite"
-              />
-              {label(m)}
+            <div key={m} className="flex items-center gap-3 text-sm text-ink">
+              <span className="flex-1">{label(m)}</span>
               <Badge tone="neutral">Personnalisé</Badge>
-            </label>
+              <button
+                type="button"
+                onClick={() => setMethods((prev) => prev.filter((x) => x !== m))}
+                className="grid h-7 w-7 place-items-center rounded-[--radius] text-ink-soft/60 transition-colors hover:bg-[#e23b3b]/10 hover:text-[#c42f2f]"
+                title="Supprimer"
+              >
+                <Trash2 size={15} />
+              </button>
+            </div>
           ))}
         </div>
 

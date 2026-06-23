@@ -27,7 +27,7 @@ export function UserMenu() {
         <ChevronDown size={14} className="text-ink-soft" />
       </button>
       {open && (
-        <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-[--radius] border border-ink/10 bg-paper shadow-[0_12px_32px_-12px_rgba(15,28,82,.25)]">
+        <div className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-[--radius] border border-ink/10 bg-paper shadow-[0_8px_20px_-12px_rgba(15,23,42,.18)]">
           <div className="border-b border-ink/8 px-4 py-3"><p className="truncate text-sm font-medium text-ink">{user.email}</p></div>
           <a href="/profile" className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-ink hover:bg-ink/5"><UserCog size={15} /> Mon compte</a>
           <button onMouseDown={(e) => { e.preventDefault(); logout(); }}

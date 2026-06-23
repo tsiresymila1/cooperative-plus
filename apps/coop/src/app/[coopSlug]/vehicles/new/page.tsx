@@ -17,6 +17,9 @@ import {
   vehicleStatus,
   vehicleTypeLabel,
   toInt,
+  SeatEditor,
+  buildLayout,
+  type Cell,
 } from "@cp/ui";
 import {
   Select,
@@ -31,16 +34,22 @@ const TYPES = ["minibus_15", "minibus_18", "bus_30", "bus_50", "taxi_brousse"];
 const STATUSES = ["active", "maintenance", "inactive"];
 
 export default function NewVehiclePage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
 
   const [name, setName] = useState("");
   const [reg, setReg] = useState("");
   const [type, setType] = useState("minibus_18");
-  const [seatCount, setSeatCount] = useState("18");
   const [status, setStatus] = useState("active");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // seat map
+  const [layout, setLayout] = useState<Cell[]>(() => buildLayout(5, 4));
+  const [rows, setRows] = useState("5");
+  const [cols, setCols] = useState("4");
+  const seats = layout.filter((c) => c.type === "seat").length;
+  const regen = () => setLayout(buildLayout(toInt(rows, 5), toInt(cols, 4)));
 
   const submit = async () => {
     if (!name || !reg) {
@@ -49,20 +58,24 @@ export default function NewVehiclePage() {
     }
     setSaving(true);
     try {
-      await db.transact(
-        db.tx.vehicles[id()]
+      const vehicleId = id();
+      await db.transact([
+        db.tx.vehicles[vehicleId]
           .update({
             name,
             registrationNo: reg,
             type,
-            seatCount: toInt(seatCount),
+            seatCount: seats,
             status,
             notes,
             createdAt: Date.now(),
           })
           .link({ cooperative: coopId }),
-      );
-      toast.success("Véhicule créé — configurez le plan de sièges");
+        db.tx.seatMaps[id()]
+          .update({ version: 1, rows: toInt(rows, 5), cols: toInt(cols, 4), layout, isActive: true, createdAt: Date.now() })
+          .link({ vehicle: vehicleId, cooperative: coopId }),
+      ]);
+      toast.success("Véhicule créé");
       router.push(`/${slug}/vehicles`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
@@ -72,7 +85,7 @@ export default function NewVehiclePage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "vehicles")}
+      nav={coopNav(slug, "vehicles", { role, permissions, isPlatformAdmin })}
       title="Nouveau véhicule"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -104,7 +117,7 @@ export default function NewVehiclePage() {
               <Input value={reg} onChange={(e) => setReg(e.target.value)} />
             </Field>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Type">
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger>
@@ -118,9 +131,6 @@ export default function NewVehiclePage() {
                   ))}
                 </SelectContent>
               </Select>
-            </Field>
-            <Field label="Sièges">
-              <Input inputMode="numeric" value={seatCount} onChange={(e) => setSeatCount(e.target.value)} />
             </Field>
             <Field label="Statut">
               <Select value={status} onValueChange={setStatus}>
@@ -140,13 +150,27 @@ export default function NewVehiclePage() {
         </div>
         </FormSection>
 
-        <FormSection index="02" title="Notes" description="Informations internes. Le plan de sièges se configure après création.">
+        <FormSection index="02" title="Plan de sièges" description="Définissez la grille puis cliquez les cases pour changer leur type.">
+          <div className="grid gap-4">
+            <div className="flex items-end gap-3">
+              <Field label="Rangées">
+                <Input inputMode="numeric" value={rows} onChange={(e) => setRows(e.target.value)} className="w-24" />
+              </Field>
+              <Field label="Colonnes">
+                <Input inputMode="numeric" value={cols} onChange={(e) => setCols(e.target.value)} className="w-24" />
+              </Field>
+              <Button size="sm" variant="outline" type="button" onClick={regen}>
+                <Grid3x3 size={15} /> Régénérer
+              </Button>
+            </div>
+            {layout.length > 0 && <SeatEditor layout={layout} onChange={setLayout} />}
+          </div>
+        </FormSection>
+
+        <FormSection index="03" title="Notes" description="Informations internes.">
           <Field label="Notes">
             <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
-          <p className="mt-4 flex items-center gap-1.5 text-xs text-ink-soft">
-            <Grid3x3 size={13} /> Le plan de sièges se configure depuis la page de modification après création.
-          </p>
         </FormSection>
 
         <div className="flex justify-end gap-2 pt-2">

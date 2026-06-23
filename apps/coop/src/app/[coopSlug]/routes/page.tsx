@@ -9,6 +9,7 @@ import {
   Button,
   Badge,
   DataTable,
+  KpiCard,
   useConfirm,
   toast,
   type Column,
@@ -18,7 +19,7 @@ import {
 } from "@cp/ui";
 
 export default function RoutesPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -27,6 +28,9 @@ export default function RoutesPage() {
   });
 
   const routes = (data?.routes ?? []).filter(notDeleted);
+  const activeCount = routes.filter((r: any) => r.status === "active").length;
+  const linkedTrips = routes.reduce((s: number, r: any) => s + (r.tripInstances ?? []).filter(notDeleted).length, 0);
+  const avgPrice = routes.length ? Math.round(routes.reduce((s: number, r: any) => s + (r.basePrice ?? 0), 0) / routes.length) : 0;
 
   const del = async (r: any) => {
     const attachedTrips = (r.tripInstances ?? []).filter(notDeleted);
@@ -50,10 +54,11 @@ export default function RoutesPage() {
   const columns: Column<any>[] = [
     {
       key: "name",
-      header: "Nom",
+      header: "Itinéraire",
       render: (r) => (
-        <span className="inline-flex items-center gap-2 font-semibold text-ink">
-          <RouteIcon size={15} className="text-ink-soft/60" /> {r.name}
+        <span className="inline-flex items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-ink text-white"><RouteIcon size={16} /></span>
+          <span className="font-semibold text-ink">{r.name}</span>
         </span>
       ),
     },
@@ -61,8 +66,10 @@ export default function RoutesPage() {
       key: "od",
       header: "Origine → Destination",
       render: (r) => (
-        <span className="inline-flex items-center gap-1.5">
-          {r.origin?.name ?? "?"} <ArrowRight size={13} className="text-ink-soft/50" /> {r.destination?.name ?? "?"}
+        <span className="inline-flex items-center gap-2">
+          <span className="rounded-md bg-ink/[.05] px-2 py-0.5 text-xs font-medium text-ink">{r.origin?.name ?? "?"}</span>
+          <ArrowRight size={13} className="text-laterite" />
+          <span className="rounded-md bg-laterite/10 px-2 py-0.5 text-xs font-medium text-laterite-deep">{r.destination?.name ?? "?"}</span>
         </span>
       ),
     },
@@ -95,8 +102,9 @@ export default function RoutesPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "routes")}
+      nav={coopNav(slug, "routes", { role, permissions, isPlatformAdmin })}
       title="Itinéraires"
+      subtitle="Réseau, tarifs et performance des lignes."
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
       breadcrumb={
@@ -112,6 +120,13 @@ export default function RoutesPage() {
         </Button>
       }
     >
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Total itinéraires" value={String(routes.length)} icon={<RouteIcon size={18} />} />
+        <KpiCard label="Actifs" value={String(activeCount)} pill={{ text: "en service", tone: "neutral" }} />
+        <KpiCard label="Trajets liés" value={String(linkedTrips)} icon={<ArrowRight size={18} />} />
+        <KpiCard label="Prix moyen" value={fmtMoney(avgPrice)} />
+      </div>
+
       <DataTable
         columns={columns}
         rows={routes}

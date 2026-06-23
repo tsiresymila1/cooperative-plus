@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
-import { db, Button, Card, Logo, SignInScreen, notDeleted } from "@cp/ui";
+import { db, Button, Card, Logo, SignInScreen, FullSpinner, notDeleted } from "@cp/ui";
 
 export default function HomePage() {
   const { isLoading: authLoading, user } = db.useAuth();
@@ -20,7 +20,7 @@ export default function HomePage() {
   );
 
   if (authLoading || (user && !isGuest && isLoading)) {
-    return <div className="grid min-h-dvh place-items-center bg-sand text-ink-soft">Chargement…</div>;
+    return <FullSpinner className="bg-sand" />;
   }
 
   if (!user || isGuest) {

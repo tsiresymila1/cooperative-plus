@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { ArrowRight, ArrowRightLeft, Bus, Clock, MapPin, Search, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Badge, Button, Card, CoopLogo, cn, db, fmtMoney } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo, Spinner, cn, db, fmtMoney } from "@cp/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -160,7 +160,7 @@ export default function SearchPage() {
   return (
     <>
       <SiteHeader />
-      <Suspense fallback={<div className="mx-auto max-w-4xl px-5 py-8 text-ink-soft">Chargement…</div>}>
+      <Suspense fallback={<div className="grid place-items-center px-5 py-20"><Spinner size={28} /></div>}>
         <SearchInner />
       </Suspense>
     </>

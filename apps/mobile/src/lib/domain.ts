@@ -136,6 +136,14 @@ export function fmtTime(value: number | string | undefined | null): string {
   return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+/** Coerce a date field (epoch ms or ISO string) to epoch ms. 0 if invalid. */
+export function toMs(value: number | string | null | undefined): number {
+  if (value == null) return 0;
+  if (typeof value === "number") return value;
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? 0 : t;
+}
+
 /** mm:ss countdown from a millisecond remainder. */
 export function fmtCountdown(ms: number): string {
   const total = Math.max(0, Math.floor(ms / 1000));

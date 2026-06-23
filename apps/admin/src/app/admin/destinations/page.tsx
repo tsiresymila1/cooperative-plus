@@ -9,7 +9,7 @@ import {
   tx,
   DataTable,
   FilterBar,
-  Dialog,
+  Drawer,
   useConfirm,
   Button,
   Badge,
@@ -283,19 +283,20 @@ export default function DestinationsPage() {
 
       <DataTable columns={columns} rows={rows} loading={isLoading} empty="Aucune destination." />
 
-      <Dialog
+      <Drawer
         open={open}
         onClose={() => setOpen(false)}
         title={editId ? "Modifier la destination" : "Nouvelle destination globale"}
+        width="max-w-lg"
         footer={
-          <>
+          <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={saving}>
               Annuler
             </Button>
             <Button size="sm" onClick={handleSave} disabled={saving}>
               {saving ? "…" : "Enregistrer"}
             </Button>
-          </>
+          </div>
         }
       >
         <div className="grid gap-4">
@@ -346,7 +347,7 @@ export default function DestinationsPage() {
             Marquer comme populaire
           </label>
         </div>
-      </Dialog>
+      </Drawer>
     </AdminShell>
   );
 }

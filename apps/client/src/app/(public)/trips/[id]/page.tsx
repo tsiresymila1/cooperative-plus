@@ -3,7 +3,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, MapPin, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Badge, Button, Card, CoopLogo } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo, Spinner } from "@cp/ui";
 import { SeatSelector, type Cell } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db, id } from "@cp/ui";
@@ -71,7 +71,7 @@ export default function TripDetail({ params }: { params: Promise<{ id: string }>
     }
   };
 
-  if (isLoading) return (<><SiteHeader /><main className="mx-auto max-w-6xl px-5 py-20 text-ink-soft">Chargement…</main></>);
+  if (isLoading) return (<><SiteHeader /><main className="mx-auto grid max-w-6xl place-items-center px-5 py-20"><Spinner size={28} /></main></>);
   // Hide trips from suspended coops (treat as not found).
   if (!trip || (trip.cooperative as any)?.subscriptionStatus === "suspended")
     return (<><SiteHeader /><main className="mx-auto max-w-6xl px-5 py-20">Trajet introuvable.</main></>);

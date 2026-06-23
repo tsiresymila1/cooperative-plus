@@ -32,9 +32,23 @@ const buttonText = cva("font-sans font-medium", {
   defaultVariants: { variant: "primary", size: "md" },
 });
 
-export function Button({ className, variant, size, children, ...p }: PressableProps & VariantProps<typeof button> & { children: React.ReactNode }) {
+export function Button({
+  className,
+  variant,
+  size,
+  children,
+  loading,
+  disabled,
+  ...p
+}: PressableProps & VariantProps<typeof button> & { children: React.ReactNode; loading?: boolean }) {
+  const spinnerColor = variant === "outline" || variant === "ghost" ? "#0f2d5c" : "#ffffff";
   return (
-    <Pressable className={cn(button({ variant, size }), className)} {...p}>
+    <Pressable
+      className={cn(button({ variant, size }), (loading || disabled) && "opacity-60", className)}
+      disabled={loading || disabled}
+      {...p}
+    >
+      {loading && <ActivityIndicator size="small" color={spinnerColor} />}
       {typeof children === "string"
         ? <Text className={buttonText({ variant, size })}>{children}</Text>
         : children}
@@ -43,10 +57,12 @@ export function Button({ className, variant, size, children, ...p }: PressablePr
 }
 
 export function Card({ className, style, ...p }: ViewProps) {
+  // Flat: hairline border instead of a shadow — avoids the heavy elevation box
+  // that flashed during entrance animations (esp. Android elevation).
   return (
     <View
-      className={cn("rounded-[4px] bg-paper p-4", className)}
-      style={[{ shadowColor: "#16266b", shadowOpacity: 0.06, shadowRadius: 16, shadowOffset: { width: 0, height: 8 }, elevation: 2 }, style]}
+      className={cn("rounded-[4px] border border-ink/8 bg-paper p-4", className)}
+      style={style}
       {...p}
     />
   );

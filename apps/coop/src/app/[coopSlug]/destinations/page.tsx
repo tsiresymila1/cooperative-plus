@@ -18,7 +18,7 @@ import {
 } from "@cp/ui";
 
 export default function DestinationsPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -111,7 +111,7 @@ export default function DestinationsPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "destinations")}
+      nav={coopNav(slug, "destinations", { role, permissions, isPlatformAdmin })}
       title="Destinations"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}

@@ -47,11 +47,25 @@ const STATUS_OPTIONS = [
   { value: "cancelled", label: "Résilié" },
 ];
 
+const COOP_URL = process.env.NEXT_PUBLIC_COOP_URL ?? "http://localhost:3001";
+
 export default function CooperativesPage() {
   const { data, isLoading } = db.useQuery({
     cooperatives: { subscriptions: { plan: {} } },
   });
+  const { user } = db.useAuth();
   const confirm = useConfirm();
+
+  // Open a coop's space already signed in: hand the admin's own token to the
+  // coop app, which exchanges it via signInWithToken (platform admin → allowed).
+  const openCoop = (slug: string) => {
+    const token = (user as { refresh_token?: string } | null)?.refresh_token;
+    const next = `/${slug}/dashboard`;
+    const url = token
+      ? `${COOP_URL}/connect?token=${encodeURIComponent(token)}&next=${encodeURIComponent(next)}`
+      : `${COOP_URL}${next}`;
+    window.open(url, "_blank", "noopener");
+  };
 
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
@@ -133,9 +147,7 @@ export default function CooperativesPage() {
       className: "text-right",
       render: (c) => (
         <div className="flex justify-end gap-2 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
-          <a href={`${process.env.NEXT_PUBLIC_COOP_URL ?? "http://localhost:3001"}/${c.slug}/dashboard`} target="_blank" rel="noopener">
-            <Button variant="ink" size="sm"><ExternalLink size={14} /> Ouvrir</Button>
-          </a>
+          <Button variant="ink" size="sm" onClick={() => openCoop(c.slug)}><ExternalLink size={14} /> Ouvrir</Button>
           <Link href={`/admin/cooperatives/${c.id}/edit`}>
             <Button variant="ghost" size="sm">Modifier</Button>
           </Link>

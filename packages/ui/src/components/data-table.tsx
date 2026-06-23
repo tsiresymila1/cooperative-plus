@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Card } from "./ui";
+import { Card, Skeleton } from "./ui";
 import { cn } from "../lib/cn";
 
 export type Column<T> = {
@@ -35,10 +35,10 @@ export function DataTable<T extends { id: string }>({
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-widest text-ink-soft/60">
+          <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
             <tr className="border-b border-ink/8">
               {columns.map((c) => (
-                <th key={c.key} className={cn("px-5 py-3 font-medium", c.className)}>
+                <th key={c.key} className={cn("px-5 py-3.5", c.className)}>
                   {c.header}
                 </th>
               ))}
@@ -46,11 +46,15 @@ export function DataTable<T extends { id: string }>({
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={columns.length} className="px-5 py-12 text-center text-ink-soft/60">
-                  Chargement…
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i} className="border-b border-ink/5 last:border-0">
+                  {columns.map((c) => (
+                    <td key={c.key} className="px-5 py-4">
+                      <Skeleton className="h-4 w-full max-w-[8rem]" />
+                    </td>
+                  ))}
+                </tr>
+              ))
             ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-5 py-12 text-center text-ink-soft/60">
@@ -63,12 +67,12 @@ export function DataTable<T extends { id: string }>({
                   key={row.id}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={cn(
-                    "group border-b border-ink/5 transition-colors last:border-0 hover:bg-ink/[.02]",
+                    "group border-b border-ink/[.06] transition-colors last:border-0 hover:bg-ink/[.03]",
                     onRowClick && "cursor-pointer",
                   )}
                 >
                   {columns.map((c) => (
-                    <td key={c.key} className={cn("px-5 py-4", c.className)}>
+                    <td key={c.key} className={cn("px-5 py-3.5", c.className)}>
                       {c.render(row)}
                     </td>
                   ))}

@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { AdminShell } from "@/components/admin-shell";
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
@@ -47,7 +48,7 @@ export default function EditCooperativePage({ params }: { params: Promise<{ id: 
   if (isLoading) {
     return (
       <Shell coop={coop}>
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       </Shell>
     );
   }

@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -33,7 +34,7 @@ import {
 import { Input } from "@cp/ui/shadcn";
 
 export default function BookingViewPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
   const params = useParams<{ id: string }>();
@@ -113,7 +114,7 @@ export default function BookingViewPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "bookings")}
+      nav={coopNav(slug, "bookings", { role, permissions, isPlatformAdmin })}
       title="Détail de la réservation"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -135,7 +136,7 @@ export default function BookingViewPage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !booking ? (
         <p className="text-ink-soft">Réservation introuvable.</p>
       ) : (

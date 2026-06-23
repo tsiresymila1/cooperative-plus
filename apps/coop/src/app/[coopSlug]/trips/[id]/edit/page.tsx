@@ -1,4 +1,5 @@
 "use client";
+import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -34,7 +35,7 @@ const dKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStar
 const STATUSES = ["scheduled", "boarding", "departed", "arrived", "cancelled"];
 
 export default function EditTripPage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const tripId = params.id;
@@ -90,7 +91,7 @@ export default function EditTripPage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "trips")}
+      nav={coopNav(slug, "trips", { role, permissions, isPlatformAdmin })}
       title="Modifier le trajet"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -112,7 +113,7 @@ export default function EditTripPage() {
       }
     >
       {isLoading ? (
-        <p className="text-ink-soft">Chargement…</p>
+        <PageSkeleton />
       ) : !trip ? (
         <p className="text-ink-soft">Trajet introuvable.</p>
       ) : hasActiveBookings ? (

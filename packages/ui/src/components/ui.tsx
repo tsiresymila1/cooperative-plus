@@ -7,7 +7,7 @@ const button = cva(
   {
     variants: {
       variant: {
-        primary: "bg-laterite text-paper hover:bg-laterite-deep shadow-sm",
+        primary: "bg-laterite text-paper hover:bg-laterite-deep",
         ink: "bg-ink text-sand hover:bg-ink-soft",
         outline: "border border-ink/15 bg-paper/60 text-ink hover:bg-paper backdrop-blur",
         ghost: "text-ink hover:bg-ink/5",
@@ -24,12 +24,12 @@ export function Button({ className, variant, size, ...p }: React.ComponentProps<
 
 export function Badge({ tone = "neutral", children }: { tone?: "neutral" | "success" | "warning" | "danger"; children: React.ReactNode }) {
   const tones = {
-    neutral: "bg-ink/8 text-ink-soft",
-    success: "bg-baobab/12 text-baobab",
-    warning: "bg-clay/15 text-[#9a5a16]",
-    danger: "bg-laterite/12 text-laterite-deep",
+    neutral: "bg-ink/[.06] text-ink-soft ring-1 ring-inset ring-ink/8",
+    success: "bg-success/12 text-success ring-1 ring-inset ring-success/20",
+    warning: "bg-warning/12 text-[#b45309] ring-1 ring-inset ring-warning/25",
+    danger: "bg-danger/10 text-danger ring-1 ring-inset ring-danger/20",
   };
-  return <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium", tones[tone])}>{children}</span>;
+  return <span className={cn("inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold", tones[tone])}>{children}</span>;
 }
 
 /** Settings/form section: numbered label + description on the left, card on the right. */
@@ -50,17 +50,27 @@ export function FormSection({ index, title, description, children, className }: 
 }
 
 export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-sm border border-ink/8 bg-paper shadow-[0_1px_2px_rgba(15,28,82,.05)]", className)}>{children}</div>;
+  return <div className={cn("rounded-2xl border border-ink/8 bg-paper", className)}>{children}</div>;
 }
 
-export function StatCard({ label, value, hint, tone = "ink" }: { label: string; value: string; hint?: string; tone?: "ink" | "laterite" | "baobab" }) {
+export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
+  label: string; value: string; hint?: string; trend?: "up" | "down";
+  tone?: "ink" | "laterite" | "baobab"; icon?: React.ReactNode;
+}) {
   const accent = { ink: "text-ink", laterite: "text-laterite", baobab: "text-baobab" }[tone];
   return (
-    <Card className="relative overflow-hidden p-5">
-      <p className="text-xs font-medium uppercase tracking-widest text-ink-soft/70">{label}</p>
-      <p className={cn("mt-3 font-display text-4xl font-bold tabular-nums", accent)}>{value}</p>
-      {hint && <p className="mt-1 text-sm text-ink-soft/70">{hint}</p>}
-      <div className="absolute -right-6 -top-6 h-20 w-20 rounded-full bg-clay/10 blur-2xl" />
+    <Card className="p-5 transition-colors hover:border-ink/15">
+      <div className="flex items-start justify-between">
+        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/70">{label}</p>
+        {icon && <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink/[.04] text-ink-soft/70">{icon}</span>}
+      </div>
+      <p className={cn("mt-3 font-display text-[2rem] font-extrabold leading-none tabular-nums", accent)}>{value}</p>
+      {hint && (
+        <p className={cn("mt-2 inline-flex items-center gap-1 text-sm font-medium",
+          trend === "up" ? "text-success" : trend === "down" ? "text-danger" : "text-ink-soft/70")}>
+          {trend === "up" ? "↑" : trend === "down" ? "↓" : null} {hint}
+        </p>
+      )}
     </Card>
   );
 }
@@ -74,10 +84,18 @@ export function BrandMark({ size = 40, className }: { size?: number; className?:
   );
 }
 
+export function BrandMarkLong({ height = 30, width = 140, className }: { height?: number; width?: number | null; className?: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/logo-long.png" alt="Cooperative Plus" height={height}
+      className={cn("rounded-[22%] object-contain", className)} style={{ width: width ?? undefined, height }} />
+  );
+}
+
 /** Cooperative logo with fallback to the Cooperative Plus default mark. */
 export function CoopLogo({ url, name, size = 40, className }: { url?: string | null; name?: string; size?: number; className?: string }) {
   return (
-    <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl border border-ink/10 bg-sand", className)}
+    <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl", className)}
       style={{ width: size, height: size }}>
       {url
         ? <img src={url} alt={name ?? "logo"} className="h-full w-full object-cover" />
@@ -87,11 +105,48 @@ export function CoopLogo({ url, name, size = 40, className }: { url?: string | n
   );
 }
 
-export function Logo({ className, withName = true, dark }: { className?: string; withName?: boolean; dark?: boolean }) {
+export function Logo({ className, withName = false, dark }: { className?: string; withName?: boolean; dark?: boolean }) {
   return (
     <span className={cn("inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight", dark ? "text-paper" : "text-navy", className)}>
-      <BrandMark size={32} />
+      <BrandMarkLong />
       {withName && <>Cooperative<span className="text-orange">+</span></>}
     </span>
+  );
+}
+
+/* Spinner — circular loading indicator. */
+export function Spinner({ size = 22, className }: { size?: number; className?: string }) {
+  return (
+    <span
+      role="status"
+      aria-label="Chargement"
+      className={cn("inline-block animate-spin rounded-full border-2 border-ink/15 border-t-laterite", className)}
+      style={{ width: size, height: size }}
+    />
+  );
+}
+
+/* Full-viewport centered spinner — replaces "Chargement…" screens. */
+export function FullSpinner({ className }: { className?: string }) {
+  return (
+    <div className={cn("grid min-h-dvh place-items-center", className)}>
+      <Spinner size={30} />
+    </div>
+  );
+}
+
+/* Skeleton — shimmer placeholder while data loads. */
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cn("animate-pulse rounded-[--radius] bg-ink/8", className)} />;
+}
+
+/* Page-level loading block: a few shimmer bars. */
+export function PageSkeleton() {
+  return (
+    <div className="space-y-3">
+      <Skeleton className="h-9 w-64" />
+      <Skeleton className="h-40 w-full" />
+      <Skeleton className="h-40 w-full" />
+    </div>
   );
 }

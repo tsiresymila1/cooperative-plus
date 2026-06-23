@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight, MapPin } from "lucide-react";
@@ -30,7 +30,7 @@ import {
 const STATUSES = ["active", "inactive"];
 
 export default function NewRoutePage() {
-  const { coopId, slug, coop } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
 
@@ -49,6 +49,7 @@ export default function NewRoutePage() {
   }, [data]);
 
   const [name, setName] = useState("");
+  const [nameEdited, setNameEdited] = useState(false);
   const [originId, setOriginId] = useState("");
   const [destId, setDestId] = useState("");
   const [price, setPrice] = useState("");
@@ -56,6 +57,14 @@ export default function NewRoutePage() {
   const [dur, setDur] = useState("");
   const [status, setStatus] = useState("active");
   const [saving, setSaving] = useState(false);
+
+  // Auto-fill name "Origine → Destination" until the user types their own.
+  useEffect(() => {
+    if (nameEdited) return;
+    const o = destinations.find((d: any) => d.id === originId)?.name;
+    const d = destinations.find((x: any) => x.id === destId)?.name;
+    setName(o && d ? `${o} → ${d}` : "");
+  }, [originId, destId, nameEdited, destinations]);
 
   const submit = async () => {
     if (!originId || !destId) {
@@ -87,7 +96,7 @@ export default function NewRoutePage() {
 
   return (
     <DashboardShell
-      nav={coopNav(slug, "routes")}
+      nav={coopNav(slug, "routes", { role, permissions, isPlatformAdmin })}
       title="Nouvel itinéraire"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
@@ -111,8 +120,8 @@ export default function NewRoutePage() {
       <div className="mx-auto max-w-4xl">
         <FormSection index="01" title="Trajet" description="Origine, destination et nom affiché de l'itinéraire.">
         <div className="grid gap-4">
-          <Field label="Nom" hint="Laissez vide pour générer automatiquement">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Origine → Destination" />
+          <Field label="Nom" hint="Auto-rempli depuis Origine → Destination">
+            <Input value={name} onChange={(e) => { setName(e.target.value); setNameEdited(true); }} placeholder="Origine → Destination" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Origine">

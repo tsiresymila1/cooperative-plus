@@ -10,7 +10,7 @@ import { CoopLogo } from "@/components/coop-logo";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
-import { fmtDateKey, fmtTime, toDateKey } from "@/lib/domain";
+import { fmtDateKey, fmtTime, toDateKey, toMs } from "@/lib/domain";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -34,18 +34,23 @@ export default function Home() {
     region: d.region ?? undefined,
   }));
 
-  // Popular live trips (next departures) for the home list.
+  // Next departures: fetch upcoming scheduled trips, then filter out any whose
+  // departure time has already passed (server date-filter is unreliable on the
+  // `date` field type, so we compare client-side like the search results do).
   const today = toDateKey(new Date());
   const { data: popularData } = db.useQuery({
     tripInstances: {
-      $: { where: { status: "scheduled", departDate: { $gte: today } }, limit: 4, order: { departureAt: "asc" } },
+      $: { where: { status: "scheduled", departDate: { $gte: today } }, limit: 20, order: { departureAt: "asc" } },
       tickets: {},
       cooperative: {},
     },
   });
-  const popular = popularData?.tripInstances ?? [];
+  const popular = (popularData?.tripInstances ?? [])
+    .filter((t) => toMs(t.departureAt) > Date.now())
+    .slice(0, 4);
 
   const [tried, setTried] = useState(false);
+  const [searching, setSearching] = useState(false);
   const originErr = tried && !origin.trim() ? "Choisissez une ville de départ" : undefined;
   const destErr = tried && !dest.trim() ? "Choisissez une ville d'arrivée" : undefined;
   const sameErr = tried && origin.trim() && dest.trim() && origin.trim() === dest.trim()
@@ -55,10 +60,15 @@ export default function Home() {
   function goSearch() {
     setTried(true);
     if (!origin.trim() || !dest.trim() || origin.trim() === dest.trim()) return;
-    router.push({
-      pathname: "/results",
-      params: { origin: origin.trim(), dest: dest.trim(), date: dateKey },
-    });
+    setSearching(true);
+    // Brief spinner before landing on the results page.
+    setTimeout(() => {
+      router.push({
+        pathname: "/results",
+        params: { origin: origin.trim(), dest: dest.trim(), date: dateKey },
+      });
+      setSearching(false);
+    }, 350);
   }
 
   return (
@@ -98,7 +108,7 @@ export default function Home() {
 
           {/* Search card */}
           <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-6">
-            <Card className="gap-3 p-4 shadow-lg shadow-ink/10">
+            <Card className="gap-3 p-4">
               <DestinationField
                 label="Départ"
                 value={origin}
@@ -123,8 +133,8 @@ export default function Home() {
 
               {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
 
-              <Button size="md" className="mt-1" onPress={goSearch}>
-                <Search size={18} color="#ffffff" />
+              <Button size="md" className="mt-1" onPress={goSearch} loading={searching}>
+                {!searching && <Search size={18} color="#ffffff" />}
                 <Text className="font-sans font-medium text-paper">Rechercher</Text>
               </Button>
             </Card>
