@@ -54,7 +54,15 @@ jobs:
 
       - name: Decode upload keystore
         working-directory: apps/mobile
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload.keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          # Strip whitespace, then re-add missing '=' padding (often lost on copy).
+          B=$(printf '%s' "$KEYSTORE_B64" | tr -d '[:space:]')
+          PAD=$(( (4 - ${#B} % 4) % 4 ))
+          for i in $(seq 1 $PAD); do B="${B}="; done
+          printf '%s' "$B" | base64 -d > android/app/upload.keystore
+          test -s android/app/upload.keystore || { echo "Keystore vide — vérifie ANDROID_KEYSTORE_BASE64"; exit 1; }
 
       - name: Configure signing
         working-directory: apps/mobile
