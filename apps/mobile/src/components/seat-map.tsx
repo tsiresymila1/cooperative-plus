@@ -36,7 +36,7 @@ export function SeatMapView({
       <Text className="mb-3 text-center font-mono text-[10px] uppercase tracking-widest text-ink-soft/55">
         ↑ avant du véhicule
       </Text>
-      <View className="gap-2">
+      <View className="gap-2 justify-center items-center">
         {Array.from({ length: maxRow + 1 }, (_, r) => (
           <View key={r} className="flex-row gap-2">
             {Array.from({ length: maxCol + 1 }, (_, col) => {
@@ -89,7 +89,7 @@ export function SeatMapView({
         ))}
       </View>
 
-      <View className="mt-4 flex-row flex-wrap justify-center gap-4">
+      <View className="mt-4 flex-row justify-center gap-4">
         <Legend className="border-laterite bg-laterite" label="vos sièges" />
         <Legend className="border-ink/10 bg-ink/10" label="occupé" />
         <Legend className="border-ink/15 bg-paper" label="libre" />

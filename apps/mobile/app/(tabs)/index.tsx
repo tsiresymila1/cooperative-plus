@@ -83,7 +83,7 @@ export default function Home() {
   }
 
   return (
-    <SafeAreaView className="h-full w-full">
+    <SafeAreaView edges={['top', 'bottom']} className="h-full w-full" >
       <View className="w-full h-full">
         {/* Header */}
         <Animated.View entering={FadeIn.duration(500)} className="flex-row items-center justify-between pr-5 py-4">

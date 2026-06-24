@@ -1,0 +1,93 @@
+name: Android build (AAB)
+
+on:
+  workflow_dispatch:
+    inputs:
+      versionCode:
+        description: "Android versionCode (must increase each Play upload)"
+        required: true
+        default: "1"
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Public by design (shipped in the bundle) — safe to keep here.
+      EXPO_PUBLIC_INSTANT_APP_ID: feb5e50f-21d7-4880-9de5-49eba48f2a45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # versionCode: from manual input, else derived from the tag's run number.
+      - name: Set versionCode
+        working-directory: apps/mobile
+        run: |
+          VC="${{ github.event.inputs.versionCode || github.run_number }}"
+          node -e "const f='app.json';const j=require('./'+f);j.expo.android=j.expo.android||{};j.expo.android.versionCode=Number('$VC');require('fs').writeFileSync(f,JSON.stringify(j,null,2));console.log('versionCode =',$VC)"
+
+      - name: Expo prebuild (android)
+        working-directory: apps/mobile
+        run: npx expo prebuild -p android --clean --no-install
+
+      - name: Decode upload keystore
+        working-directory: apps/mobile
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload.keystore
+
+      - name: Configure signing
+        working-directory: apps/mobile
+        run: |
+          cat >> android/gradle.properties <<EOF
+          MYAPP_UPLOAD_STORE_FILE=upload.keystore
+          MYAPP_UPLOAD_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}
+          MYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          MYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}
+          EOF
+          node scripts/inject-signing.js
+
+      - name: Build release AAB + APK
+        working-directory: apps/mobile/android
+        run: ./gradlew :app:bundleRelease :app:assembleRelease --no-daemon
+
+      - name: Upload AAB (Play Store)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cooperative-plus
+          path: apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
+      - name: Upload APK (sideload / test)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cooperative-plus
+          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          if-no-files-found: error
+
+      # ── Optional: auto-upload to Play (internal track). Needs the secret. ──
+      - name: Upload to Play Store (internal)
+        if: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: ts.mila.cooperativeplus
+          releaseFiles: apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+          track: internal
+          status: completed

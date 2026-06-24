@@ -86,7 +86,9 @@ export default function Confirmation() {
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
       {isLoading ? (
-        <Spinner />
+        <View className="w-full h-full items-center justify-center">
+          <Spinner />
+        </View>
       ) : !booking ? (
         <View className="flex-1 items-center justify-center p-8">
           <Text className="font-display text-xl text-ink">

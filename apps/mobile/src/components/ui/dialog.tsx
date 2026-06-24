@@ -2,7 +2,7 @@
 import * as DialogPrimitive from "@rn-primitives/dialog";
 import { X } from "lucide-react-native";
 import * as React from "react";
-import { Pressable } from "react-native";
+import { Pressable, useColorScheme } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { cn } from "@/lib/cn";
 
@@ -23,6 +23,7 @@ function DialogContent({
   showClose?: boolean;
 }) {
   const { onOpenChange } = DialogPrimitive.useRootContext();
+  const colorScheme = useColorScheme()
   return (
     <DialogPrimitive.Portal hostName={portalHost}>
       <DialogPrimitive.Overlay asChild>
@@ -46,7 +47,7 @@ function DialogContent({
                     hitSlop={12}
                     className="absolute right-3 top-3 h-7 w-7 items-center justify-center rounded-[4px] bg-sand active:opacity-80"
                   >
-                    <X size={15} color="#16266b" />
+                    <X size={15} color={colorScheme === "dark" ? "#ffffff" : "#000000"} />
                   </DialogPrimitive.Close>
                 )}
               </DialogPrimitive.Content>
