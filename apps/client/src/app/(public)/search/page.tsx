@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { ArrowRight, ArrowRightLeft, Bus, Clock, MapPin, Search, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Badge, Button, Card, CoopLogo, Spinner, cn, db, fmtMoney } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo, Spinner, cn, db, fmtMoney, notDeleted } from "@cp/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -27,7 +27,9 @@ function SearchInner() {
 
   // destination options (real, from DB)
   const { data: destData } = db.useQuery({ destinations: { $: { where: { isGlobal: true }, order: { name: "asc" } } } });
-  const cities = (destData?.destinations ?? []).map((d) => d.name);
+  // Dedupe by name — duplicate destination records would otherwise show twice
+  // and both match the same Select value (concatenated label + double check).
+  const cities = [...new Set((destData?.destinations ?? []).filter(notDeleted).map((d) => d.name))];
 
   const dk = date ? dateKey(date) : "";
   // live results react to from/to/date
