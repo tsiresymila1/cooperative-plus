@@ -9,3 +9,8 @@ dist/
 .DS_Store
 .vercel
 drizzle/meta/
+
+# Android signing — NEVER commit
+*.keystore
+*.jks
+*.keystore.base64
