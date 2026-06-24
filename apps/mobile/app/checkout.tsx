@@ -8,6 +8,7 @@ import { Button, Card, Field, Input } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
+import { scheduleDepartureReminders } from "@/lib/notifications";
 import { cn, fmtMoney } from "@/lib/cn";
 import { db, id, type Chunk } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -215,6 +216,13 @@ export default function Checkout() {
       }
 
       await db.transact(chunks);
+
+      // Local departure reminders (24h + 1h before) — no server / no push token.
+      scheduleDepartureReminders({
+        route: `${selection.originName} → ${selection.destName}`,
+        departureAt: selection.departureAt,
+        reference,
+      }).catch(() => {});
 
       completedRef.current = true; // holds already consumed by the transaction
       setSelection(null);

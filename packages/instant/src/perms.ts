@@ -19,9 +19,9 @@ const rules = {
     },
   },
 
-  // Storage (logos, payment proofs): public read, authed upload.
+  // Storage (logos, payment proofs): public read, authed upload (create + overwrite).
   $files: {
-    allow: { view: "true", create: authed, delete: authed },
+    allow: { view: "true", create: authed, update: authed, delete: authed },
   },
 
   // Password hashes — only the server (admin token) touches these.

@@ -46,7 +46,7 @@ export default function NewTeamMemberPage() {
   return (
     <DashboardShell
       nav={coopNav(slug, "team", { role, permissions, isPlatformAdmin })}
-      title="Inviter un assistant"
+      title="Ajouter un assistant"
       tenant={coop.displayName}
       logoUrl={coop.logoUrl}
       breadcrumb={

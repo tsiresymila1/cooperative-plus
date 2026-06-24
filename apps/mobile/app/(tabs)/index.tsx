@@ -181,7 +181,7 @@ export default function Home() {
                         </View>
                         <Badge
                           tone={full ? "danger" : booked / total >= 0.8 ? "warning" : "success"}
-                          label={full ? "Complet" : `${booked}/${total} places`}
+                          label={full ? "Complet" : `${total - booked}/${total} places`}
                         />
                       </View>
 

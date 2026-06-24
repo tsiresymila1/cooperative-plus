@@ -119,7 +119,7 @@ function SearchInner() {
           <p className="text-sm text-ink-soft">Essayez une autre date ou destination.</p>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="reveal space-y-3">
           {results.map((t, i) => (
             <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
               <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">

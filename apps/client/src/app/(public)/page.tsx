@@ -1,26 +1,20 @@
+"use client";
 import Link from "next/link";
+import Image from "next/image";
+import { useMemo } from "react";
 import { ArrowRight, ArrowUpRight, Bus, Clock3, MapPin, MousePointerClick, Play, Quote, ShieldCheck, Star, Ticket, Wallet } from "lucide-react";
-import { Button, Logo } from "@cp/ui";
+import { Button, Logo, db, notDeleted, todayISO } from "@cp/ui";
 import { SiteHeader } from "@/components/site-header";
 import { SearchBar } from "@/components/search-bar";
 import { fmtMoney } from "@cp/ui";
 
 const HERO_IMG = "/hero.png";
 
-const routes = [
-  { from: "Antananarivo", to: "Mahajanga", price: 35000, dur: "8h", coops: 6 },
-  { from: "Antananarivo", to: "Toamasina", price: 30000, dur: "7h", coops: 9 },
-  { from: "Antananarivo", to: "Fianarantsoa", price: 28000, dur: "9h", coops: 5 },
-  { from: "Antananarivo", to: "Antsirabe", price: 12000, dur: "3h", coops: 11 },
-  { from: "Antsirabe", to: "Toliara", price: 60000, dur: "14h", coops: 4 },
-  { from: "Antananarivo", to: "Morondava", price: 55000, dur: "12h", coops: 3 },
-];
 const steps = [
   { icon: MapPin, title: "Cherchez", desc: "Départ, arrivée, date. Comparez 47 coopératives en un coup d'œil." },
   { icon: MousePointerClick, title: "Choisissez votre siège", desc: "Plan du véhicule en temps réel. Siège maintenu 5 minutes." },
   { icon: Ticket, title: "Payez & embarquez", desc: "Mobile Money, carte ou espèces. Billet QR instantané." },
 ];
-const stats = [["47", "coopératives"], ["1 240+", "trajets / jour"], ["28", "villes desservies"], ["4.8★", "note voyageurs"]] as const;
 // ponytail: cosmetic category tabs (first active); wire to a vehicleType filter when search supports it.
 const tabs = ["Tous", "Bus", "Minibus", "4×4"] as const;
 const reviews = [
@@ -30,12 +24,49 @@ const reviews = [
 ];
 
 export default function Landing() {
+  const today = todayISO();
+  // Live data — upcoming scheduled trips + network counts.
+  const { data } = db.useQuery({
+    cooperatives: {},
+    destinations: { $: { where: { isGlobal: true } } },
+    tripInstances: { $: { where: { status: "scheduled", departDate: { $gte: today } } } },
+  });
+  const coops = (data?.cooperatives ?? []).filter(notDeleted);
+  const dests = (data?.destinations ?? []).filter(notDeleted);
+  const trips = (data?.tripInstances ?? []).filter(notDeleted);
+
+  const stats: readonly (readonly [string, string])[] = [
+    [String(coops.length || "—"), "coopératives"],
+    [String(trips.length || "—"), "trajets à venir"],
+    [String(dests.length || "—"), "villes desservies"],
+    ["4.8★", "note voyageurs"],
+  ];
+
+  // Popular routes = busiest origin→dest among upcoming trips.
+  const popularRoutes = useMemo(() => {
+    const map = new Map<string, { from: string; to: string; price: number; dur: string; coops: Set<string>; count: number }>();
+    for (const t of (data?.tripInstances ?? []).filter(notDeleted) as any[]) {
+      const key = `${t.originName}__${t.destName}`;
+      let e = map.get(key);
+      if (!e) { e = { from: t.originName, to: t.destName, price: t.price, dur: "", coops: new Set(), count: 0 }; map.set(key, e); }
+      e.count++;
+      e.price = Math.min(e.price, t.price);
+      if (t.coopName) e.coops.add(t.coopName);
+      if (!e.dur && t.arrivalEstimateAt && t.departureAt) {
+        const ms = +new Date(t.arrivalEstimateAt) - +new Date(t.departureAt);
+        if (ms > 0) e.dur = `${Math.round(ms / 3.6e6)}h`;
+      }
+    }
+    return [...map.values()].sort((a, b) => b.count - a.count).slice(0, 6)
+      .map((e) => ({ from: e.from, to: e.to, price: e.price, dur: e.dur, coops: e.coops.size }));
+  }, [data]);
+
   return (
     <main className="relative">
       {/* ── Hero — full-screen image ─────────────────────────── */}
       <section className="relative isolate flex min-h-[100svh] flex-col overflow-hidden">
-        {/* photo covers the whole viewport */}
-        <div aria-hidden className="absolute inset-0 -z-20 bg-cover bg-center blur-[2px]" style={{ backgroundImage: `url('${HERO_IMG}')` }} />
+        {/* photo covers the whole viewport — optimized + cached via next/image */}
+        <Image src={HERO_IMG} alt="" fill priority sizes="100vw" className="-z-20 scale-105 object-cover blur-[2px]" />
         {/* left-weighted legibility wash + blend to page at the bottom */}
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-sand via-black/10 to-black/30 dark:from-sand" />
@@ -44,20 +75,20 @@ export default function Landing() {
 
         <div className="relative mx-auto flex w-full  flex-col justify-center px-5 py-32 sm:px-8">
           <div className="pt-20 w-full flex flex-col items-center justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white backdrop-blur-md">
+            <div className="animate-rise inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-sm font-medium text-white backdrop-blur-md">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green opacity-75" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-green" />
               </span>
               47 coopératives · tout Madagascar
             </div>
-            <h1 className="mt-5 text-center font-display text-4xl font-bold leading-[1] tracking-tight text-white [text-shadow:0_2px_40px_rgba(0,0,0,.5)] sm:mt-6 sm:text-6xl md:text-7xl">
+            <h1 className="animate-rise mt-5 text-center font-display text-4xl font-bold leading-[1] tracking-tight text-white [text-shadow:0_2px_40px_rgba(0,0,0,.5)] sm:mt-6 sm:text-6xl md:text-7xl" style={{ animationDelay: "80ms" }}>
               Votre place,<br />réservée en <span className="text-orange">2 minutes</span>.
             </h1>
-            <p className="mt-5 text-pretty text-center text-lg text-white/85 [text-shadow:0_1px_20px_rgba(0,0,0,.45)]">
+            <p className="animate-rise mt-5 text-pretty text-center text-lg text-white/85 [text-shadow:0_1px_20px_rgba(0,0,0,.45)]" style={{ animationDelay: "150ms" }}>
               Comparez les départs taxi-brousse, choisissez votre siège, payez par Mobile Money. Billet QR instantané.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <div className="animate-rise mt-8 flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "220ms" }}>
               <Link href="/search"><Button size="lg">Réserver maintenant <ArrowRight size={18} /></Button></Link>
               <Link href="/search" className="group inline-flex items-center gap-3 text-sm font-semibold text-white">
                 <span className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20"><Play size={16} className="fill-white" /></span>
@@ -68,7 +99,7 @@ export default function Landing() {
         </div>
 
         {/* tabbed search — sits near the bottom of the hero */}
-        <div className="relative z-10 mx-auto w-full max-w-5xl px-5 pb-10 sm:pb-14">
+        <div className="animate-rise relative z-10 mx-auto w-full max-w-5xl px-5 pb-10 sm:pb-14" style={{ animationDelay: "300ms" }}>
           <SearchBar />
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-sm font-medium text-white/85">
             <span className="inline-flex items-center gap-2"><ShieldCheck size={15} className="text-green" /> Sièges garantis</span>
@@ -79,7 +110,7 @@ export default function Landing() {
       </section>
 
       {/* ── Stats ribbon ─────────────────────────────────────── */}
-      <section className="mx-auto mt-16 max-w-5xl px-5">
+      <section className="reveal mx-auto mt-16 max-w-5xl px-5">
         <div className="grid grid-cols-2 divide-ink/8 overflow-hidden rounded-md border border-ink/8 bg-paper sm:grid-cols-4 sm:divide-x">
           {stats.map(([n, l]) => (
             <div key={l} className="px-6 py-7 text-center">
@@ -91,7 +122,7 @@ export default function Landing() {
       </section>
 
       {/* ── Popular routes ───────────────────────────────────── */}
-      <section id="routes" className="mx-auto max-w-6xl px-5 py-24">
+      <section id="routes" className="reveal mx-auto max-w-6xl px-5 py-24">
         <div className="mb-10 flex items-end justify-between">
           <div>
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-orange">Destinations</p>
@@ -101,34 +132,44 @@ export default function Landing() {
             Tout voir <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {routes.map((r) => (
-            <Link key={`${r.from}-${r.to}`} href="/search"
-              className="group relative overflow-hidden rounded-md border border-ink/8 bg-paper p-5 transition-all hover:-translate-y-1 hover:border-orange/30 hover:shadow-[0_20px_40px_-18px_rgba(245,130,31,.35)]">
-              <div aria-hidden className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-orange/0 blur-2xl transition-colors duration-500 group-hover:bg-orange/15" />
-              <div className="flex items-center gap-2 font-display text-lg font-bold">
-                <span>{r.from}</span>
-                <ArrowRight size={16} className="text-orange transition-transform group-hover:translate-x-0.5" />
-                <span>{r.to}</span>
-              </div>
-              <div className="mt-2 flex items-center gap-3 text-sm text-ink-soft">
-                <span className="inline-flex items-center gap-1"><Clock3 size={13} /> {r.dur}</span>
-                <span className="h-1 w-1 rounded-full bg-ink-soft/30" />
-                <span>{r.coops} coopératives</span>
-              </div>
-              <div className="mt-5 flex items-end justify-between border-t border-ink/8 pt-4">
-                <span className="text-sm text-ink-soft">dès <span className="font-mono text-xl font-bold text-ink">{fmtMoney(r.price)}</span></span>
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-ink/[.05] text-ink-soft transition-all group-hover:bg-orange group-hover:text-white">
-                  <ArrowUpRight size={16} />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {popularRoutes.length === 0 ? (
+          <div className="rounded-md border border-dashed border-ink/15 bg-paper p-12 text-center text-ink-soft">
+            Aucun trajet programmé pour le moment. Revenez bientôt.
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {popularRoutes.map((r) => (
+              <Link key={`${r.from}-${r.to}`} href={`/search?from=${encodeURIComponent(r.from)}&to=${encodeURIComponent(r.to)}`}
+                className="group relative overflow-hidden rounded-md border border-ink/8 bg-paper p-5 transition-all hover:-translate-y-1 hover:border-orange/30 hover:shadow-[0_20px_40px_-18px_rgba(245,130,31,.35)]">
+                <div aria-hidden className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-orange/0 blur-2xl transition-colors duration-500 group-hover:bg-orange/15" />
+                <div className="flex items-center gap-2 font-display text-lg font-bold">
+                  <span>{r.from}</span>
+                  <ArrowRight size={16} className="text-orange transition-transform group-hover:translate-x-0.5" />
+                  <span>{r.to}</span>
+                </div>
+                <div className="mt-2 flex items-center gap-3 text-sm text-ink-soft">
+                  {r.dur && (
+                    <>
+                      <span className="inline-flex items-center gap-1"><Clock3 size={13} /> {r.dur}</span>
+                      <span className="h-1 w-1 rounded-full bg-ink-soft/30" />
+                    </>
+                  )}
+                  <span>{r.coops} coopérative{r.coops > 1 ? "s" : ""}</span>
+                </div>
+                <div className="mt-5 flex items-end justify-between border-t border-ink/8 pt-4">
+                  <span className="text-sm text-ink-soft">dès <span className="font-mono text-xl font-bold text-ink">{fmtMoney(r.price)}</span></span>
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-ink/[.05] text-ink-soft transition-all group-hover:bg-orange group-hover:text-white">
+                    <ArrowUpRight size={16} />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── How it works ─────────────────────────────────────── */}
-      <section id="how" className="border-y border-ink/8 bg-paper">
+      <section id="how" className="reveal border-y border-ink/8 bg-paper">
         <div className="mx-auto max-w-6xl px-5 py-24">
           <div className="max-w-xl">
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-orange">Comment ça marche</p>
@@ -155,7 +196,7 @@ export default function Landing() {
       </section>
 
       {/* ── Reviews ──────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 py-24">
+      <section className="reveal mx-auto max-w-6xl px-5 py-24">
         <div className="mb-10 flex items-end justify-between">
           <div>
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-orange">Avis voyageurs</p>
@@ -184,7 +225,7 @@ export default function Landing() {
       </section>
 
       {/* ── Coop CTA ─────────────────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-5 pb-24">
+      <section className="reveal mx-auto max-w-6xl px-5 pb-24">
         <div className="relative overflow-hidden rounded-xl bg-strong px-8 py-16 text-white md:px-16 md:py-20">
           <div aria-hidden className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-orange/25 blur-3xl" />
           <div aria-hidden className="absolute -bottom-16 left-10 h-56 w-56 rounded-full bg-green/20 blur-3xl" />

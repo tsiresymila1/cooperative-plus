@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createContext, useContext, useEffect } from "react";
-import { ShieldAlert } from "lucide-react";
+import { LogOut, ShieldAlert } from "lucide-react";
 import { db } from "../lib/db";
 import { Button, Card, Logo, FullSpinner } from "./ui";
 import { SignInScreen } from "./sign-in";
@@ -38,7 +38,8 @@ export const useCoop = () => {
 /** Coop context if present, else null (safe outside CoopGuard — e.g. admin shell). */
 export const useCoopOptional = () => useContext(Ctx);
 
-function Denied({ title, message }: { title: string; message: string }) {
+function Denied({ title, message, kind = "coop" }: { title: string; message: string; kind?: "coop" | "admin" }) {
+  const logout = async () => { await db.auth.signOut(); window.location.href = "/"; };
   return (
     <div className="grid min-h-dvh place-items-center bg-sand px-5">
       <Card className="max-w-md p-8 text-center">
@@ -49,12 +50,14 @@ function Denied({ title, message }: { title: string; message: string }) {
         <h1 className="mt-4 font-display text-xl font-bold text-ink">{title}</h1>
         <p className="mt-2 text-sm text-ink-soft">{message}</p>
         <div className="mt-6 flex justify-center gap-2">
-          <Link href="/">
-            <Button variant="outline" size="sm">Mes coopératives</Button>
-          </Link>
-          <Link href="/">
-            <Button size="sm">Accueil</Button>
-          </Link>
+          {kind === "coop" && (
+            <Link href="/">
+              <Button variant="outline" size="sm">Mes coopératives</Button>
+            </Link>
+          )}
+          <Button size="sm" variant={kind === "coop" ? "primary" : "outline"} onClick={logout}>
+            <LogOut size={15} /> Déconnexion
+          </Button>
         </div>
       </Card>
     </div>
@@ -190,6 +193,7 @@ export function AdminGuard({ children }: { children: React.ReactNode }) {
   if (!me?.isPlatformAdmin)
     return (
       <Denied
+        kind="admin"
         title="Accès refusé"
         message="Cette zone est réservée aux administrateurs de la plateforme."
       />

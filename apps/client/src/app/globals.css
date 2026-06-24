@@ -96,4 +96,15 @@
   .animate-flip { animation: board-flip .5s cubic-bezier(.2,.8,.2,1) backwards; }
   @keyframes rise { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
   .animate-rise { animation: rise .6s cubic-bezier(.2,.8,.2,1) backwards; }
+
+  /* Scroll-triggered fade-up via IntersectionObserver (see ScrollReveal).
+     Hidden state only applies once JS adds `.reveal-ready` — no-JS shows content. */
+  .reveal-ready .reveal { opacity: 0; transform: translateY(28px); }
+  .reveal-ready .reveal.reveal-show {
+    opacity: 1; transform: none;
+    transition: opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-ready .reveal { opacity: 1 !important; transform: none !important; }
+  }
 }

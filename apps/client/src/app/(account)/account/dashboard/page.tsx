@@ -17,7 +17,7 @@ export default function AccountDashboard() {
   const spent = bookings.filter((b) => b.status !== "cancelled").reduce((s, b) => s + b.totalAmount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="reveal space-y-6">
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Réservations" value={String(bookings.length)} />
         <StatCard label="À venir" value={String(upcoming.length)} tone="baobab" />

@@ -19,8 +19,6 @@ jobs:
     env:
       # Public by design (shipped in the bundle) — safe to keep here.
       EXPO_PUBLIC_INSTANT_APP_ID: feb5e50f-21d7-4880-9de5-49eba48f2a45
-      # Secrets can't be used in step `if:` directly — expose via env.
-      PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
     steps:
       - uses: actions/checkout@v4
 
@@ -93,15 +91,28 @@ jobs:
           path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
 
-      # ── Optional: auto-upload to Play (internal track). Needs the secret. ──
-      # Failure here must NOT fail the job — the AAB/APK artifacts are already uploaded.
+  # ── Deploy: upload the built AAB to the Play Store (internal track). ──
+  # Runs after `build`; skipped automatically when the Play secret is absent.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      # Secrets can't be used in step `if:` directly — expose via env.
+      PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+    steps:
+      - name: Download AAB artifact
+        if: ${{ env.PLAY_JSON != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: cooperative-plus_${{ github.run_number }}_aab
+          path: dist
+
       - name: Upload to Play Store (internal)
         if: ${{ env.PLAY_JSON != '' }}
-        continue-on-error: true
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ts.mila.cooperativeplus
-          releaseFiles: apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+          releaseFiles: dist/app-release.aab
           track: internal
           status: completed

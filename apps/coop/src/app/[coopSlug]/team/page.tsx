@@ -117,7 +117,7 @@ export default function TeamPage() {
       }
       action={
         <Button size="sm" onClick={() => router.push(`/${slug}/team/new`)}>
-          <UserPlus size={16} /> Inviter un assistant
+          <UserPlus size={16} /> Ajouter un assistant
         </Button>
       }
     >

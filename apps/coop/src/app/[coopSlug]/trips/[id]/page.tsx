@@ -1,5 +1,6 @@
 "use client";
 import { PageSkeleton } from "@cp/ui";
+import { BoardingScanner } from "@/components/boarding-scanner";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ import {
   XCircle,
   Search,
   Printer,
+  QrCode,
 } from "lucide-react";
 import {
   DashboardShell,
@@ -36,6 +38,7 @@ import {
   Badge,
   Field,
   SeatSelector,
+  Dialog,
   useConfirm,
   toast,
   type Cell,
@@ -115,6 +118,7 @@ export default function TripViewPage() {
   const [booking, setBooking] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
   const [mSearch, setMSearch] = useState("");
 
   const visibleBookings = useMemo(() => {
@@ -331,6 +335,11 @@ export default function TripViewPage() {
               <ArrowLeft size={16} /> Retour
             </Button>
           </Link>
+          {trip && (
+            <Button size="sm" variant="outline" onClick={() => setScanOpen(true)}>
+              <QrCode size={16} /> Embarquement
+            </Button>
+          )}
           {trip && (
             <Button size="sm" variant="outline" onClick={() => router.push(`/${slug}/trips/${tripId}/manifest`)}>
               <Printer size={16} /> Manifeste
@@ -605,6 +614,16 @@ export default function TripViewPage() {
           </Card>
         </div>
       )}
+
+      <Dialog
+        open={scanOpen}
+        onClose={() => setScanOpen(false)}
+        title="Embarquement"
+        description={trip ? `${trip.originName} → ${trip.destName} · seuls les billets de ce trajet sont acceptés.` : undefined}
+        size="xl"
+      >
+        {scanOpen && <BoardingScanner coopId={coopId} tripId={tripId} />}
+      </Dialog>
     </DashboardShell>
   );
 }

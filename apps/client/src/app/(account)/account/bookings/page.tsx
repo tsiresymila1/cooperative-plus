@@ -41,7 +41,7 @@ export default function Bookings() {
   const bookings = data?.bookings ?? [];
 
   return (
-    <div className="space-y-3">
+    <div className="reveal space-y-3">
       <h1 className="font-display text-2xl font-bold">Mes réservations</h1>
       {isLoading ? (
         [0, 1].map((i) => (

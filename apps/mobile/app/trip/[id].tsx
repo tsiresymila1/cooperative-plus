@@ -3,7 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
-import { ChevronLeft, CircleDot, Clock, DoorOpen } from "lucide-react-native";
+import { ChevronLeft, CircleDot, Clock, DoorOpen, User } from "lucide-react-native";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
@@ -243,7 +243,7 @@ export default function TripDetail() {
                         ? "danger"
                         : "success"
                     }
-                    label={`${trip.tickets?.length ?? 0}/${trip.seatsTotal} places`}
+                    label={`${trip.seatsTotal - (trip.tickets?.length ?? 0)}/${trip.seatsTotal} places`}
                   />
                 </View>
               </Card>
@@ -395,13 +395,13 @@ function SeatMap({
                   className={cn(
                     "h-14 w-14 items-center justify-center rounded-[4px] border active:opacity-80",
                     isTaken
-                      ? "border-ink/10 bg-ink/10"
+                      ? "border-danger bg-red-600"
                       : isSel
                         ? "border-laterite bg-laterite"
                         : "border-ink/15 bg-paper",
                   )}
                 >
-                  <Text
+                  {isTaken ? <User size={16} color="white" /> : <Text
                     className={cn(
                       "font-mono text-xs font-semibold",
                       isTaken
@@ -412,7 +412,7 @@ function SeatMap({
                     )}
                   >
                     {label}
-                  </Text>
+                  </Text>}
                 </Pressable>
               );
             })}

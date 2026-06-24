@@ -20,7 +20,7 @@ export default function Payments() {
     .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
 
   return (
-    <div className="space-y-3">
+    <div className="reveal space-y-3">
       <h1 className="font-display text-2xl font-bold">Historique des paiements</h1>
       {isLoading ? (
         <div className="h-32 animate-pulse rounded-2xl bg-ink/5" />

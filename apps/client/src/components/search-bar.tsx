@@ -2,16 +2,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRightLeft, MapPin, Search, Users } from "lucide-react";
-import { Button } from "@cp/ui";
+import { Button, db, notDeleted } from "@cp/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { DatePicker } from "./ui/date-picker";
-import { cities } from "@/lib/mock";
 
 export function SearchBar() {
   const router = useRouter();
+  // Real destinations from InstantDB (global, deduped, not deleted).
+  const { data } = db.useQuery({ destinations: { $: { where: { isGlobal: true }, order: { name: "asc" } } } });
+  const cities = [...new Set((data?.destinations ?? []).filter(notDeleted).map((d: any) => d.name))];
   const [from, setFrom] = useState("Antananarivo");
   const [to, setTo] = useState("Mahajanga");
-  const [date, setDate] = useState<Date | undefined>(new Date("2026-06-19"));
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [pax, setPax] = useState("2");
   const swap = () => { setFrom(to); setTo(from); };
 

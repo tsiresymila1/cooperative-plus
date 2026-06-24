@@ -18,6 +18,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { PortalHost } from "@rn-primitives/portal";
 import { AuthProvider } from "@/lib/auth";
 import { SelectionProvider } from "@/lib/selection";
+import { setupNotifications } from "@/lib/notifications";
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,8 @@ export default function RootLayout() {
     AsyncStorage.getItem("cp-theme").then((t) => {
       if (t === "dark" || t === "light") setColorScheme(t);
     });
+    // Notification channel + permission (local departure reminders).
+    setupNotifications().catch(() => {});
   }, []);
 
   // First-launch onboarding gate.

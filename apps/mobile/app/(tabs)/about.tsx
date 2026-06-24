@@ -1,10 +1,12 @@
+import { useState } from "react";
 import { Image, Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import Constants from "expo-constants";
-import { Armchair, CreditCard, Globe, Mail, MapPin, Phone, Search, ShieldCheck } from "lucide-react-native";
+import { Armchair, Bell, CreditCard, Globe, Mail, MapPin, Phone, Search, ShieldCheck } from "lucide-react-native";
 import { Card } from "@/components/ui";
 import { useColors } from "@/lib/colors";
+import { sendTestNotification } from "@/lib/notifications";
 
 const VERSION = Constants.expoConfig?.version ?? "1.0.0";
 
@@ -33,6 +35,13 @@ function ContactRow({ Icon, label, value, onPress }: { Icon: typeof Mail; label:
 export default function About() {
   const insets = useSafeAreaInsets();
   const c = useColors();
+  const [testMsg, setTestMsg] = useState<string | null>(null);
+
+  async function testNotif() {
+    const ok = await sendTestNotification();
+    setTestMsg(ok ? "Notification programmée — dans 5 secondes ✓" : "Indisponible (nécessite un build, pas Expo Go)");
+    setTimeout(() => setTestMsg(null), 4000);
+  }
 
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
@@ -82,6 +91,23 @@ export default function About() {
             <View className="h-px bg-ink/8" />
             <ContactRow Icon={MapPin} label="Adresse" value="Antananarivo, Madagascar" />
           </Card>
+        </Animated.View>
+
+        {/* Notification test */}
+        <Animated.View entering={FadeInDown.delay(200).duration(420)} className="mt-5">
+          <Pressable
+            onPress={testNotif}
+            className="flex-row items-center gap-3 rounded-[4px] border border-ink/10 bg-paper px-4 py-3 active:opacity-90"
+          >
+            <View className="h-9 w-9 items-center justify-center rounded-[4px] bg-laterite/12">
+              <Bell size={16} color={c.laterite} />
+            </View>
+            <View className="flex-1">
+              <Text className="font-sans text-sm font-semibold text-ink">Tester la notification</Text>
+              <Text className="font-sans text-xs text-ink-soft/60">Rappel de départ dans 5 secondes</Text>
+            </View>
+          </Pressable>
+          {testMsg ? <Text className="mt-2 px-1 font-sans text-xs text-ink-soft">{testMsg}</Text> : null}
         </Animated.View>
 
         <Text className="mt-6 text-center font-sans text-xs text-ink-soft/50">

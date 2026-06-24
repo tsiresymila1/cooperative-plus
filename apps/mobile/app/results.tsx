@@ -95,7 +95,7 @@ export default function Results() {
                           </View>
                           <Badge
                             tone={full ? "danger" : booked / t.seatsTotal >= 0.8 ? "warning" : "success"}
-                            label={full ? "Complet" : `${booked}/${t.seatsTotal} places`}
+                            label={full ? "Complet" : `${t.seatsTotal-booked}/${t.seatsTotal} places`}
                           />
                         </View>
 

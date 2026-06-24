@@ -345,6 +345,28 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
   const saving = createAccount.isPending;
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  // Attach an already-existing user (no new credentials) vs. create a fresh account.
+  const [mode, setMode] = useState<"existing" | "new">("existing");
+  const [pick, setPick] = useState({ userId: "", role: "assistant" });
+  const { data: usersData } = db.useQuery({ $users: {} });
+  const memberIds = new Set((members ?? []).map((m: any) => m.user?.id));
+  const candidates = (usersData?.$users ?? []).filter((u: any) => !memberIds.has(u.id));
+
+  const attachExisting = async () => {
+    if (!pick.userId) { toast.error("Sélectionnez un utilisateur."); return; }
+    try {
+      await db.transact(
+        tx.memberships[newId()]
+          .update({ role: pick.role, permissions: [], status: "active", createdAt: Date.now() })
+          .link({ cooperative: coopId, user: pick.userId }),
+      );
+      toast.success("Utilisateur rattaché.");
+      setPick({ userId: "", role: "assistant" });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec du rattachement.");
+    }
+  };
+
   const add = () => {
     if (!form.email.trim()) { toast.error("Email requis."); return; }
     if (form.password.length < 6) { toast.error("Le mot de passe doit faire au moins 6 caractères."); return; }
@@ -427,40 +449,88 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
       </div>
 
       <div className="rounded-[--radius] border border-ink/10 p-4">
-        <p className="mb-3 flex items-center gap-2 text-sm font-medium text-ink">
-          <UserPlus size={15} /> Ajouter un compte
-        </p>
-        <div className="grid gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Email">
-              <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="compte@exemple.mg" />
-            </Field>
-            <Field label="Nom">
-              <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Rakoto Jean" />
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Mot de passe" hint="Au moins 6 caractères.">
-              <Input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} autoComplete="new-password" placeholder="••••••••" />
-            </Field>
-            <Field label="Rôle">
-              <Select value={form.role} onValueChange={(v) => set("role", v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="owner">Propriétaire</SelectItem>
-                  <SelectItem value="assistant">Assistant</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-          </div>
-          <div className="flex justify-end">
-            <Button size="sm" onClick={add} disabled={saving}>
-              {saving ? "…" : "Ajouter le compte"}
-            </Button>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="flex items-center gap-2 text-sm font-medium text-ink">
+            <UserPlus size={15} /> Ajouter un compte
+          </p>
+          <div className="flex gap-0.5 rounded-lg bg-ink/5 p-0.5 text-xs font-medium">
+            <button type="button" onClick={() => setMode("existing")}
+              className={mode === "existing" ? "rounded-md bg-paper px-3 py-1.5 text-ink shadow-sm" : "px-3 py-1.5 text-ink-soft"}>
+              Utilisateur existant
+            </button>
+            <button type="button" onClick={() => setMode("new")}
+              className={mode === "new" ? "rounded-md bg-paper px-3 py-1.5 text-ink shadow-sm" : "px-3 py-1.5 text-ink-soft"}>
+              Nouveau compte
+            </button>
           </div>
         </div>
+
+        {mode === "existing" ? (
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Utilisateur">
+                <Select value={pick.userId || undefined} onValueChange={(v) => setPick((p) => ({ ...p, userId: v }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={candidates.length ? "Choisir un utilisateur…" : "Aucun utilisateur disponible"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {candidates.map((u: any) => (
+                      <SelectItem key={u.id} value={u.id}>
+                        {u.name ? `${u.name} · ${u.email}` : u.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field label="Rôle">
+                <Select value={pick.role} onValueChange={(v) => setPick((p) => ({ ...p, role: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="owner">Propriétaire</SelectItem>
+                    <SelectItem value="assistant">Assistant</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={attachExisting} disabled={!candidates.length}>Rattacher</Button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Email">
+                <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="compte@exemple.mg" />
+              </Field>
+              <Field label="Nom">
+                <Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Rakoto Jean" />
+              </Field>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Mot de passe" hint="Au moins 6 caractères.">
+                <Input type="password" value={form.password} onChange={(e) => set("password", e.target.value)} autoComplete="new-password" placeholder="••••••••" />
+              </Field>
+              <Field label="Rôle">
+                <Select value={form.role} onValueChange={(v) => set("role", v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="owner">Propriétaire</SelectItem>
+                    <SelectItem value="assistant">Assistant</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+            </div>
+            <div className="flex justify-end">
+              <Button size="sm" onClick={add} disabled={saving}>
+                {saving ? "…" : "Ajouter le compte"}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </FormSection>
   );

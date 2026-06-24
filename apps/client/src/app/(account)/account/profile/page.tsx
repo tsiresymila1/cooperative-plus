@@ -28,7 +28,7 @@ export default function Profile() {
   const initials = (name || user?.email || "?").slice(0, 2).toUpperCase();
 
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="reveal max-w-xl space-y-6">
       <h1 className="font-display text-2xl font-bold">Profil</h1>
       <Card className="p-6">
         <div className="mb-6 flex items-center gap-4">

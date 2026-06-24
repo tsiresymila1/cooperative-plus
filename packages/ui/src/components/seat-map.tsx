@@ -48,7 +48,7 @@ export function SeatSelector({ layout, taken, held = [], selected, onToggle, max
                   <motion.button key={c} whileTap={disabled ? undefined : { scale: 0.88 }} disabled={disabled}
                     onClick={() => onToggle(label)} title={`Siège ${label}`}
                     className={cn(SEAT,
-                      isTaken ? "cursor-not-allowed border-ink bg-strong text-white"
+                      isTaken ? "cursor-not-allowed border-red-600 bg-red-600 text-white"
                         : isHeld ? "cursor-not-allowed border-laterite bg-laterite text-white"
                           : isSel ? "border-laterite bg-laterite text-white"
                             : "border-ink/12 bg-paper text-ink-soft hover:border-laterite/60 hover:bg-laterite/[.06] hover:text-ink")}>
@@ -75,7 +75,7 @@ function Legend() {
   const items = [
     ["border-ink/12 bg-paper", "Libre"],
     ["border-laterite bg-laterite", "Choisi / réservé"],
-    ["border-ink bg-strong", "Occupé"],
+    ["border-red-600 bg-red-600", "Occupé"],
   ] as const;
   return (
     <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs font-medium text-ink-soft">

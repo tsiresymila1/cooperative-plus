@@ -3,6 +3,7 @@ import { Montserrat, Bricolage_Grotesque, Spline_Sans_Mono } from "next/font/goo
 import "./globals.css";
 import { Providers } from "@cp/ui";
 import { Toaster } from "@cp/ui";
+import { ScrollReveal } from "@/components/scroll-reveal";
 
 const sans = Montserrat({ subsets: ["latin"], variable: "--font-sans-next", display: "swap" });
 const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display-next", display: "swap" });
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" suppressHydrationWarning className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="min-h-dvh antialiased">
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('cp-theme')!=='light')document.documentElement.classList.add('dark')}catch(e){}})();" }} />
+        <ScrollReveal />
         <Providers>{children}</Providers>
         <Toaster />
       </body>

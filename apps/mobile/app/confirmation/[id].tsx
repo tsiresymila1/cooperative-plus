@@ -8,16 +8,15 @@ import {
   CheckCircle2,
   Download,
   Printer,
-  Ticket as TicketIcon,
 } from "lucide-react-native";
 import QRCode from "react-native-qrcode-svg";
-import { Badge, Button, Card, Spinner } from "@/components/ui";
+import { Button, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SeatMapView } from "@/components/seat-map";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
-import { bookingStatusFr, fmtDateKey, fmtTime, parseSeatLayout } from "@/lib/domain";
+import { bookingStatusFr, fmtTime, parseSeatLayout } from "@/lib/domain";
 import { printTicket, shareTicketPdf } from "@/lib/ticket-pdf";
 
 export default function Confirmation() {
@@ -119,102 +118,79 @@ export default function Confirmation() {
             </Text>
           </Animated.View>
 
-          {/* Trip summary */}
+          {/* Ticket — single card for the whole booking (image layout) */}
           <Animated.View
             entering={FadeInDown.delay(100).duration(420)}
             className="mt-6"
           >
-            <Card>
-              <View className="flex-row items-center gap-2.5">
-                <CoopLogo
-                  url={trip?.cooperative?.logoUrl}
-                  brandColor={trip?.cooperative?.brandColor}
-                  name={trip?.coopName ?? ""}
-                  size={36}
-                />
-                <View className="flex-1">
-                  <Text
-                    className="flex-1 font-sans text-sm font-bold text-laterite"
-                    numberOfLines={1}
-                  >
-                    {trip?.coopName}
-                  </Text>
-                      <Text className="mt-1 font-mono text-sm text-ink-soft/90 font-bold">
-                    {booking.reference}
-                  </Text>
+            <View className="overflow-hidden rounded-[16px] border-0 border-ink/8 bg-paper">
+              {/* Navy header: coop + reference, then route + date */}
+              <View className="bg-navy-deep px-5 pb-6 pt-5">
+                <View className="flex-row items-start justify-between">
+                  <View className="flex-1 flex-row items-center gap-2.5">
+                    <CoopLogo
+                      url={trip?.cooperative?.logoUrl}
+                      brandColor={trip?.cooperative?.brandColor}
+                      name={trip?.coopName ?? ""}
+                      size={32}
+                    />
+                    <Text className="flex-1 font-sans text-sm font-bold text-white" numberOfLines={1}>
+                      {trip?.coopName}
+                    </Text>
+                  </View>
+                  <View className="items-end">
+                    <Text className="font-mono text-[10px] uppercase tracking-widest text-white/45">
+                      Référence
+                    </Text>
+                    <Text className="mt-0.5 font-mono text-sm font-bold text-orange">
+                      {booking.reference}
+                    </Text>
+                  </View>
                 </View>
-                <Badge {...bookingStatusFr(booking.status)} />
-              </View>
-              <View className="mt-3 flex-row items-center gap-2">
-                <Text className="font-display text-xl text-ink">
-                  {trip?.originName}
+                <Text className="mt-4 font-display text-2xl text-white">
+                  {trip?.originName} → {trip?.destName}
                 </Text>
-                <Text className="text-laterite">→</Text>
-                <Text className="font-display text-xl text-laterite">
-                  {trip?.destName}
+                <Text className="mt-1.5 font-mono text-sm text-white/70">
+                  {longDepart(trip?.departDate, trip?.departureAt)}
                 </Text>
               </View>
-              <View className="mt-3 flex-row items-center justify-between">
-                <Text className="font-mono text-sm text-ink-soft">
-                  {trip
-                    ? `${fmtDateKey(trip.departDate)} · ${fmtTime(trip.departureAt)}`
-                    : ""}
-                </Text>
-                <Text className="font-mono text-base text-ink">
-                  {fmtMoney(booking.totalAmount, booking.currency)}
-                </Text>
-              </View>
-            </Card>
-          </Animated.View>
 
-          {/* Tickets with QR */}
-          <Animated.View entering={FadeInDown.delay(180).duration(420)}>
-            <Text className="mb-2 mt-6 font-display text-lg text-ink">
-              {tickets.length > 1 ? "Vos billets" : "Votre billet"}
-            </Text>
-          </Animated.View>
-          {tickets.map((tk, i) => (
-            <Animated.View
-              key={tk.id}
-              entering={FadeInDown.delay(180 + i * 90).duration(420)}
-            >
-              <Card className="mb-3 flex-row items-center gap-4">
-                <View className="rounded-[4px] bg-paper p-2">
+              {/* Notch seam */}
+              <View className="relative h-0">
+                <View className="absolute -left-2.5 -top-2.5 h-5 w-5 rounded-full bg-sand" />
+                <View className="absolute -right-2.5 -top-2.5 h-5 w-5 rounded-full bg-sand" />
+              </View>
+
+              {/* White body: single QR + summary rows */}
+              <View className="flex-row items-center gap-5 px-5 py-6">
+                <View className="rounded-[4px] bg-paper">
                   <QRCode
-                    value={tk.qrToken}
-                    size={84}
+                    value={tickets[0]?.qrToken ?? booking.reference}
+                    size={100}
                     color="#16266b"
                     backgroundColor="#ffffff"
                   />
                 </View>
-                <View className="flex-1">
-                  <View className="flex-row items-center gap-1.5">
-                    <TicketIcon size={14} color="#f5821f" />
-                    <Text className="font-display text-base text-ink">
-                      Siège {tk.seatLabel}
-                    </Text>
-                  </View>
-                  <Text className="mt-1 font-sans text-sm text-ink-soft">
-                    {tk.passengerName}
-                  </Text>
-                  <Text className="mt-1 font-mono text-xs text-ink-soft/60">
-                    {tk.qrToken.slice(0, 12)}…
-                  </Text>
+                <View className="flex-1 gap-2">
+                  <TicketRow label="Sièges" value={tickets.map((t) => t.seatLabel).join(", ") || "—"} />
+                  <TicketRow label="Passagers" value={String(tickets.length)} />
+                  <TicketRow label="Total" value={fmtMoney(booking.totalAmount, booking.currency)} />
+                  <TicketRow label="Statut" value={bookingStatusFr(booking.status).label} />
                 </View>
-              </Card>
-            </Animated.View>
-          ))}
+              </View>
+            </View>
+          </Animated.View>
 
           {/* See seats in the vehicle */}
           {cells.length > 0 && (
-            <Button variant="outline" className="mt-5" onPress={() => setSeatsOpen(true)}>
+            <Button variant="outline" className="mt-6" onPress={() => setSeatsOpen(true)}>
               <Armchair size={18} color="#ff7a00" />
               <Text className="font-sans font-medium text-ink">Voir mes sièges dans le véhicule</Text>
             </Button>
           )}
 
           {/* Print / save */}
-          <View className="mt-2 flex-row gap-2">
+          <View className="mt-5 flex-row gap-2">
             <Button
               variant="outline"
               className="flex-1"
@@ -237,7 +213,7 @@ export default function Confirmation() {
             </Button>
           </View>
 
-          <View className="mt-2 gap-2">
+          <View className="mt-5 gap-5">
             <Button onPress={() => router.replace("/bookings")}>
               <Text className="font-sans font-medium text-white">
                 Mes réservations
@@ -260,4 +236,24 @@ export default function Confirmation() {
       </Dialog>
     </View>
   );
+}
+
+function TicketRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View className="flex-row items-center justify-between">
+      <Text className="font-sans text-sm text-ink-soft">{label}</Text>
+      <Text className="font-sans text-sm font-bold text-ink">{value}</Text>
+    </View>
+  );
+}
+
+const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+const MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+
+/** "jeudi 25 juin à 06:00" from a date-key + departure timestamp. */
+function longDepart(departDate?: string, departureAt?: number | string | null): string {
+  if (!departDate) return "";
+  const d = new Date(`${departDate}T00:00:00`);
+  const head = `${JOURS[d.getDay()]} ${d.getDate()} ${MOIS[d.getMonth()]}`;
+  return departureAt ? `${head} à ${fmtTime(departureAt)}` : head;
 }

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
-import { db, Button, Card, Logo, SignInScreen, FullSpinner, notDeleted } from "@cp/ui";
+import { db, Button, Card, Logo, SignInScreen, FullSpinner, notDeleted, UserMenu, ThemeToggle } from "@cp/ui";
 
 export default function HomePage() {
   const { isLoading: authLoading, user } = db.useAuth();
@@ -43,8 +43,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-dvh bg-sand">
-      <header className="border-b border-ink/10 bg-paper px-6 py-4">
+      <header className="flex items-center justify-between border-b border-ink/10 bg-paper px-6 py-4">
         <Logo />
+        <div className="flex items-center gap-1.5">
+          <ThemeToggle />
+          <UserMenu />
+        </div>
       </header>
       <main className="mx-auto max-w-3xl px-6 py-12">
         <h1 className="font-display text-2xl font-bold text-ink">Mes coopératives</h1>
