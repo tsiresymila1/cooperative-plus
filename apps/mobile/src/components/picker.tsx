@@ -15,6 +15,7 @@ import {
   Search,
 } from "lucide-react-native";
 import { cn } from "@/lib/cn";
+import { useColors } from "@/lib/colors";
 import { fmtDateKey, toDateKey } from "@/lib/domain";
 import { Calendar } from "@/components/calendar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -41,6 +42,7 @@ export function DestinationField({
 }) {
   const ref = useRef<BottomSheetModal>(null);
   const [term, setTerm] = useState("");
+  const c = useColors();
 
   const filtered = useMemo(() => {
     const t = term.trim().toLowerCase();
@@ -85,7 +87,7 @@ export function DestinationField({
           >
             {value || placeholder}
           </Text>
-          <ChevronDown size={18} color="#4a5680" />
+          <ChevronDown size={18} color={c.inkSoft} />
         </View>
         {error ? <Text className="mt-1 font-sans text-xs text-laterite-deep">{error}</Text> : null}
       </Pressable>
@@ -95,40 +97,32 @@ export function DestinationField({
         snapPoints={["50%"]}
         enablePanDownToClose
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: "#ffffff", borderRadius: 4 }}
-        handleIndicatorStyle={{ backgroundColor: "rgba(22,38,107,0.18)" }}
+        backgroundStyle={{ backgroundColor: c.paper, borderRadius: 4 }}
+        handleIndicatorStyle={{ backgroundColor: c.inkSoft }}
         enableDynamicSizing={false}
       >
-        <BottomSheetView style={{ paddingHorizontal: 20, paddingBottom: 8, backgroundColor: "white", position: "relative", zIndex: 1000 }}>
+        <BottomSheetView style={{ backgroundColor: c.paper, paddingHorizontal: 20, paddingTop: 4, paddingBottom: 10, zIndex: 1000 }}>
           <Text className="font-display text-xl text-ink">{label}</Text>
           <View className="mt-3 flex-row items-center gap-2 rounded-[4px] border border-ink/10 bg-sand px-3">
-            <Search size={16} color="#4a5680" />
+            <Search size={16} color={c.inkSoft} />
             <BottomSheetTextInput
               value={term}
               onChangeText={setTerm}
               placeholder="Rechercher une ville"
-              placeholderTextColor="#4a568066"
-              style={{
-                flex: 1,
-                paddingVertical: 12,
-                fontSize: 16,
-                color: "#16266b",
-                fontFamily: "Manrope_500Medium",
-              }}
+              placeholderTextColor={c.inkSoft}
+              style={{ flex: 1, paddingVertical: 12, fontSize: 16, color: c.ink, fontFamily: "Montserrat_500Medium" }}
             />
           </View>
-
         </BottomSheetView>
 
         <BottomSheetScrollView
-          contentContainerStyle={{
+          contentContainerStyle={{ 
             paddingTop: 100,
             paddingBottom: 32,
             paddingHorizontal: 16
-          }}
+           }}
           keyboardShouldPersistTaps="handled"
         >
-
           {filtered.length === 0 ? (
             <Text className="px-3 py-6 text-center font-sans text-sm text-ink-soft/60">
               Aucune ville trouvée.
@@ -146,15 +140,11 @@ export function DestinationField({
                   )}
                 >
                   <View className="h-9 w-9 items-center justify-center rounded-[4px] bg-sand">
-                    <MapPin size={16} color={active ? "#f5821f" : "#16266b"} />
+                    <MapPin size={16} color={active ? c.laterite : c.ink} />
                   </View>
-                  <Text className="flex-1 font-sans text-base text-ink">
-                    {d.name}
-                  </Text>
+                  <Text className="flex-1 font-sans text-base text-ink">{d.name}</Text>
                   {d.region ? (
-                    <Text className="font-mono text-xs text-ink-soft/50">
-                      {d.region}
-                    </Text>
+                    <Text className="font-mono text-xs text-ink-soft/50">{d.region}</Text>
                   ) : null}
                 </Pressable>
               );
@@ -177,6 +167,7 @@ export function DateField({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const c = useColors();
 
   return (
     <View className={className}>
@@ -187,7 +178,7 @@ export function DateField({
         onPress={() => setOpen(true)}
         className="mt-1 flex-row items-center gap-2"
       >
-        <CalendarIcon size={16} color="#16266b" />
+        <CalendarIcon size={16} color={c.ink} />
         <Text className="font-sans text-base text-ink">
           {fmtDateKey(toDateKey(value))}
         </Text>

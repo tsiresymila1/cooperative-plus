@@ -3,10 +3,13 @@ import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
-import { ArrowRight, Clock, Search, User as UserIcon } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ArrowRight, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
 import { Badge, Button, Card } from "@/components/ui";
 import { DateField, DestinationField, type Dest } from "@/components/picker";
 import { CoopLogo } from "@/components/coop-logo";
+import { useColors } from "@/lib/colors";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -15,6 +18,14 @@ import { fmtDateKey, fmtTime, toDateKey, toMs } from "@/lib/domain";
 export default function Home() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const c = useColors();
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const dark = colorScheme === "dark";
+  function toggleTheme() {
+    const next = dark ? "light" : "dark";
+    setColorScheme(next);
+    AsyncStorage.setItem("cp-theme", next).catch(() => {});
+  }
 
   const [origin, setOrigin] = useState("");
   const [dest, setDest] = useState("");
@@ -79,12 +90,20 @@ export default function Home() {
           <View className="flex-row items-center gap-2">
             <Image source={require("../../assets/logo-long.png")} style={{ width: 170, height: 40, borderRadius: 8 }} resizeMode="contain" />
           </View>
-          <Pressable
-            onPress={() => router.push(user ? "/profile" : "/sign-in")}
-            className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
-          >
-            <UserIcon size={18} color="#16266b" />
-          </Pressable>
+          <View className="flex-row items-center gap-2">
+            <Pressable
+              onPress={toggleTheme}
+              className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
+            >
+              {dark ? <Sun size={18} color={c.laterite} /> : <Moon size={18} color={c.ink} />}
+            </Pressable>
+            <Pressable
+              onPress={() => router.push(user ? "/profile" : "/sign-in")}
+              className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
+            >
+              <UserIcon size={18} color={c.ink} />
+            </Pressable>
+          </View>
         </Animated.View>
         <ScrollView
           className="flex-1 bg-sand"
@@ -115,7 +134,7 @@ export default function Home() {
                 placeholder="Ville de départ"
                 options={allDests}
                 onSelect={(v) => { setOrigin(v); setTried(false); }}
-                tint="#16266b"
+                tint={c.ink}
                 error={originErr}
               />
               <View className="h-px bg-ink/8" />
@@ -125,7 +144,7 @@ export default function Home() {
                 placeholder="Ville d'arrivée"
                 options={allDests}
                 onSelect={(v) => { setDest(v); setTried(false); }}
-                tint="#f5821f"
+                tint={c.laterite}
                 error={destErr}
               />
 
@@ -135,7 +154,7 @@ export default function Home() {
 
               <Button size="md" className="mt-1" onPress={goSearch} loading={searching}>
                 {!searching && <Search size={18} color="#ffffff" />}
-                <Text className="font-sans font-medium text-paper">Rechercher</Text>
+                <Text className="font-sans font-medium text-white">Rechercher</Text>
               </Button>
             </Card>
           </Animated.View>
@@ -192,7 +211,7 @@ export default function Home() {
                           })
                         }
                       >
-                        <Text className="font-sans font-medium text-paper">Réserver</Text>
+                        <Text className="font-sans font-medium text-white">Réserver</Text>
                       </Button>
                     </Card>
                   </Animated.View>

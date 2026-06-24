@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
-import { LogOut, Ticket as TicketIcon } from "lucide-react-native";
+import { LogOut, Moon, Ticket as TicketIcon } from "lucide-react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useColorScheme } from "nativewind";
 import { Button, Card, Field, Input, Spinner } from "@/components/ui";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { db } from "@/lib/db";
@@ -21,6 +23,13 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
+  const { colorScheme, setColorScheme } = useColorScheme();
+  const dark = colorScheme === "dark";
+  const toggleTheme = (v: boolean) => {
+    const next = v ? "dark" : "light";
+    setColorScheme(next);
+    AsyncStorage.setItem("cp-theme", next);
+  };
 
   useEffect(() => {
     if (profile) {
@@ -54,7 +63,7 @@ export default function Profile() {
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
       <View className="px-5 py-3">
-        <Text className="font-display text-2xl text-ink">Profil</Text>
+        <Text className="font-display text-3xl text-ink">Profil</Text>
       </View>
 
       {authLoading ? (
@@ -87,9 +96,22 @@ export default function Profile() {
               </Field>
             </Card>
             <Button className="mt-3" onPress={save} loading={saving}>
-              <Text className="font-sans font-medium text-paper">Enregistrer</Text>
+              <Text className="font-sans font-medium text-white">Enregistrer</Text>
             </Button>
             {saved && <Text className="mt-2 text-center font-sans text-sm text-baobab">Enregistré ✓</Text>}
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(120).duration(420)} className="mt-5">
+            <Text className="mb-2 font-display text-lg text-ink">Apparence</Text>
+            <Card>
+              <View className="flex-row items-center justify-between">
+                <View className="flex-row items-center gap-2.5">
+                  <Moon size={18} color={dark ? "#ff8a33" : "#475569"} />
+                  <Text className="font-sans text-base text-ink">Thème sombre</Text>
+                </View>
+                <Switch value={dark} onValueChange={toggleTheme} trackColor={{ true: "#ff8a33" }} />
+              </View>
+            </Card>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(160).duration(420)} className="mt-5">

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ChevronRight, Ticket } from "lucide-react";
-import { Badge, Button, Card } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
 
@@ -33,7 +33,7 @@ export default function Bookings() {
               order: { createdAt: "desc" },
             },
             tickets: {},
-            tripInstance: {},
+            tripInstance: { cooperative: {} },
           },
         }
       : null,
@@ -60,10 +60,11 @@ export default function Bookings() {
           {bookings.map((b) => (
             <Link key={b.id} href={`/bookings/${b.reference}`}>
               <Card className="flex items-center gap-4 p-5 transition-colors hover:bg-ink/[.02]">
+                <CoopLogo url={b.tripInstance?.cooperative?.logoUrl} name={b.tripInstance?.coopName} size={44} className="border border-ink/10" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-orange-deep">
-                      {b.reference}
+                    <span className="truncate text-sm font-semibold text-ink">
+                      {b.tripInstance?.coopName ?? "Cooperative Plus"}
                     </span>
                     <Badge tone={tone[b.status] ?? "neutral"}>
                       {label[b.status] ?? b.status}
@@ -89,6 +90,8 @@ export default function Bookings() {
                       .map((t) => t.seatLabel)
                       .sort()
                       .join(", ")}
+                    {" · "}
+                    <span className="font-mono text-orange-deep">{b.reference}</span>
                   </p>
                 </div>
                 <p className="font-mono text-lg font-bold">

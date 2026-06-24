@@ -7,6 +7,7 @@ import { Check, ChevronLeft, CreditCard, Smartphone, Wallet } from "lucide-react
 import { Button, Card, Field, Input } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
+import { useColors } from "@/lib/colors";
 import { cn, fmtMoney } from "@/lib/cn";
 import { db, id, type Chunk } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -37,6 +38,7 @@ export default function Checkout() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { selection, setSelection } = useSelection();
+  const c = useColors();
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -235,7 +237,7 @@ export default function Checkout() {
       <View className="flex-row items-center justify-between px-5 py-3">
         <View className="flex-row items-center gap-3">
           <Pressable onPress={leave} className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper">
-            <ChevronLeft size={20} color="#16266b" />
+            <ChevronLeft size={20} color={c.ink} />
           </Pressable>
           <Text className="font-display text-lg text-ink">Paiement</Text>
         </View>
@@ -343,7 +345,7 @@ export default function Checkout() {
           <Text className="font-mono  font-bold text-xl text-ink">{fmtMoney(total, selection.currency)}</Text>
         </View>
         <Button onPress={confirm} loading={submitting} disabled={!canSubmit}>
-          <Text className="font-sans font-medium text-paper">
+          <Text className="font-sans font-medium text-white">
             {method === "cash" ? "Réserver (payer à bord)" : "Payer maintenant"}
           </Text>
         </Button>

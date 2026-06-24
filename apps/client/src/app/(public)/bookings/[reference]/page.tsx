@@ -5,17 +5,25 @@ import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { CheckCircle2, Download } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Button, Card } from "@cp/ui";
+import { Button, Card, CoopLogo, SeatSelector, type Cell } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
 
 export default function Confirmation({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = use(params);
   const { data, isLoading } = db.useQuery({
-    bookings: { $: { where: { reference } }, tickets: {}, tripInstance: {} },
+    bookings: { $: { where: { reference } }, tickets: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} } } },
   });
   const bk = data?.bookings?.[0];
   const trip = bk?.tripInstance;
+
+  // Seat-map preview for the ticket: layout from the vehicle (or snapshot),
+  // with the passenger's own seats highlighted.
+  const ownSeats = (bk?.tickets ?? []).map((t) => t.seatLabel as string);
+  const activeMap = (trip?.vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ?? (trip?.vehicle?.seatMaps ?? [])[0];
+  const layout: Cell[] = Array.isArray(activeMap?.layout)
+    ? (activeMap.layout as Cell[])
+    : Array.isArray((trip as any)?.seatMapSnapshot) ? ((trip as any).seatMapSnapshot as Cell[]) : [];
 
   return (
     <>
@@ -31,16 +39,22 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
         <p className="mt-2 text-center text-ink-soft">{bk?.status === "pending" ? "Payez à la gare avant le départ." : "Présentez le QR code à l'embarquement."}</p>
 
         <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }} className="mt-8">
-          <Card className="overflow-hidden p-0">
+          <Card className="overflow-hidden p-0 border-0">
             <div className="bg-strong p-5 text-white">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-widest text-white/60">Référence</span>
-                <span className="font-mono text-lg font-bold tracking-wider text-clay">{reference}</span>
+              <div className="flex items-center justify-between gap-3">
+                <span className="flex items-center gap-2.5">
+                  <CoopLogo url={trip?.cooperative?.logoUrl} name={trip?.coopName} size={34} className="rounded-lg border border-white/20" />
+                  <span className="font-display text-base font-bold leading-tight">{trip?.coopName ?? "Cooperative Plus"}</span>
+                </span>
+                <span className="text-right">
+                  <span className="block text-[10px] uppercase tracking-widest text-white/55">Référence</span>
+                  <span className="font-mono text-base font-bold tracking-wider text-clay">{reference}</span>
+                </span>
               </div>
-              <div className="mt-3 font-display text-2xl font-bold">
+              <div className="mt-4 font-display text-2xl font-bold">
                 {trip ? `${trip.originName} → ${trip.destName}` : (isLoading ? "Chargement…" : "—")}
               </div>
-              {trip && <p className="mt-1 font-mono text-sm text-white/70">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })} · {trip.coopName}</p>}
+              {trip && <p className="mt-1 font-mono text-sm text-white/70">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>}
             </div>
             <div className="relative border-y border-dashed border-ink/15">
               <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-sand" />
@@ -60,7 +74,19 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
           </Card>
         </motion.div>
 
-        <div className="mt-6 flex gap-3">
+        {/* Seat preview — screen only (excluded from print) */}
+        {layout.length > 0 && (
+          <Card className="mt-6 p-5 print:hidden">
+            <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-ink-soft/60">Vos places</p>
+            <div className="flex justify-center overflow-x-auto">
+              <div className="pointer-events-none origin-top scale-90">
+                <SeatSelector layout={layout} taken={[]} selected={ownSeats} onToggle={() => {}} />
+              </div>
+            </div>
+          </Card>
+        )}
+
+        <div className="mt-6 flex gap-3 print:hidden">
           <Button variant="outline" className="flex-1" onClick={() => window.print()}><Download size={16} /> Télécharger</Button>
           <Link href="/account/bookings" className="flex-1"><Button className="w-full">Mes réservations</Button></Link>
         </div>

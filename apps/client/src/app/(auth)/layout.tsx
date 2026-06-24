@@ -6,10 +6,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       {/* Brand panel */}
-      <div className="relative hidden flex-col justify-between overflow-hidden bg-strong p-12 text-white lg:flex">
-        <Link href="/"><Logo dark /></Link>
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-[linear-gradient(150deg,#17286fcc_0%,#0f2d5ccc_55%,#0b1d44cc_100%)] dark:[background:transparent] p-12 text-white lg:flex">
+        <Link href="/" className="relative z-10 inline-flex w-fit rounded-xl px-3.5 py-2 shadow-sm"><Logo height={50} width={200}/></Link>
         <div className="relative z-10">
-          <h2 className="font-display text-4xl font-bold leading-tight">Tout le réseau taxi-brousse, dans une seule appli.</h2>
+          <h2 className="font-display text-4xl font-bold leading-tight">Tout le réseau <br/>taxi-brousse,<br/> dans une seule appli.</h2>
           <ul className="mt-8 space-y-4 text-white/80">
             <li className="flex items-center gap-3"><ShieldCheck size={20} className="text-green" /> Sièges garantis, zéro double-réservation</li>
             <li className="flex items-center gap-3"><Wallet size={20} className="text-green" /> Mobile Money · Carte · Espèces</li>

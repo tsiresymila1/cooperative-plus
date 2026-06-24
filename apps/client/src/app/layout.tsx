@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" suppressHydrationWarning className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="min-h-dvh antialiased">
-        <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('cp-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})();" }} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('cp-theme')!=='light')document.documentElement.classList.add('dark')}catch(e){}})();" }} />
         <Providers>{children}</Providers>
         <Toaster />
       </body>

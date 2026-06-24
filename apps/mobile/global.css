@@ -25,29 +25,45 @@
   --input: #e2e8f0;
   --ring: #ff7a00;
   --radius: 0.25rem;
+  /* brand tokens (light) */
+  --ink: #0f2d5c; --ink-soft: #475569;
+  --sand: #f8fafc; --sand-deep: #eaedff; --paper: #ffffff; --strong: #0f2d5c;
+  --orange: #ff7a00; --orange-deep: #e06d00;
+  --laterite: #ff7a00; --laterite-deep: #e06d00;
+  --green: #34c759; --baobab: #34c759; --clay: #f59e0b; --sky: #0f2d5c; --navy: #0f2d5c;
 }
 
-/* ── Dark — brand navy surfaces ── */
-.dark:root {
-  --background: #0f1c52;
-  --foreground: #eef1f7;
-  --card: #16266b;
-  --card-foreground: #eef1f7;
-  --popover: #16266b;
-  --popover-foreground: #eef1f7;
-  --primary: #f5821f;
-  --primary-foreground: #0f1c52;
-  --secondary: #16266b;
-  --secondary-foreground: #eef1f7;
-  --muted: #16266b;
-  --muted-foreground: #aeb6d4;
-  --accent: #1d2f7a;
-  --accent-foreground: #eef1f7;
-  --destructive: #ff6166;
-  --destructive-foreground: #0f1c52;
-  --border: #1d2f7a;
-  --input: #1d2f7a;
-  --ring: #f5821f;
+/* ── Dark — NativeWind v5 drives the dark scheme via the media query (the
+   colorScheme toggle controls its result), so the overrides must live here,
+   NOT under a `.dark` class selector. ── */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0b;
+    --foreground: #ededf0;
+    --card: #161719;
+    --card-foreground: #ededf0;
+    --popover: #161719;
+    --popover-foreground: #ededf0;
+    --primary: #ff8a33;
+    --primary-foreground: #0a0a0b;
+    --secondary: #1b1c1f;
+    --secondary-foreground: #ededf0;
+    --muted: #161719;
+    --muted-foreground: #9a9aa3;
+    --accent: #232327;
+    --accent-foreground: #ededf0;
+    --destructive: #ff6363;
+    --destructive-foreground: #0a0a0b;
+    --border: #2a2a2f;
+    --input: #2a2a2f;
+    --ring: #ff8a33;
+    /* brand tokens (dark) */
+    --ink: #ededf0; --ink-soft: #9a9aa3;
+    --sand: #0a0a0b; --sand-deep: #121214; --paper: #161719; --strong: #232327;
+    --orange: #ff8a33; --orange-deep: #ff7a1a;
+    --laterite: #ff8a33; --laterite-deep: #ff7a1a;
+    --green: #3ddc84; --baobab: #3ddc84; --clay: #ffb066; --sky: #57aacb; --navy: #ededf0;
+  }
 }
 
 @theme inline {
@@ -75,29 +91,32 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  /* ── Brand tokens — resolve to runtime vars so they flip in dark mode ── */
+  --color-navy: var(--navy);
+  --color-orange: var(--orange);
+  --color-orange-deep: var(--orange-deep);
+  --color-green: var(--green);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-sand: var(--sand);
+  --color-sand-deep: var(--sand-deep);
+  --color-paper: var(--paper);
+  --color-strong: var(--strong);
+  --color-laterite: var(--laterite);
+  --color-laterite-deep: var(--laterite-deep);
+  --color-clay: var(--clay);
+  --color-baobab: var(--baobab);
+  --color-sky: var(--sky);
 }
 
 @theme {
-  /* ── Cooperative Plus — Premium Transit palette (Stitch) ── */
-  --color-navy: #0f2d5c;
+  /* Static (non-reactive) tokens */
   --color-navy-deep: #00183d;
-  --color-orange: #ff7a00;
-  --color-orange-deep: #e06d00;
-  --color-green: #34c759;
-  --color-ink: #0f2d5c;        /* primary navy text */
-  --color-ink-soft: #475569;   /* slate */
-  --color-sand: #f8fafc;       /* page background */
-  --color-sand-deep: #eaedff;  /* tinted surface */
-  --color-paper: #ffffff;
-  --color-laterite: #ff7a00;   /* CTA orange */
-  --color-laterite-deep: #e06d00;
-  --color-clay: #f59e0b;       /* warning */
-  --color-baobab: #34c759;     /* success / available */
-  --color-sky: #0f2d5c;
 
-  --font-display: "Inter_700Bold";
-  --font-sans: "Montserrat_500Medium";
-  --font-mono: "JetBrainsMono_400Regular";
+  --font-display: Inter_700Bold;
+  --font-sans: Montserrat_500Medium;
+  --font-mono: JetBrainsMono_400Regular;
 
   --radius-xl: 16px;
   --radius-2xl: 20px;

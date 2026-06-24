@@ -6,10 +6,12 @@ import { router } from "expo-router";
 import { ArrowRight, ChevronLeft, Mail, ShieldCheck } from "lucide-react-native";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { useColors } from "@/lib/colors";
 import { db } from "@/lib/db";
 
 export default function SignIn() {
   const insets = useSafeAreaInsets();
+  const c = useColors();
   const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -63,7 +65,7 @@ export default function SignIn() {
     >
       <View className="flex-row items-center gap-3 px-5 py-3">
         <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper">
-          <ChevronLeft size={20} color="#16266b" />
+          <ChevronLeft size={20} color={c.ink} />
         </Pressable>
         <Text className="font-display text-lg text-ink">Connexion</Text>
       </View>

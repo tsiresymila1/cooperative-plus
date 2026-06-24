@@ -52,7 +52,7 @@ export default function SignUp() {
           <Field label="Nom complet"><Input placeholder="Rakoto Hery" value={name} onChange={(e) => setName(e.target.value)} required /></Field>
           <Field label="Téléphone"><Input inputMode="tel" placeholder="034 00 000 00" value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
           <Field label="Email"><Input type="email" placeholder="vous@exemple.mg" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-          <Button className="w-full" disabled={loading}>{loading ? "Envoi…" : "Continuer"}</Button>
+          <Button className="w-full text-white" disabled={loading}>{loading ? "Envoi…" : "Continuer"}</Button>
         </form>
       ) : (
         <form onSubmit={verify} className="mt-8 space-y-4">

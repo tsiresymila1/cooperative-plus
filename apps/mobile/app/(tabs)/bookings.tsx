@@ -152,10 +152,10 @@ function TicketCard({ booking: b, expired }: { booking: any; expired: boolean })
         </View>
         <Pressable
           onPress={() => router.push({ pathname: "/confirmation/[id]", params: { id: b.id } })}
-          className="flex-row items-center gap-2 rounded-[4px] bg-navy px-4 py-2.5 active:opacity-90"
+          className="flex-row items-center gap-2 rounded-[4px] bg-navy dark:bg-[#003366] px-4 py-2.5 active:opacity-90"
         >
           <QrCode size={16} color="#ffffff" />
-          <Text className="font-sans text-sm font-medium text-paper">Voir le billet</Text>
+          <Text className="font-sans text-sm font-medium text-white">Voir le billet</Text>
           <ArrowRight size={15} color="#f5821f" />
         </Pressable>
       </View>

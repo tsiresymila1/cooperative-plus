@@ -1,6 +1,7 @@
 "use client";
 import { PageSkeleton } from "@cp/ui";
 import { AdminShell } from "@/components/admin-shell";
+import { useCreateCoopAccount } from "@/lib/queries/cooperatives";
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight, Power, Trash2, UserPlus } from "lucide-react";
@@ -251,34 +252,20 @@ function InfoSections({ coop, plans, sub }: { coop: any; plans: any[]; sub: any 
 function AccountsSection({ coopId, members }: { coopId: string; members: any[] }) {
   const confirm = useConfirm();
   const [form, setForm] = useState({ email: "", name: "", password: "", role: "owner" });
-  const [saving, setSaving] = useState(false);
+  const createAccount = useCreateCoopAccount();
+  const saving = createAccount.isPending;
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const add = async () => {
-    if (!form.email.trim()) {
-      toast.error("Email requis.");
-      return;
-    }
-    if (form.password.length < 6) {
-      toast.error("Le mot de passe doit faire au moins 6 caractères.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const res = await fetch(`/api/cooperatives/${coopId}/accounts`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Échec.");
-      toast.success("Compte attaché.");
-      setForm({ email: "", name: "", password: "", role: "owner" });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Échec.");
-    } finally {
-      setSaving(false);
-    }
+  const add = () => {
+    if (!form.email.trim()) { toast.error("Email requis."); return; }
+    if (form.password.length < 6) { toast.error("Le mot de passe doit faire au moins 6 caractères."); return; }
+    createAccount.mutate(
+      { coopId, email: form.email, name: form.name, password: form.password, role: form.role as "owner" | "assistant" },
+      {
+        onSuccess: () => { toast.success("Compte attaché."); setForm({ email: "", name: "", password: "", role: "owner" }); },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Échec."),
+      },
+    );
   };
 
   const toggle = async (r: any) => {

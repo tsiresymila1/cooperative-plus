@@ -58,7 +58,7 @@ export default function ManifestPage() {
       </div>
 
       {/* A4 sheet */}
-      <div className="mx-auto w-[210mm] bg-white p-[14mm] text-slate-900 shadow-lg print:shadow-none">
+      <div className="mx-auto w-[210mm] bg-white p-[14mm] text-slate-900 shadow-lg print:w-auto print:p-0 print:shadow-none">
         {/* header */}
         <div className="flex items-start justify-between border-b-2 border-slate-900 pb-4">
           <div className="flex items-center gap-3">
@@ -87,7 +87,7 @@ export default function ManifestPage() {
 
         {/* seat map — large */}
         {layout.length > 0 && (
-          <div className="mt-6">
+          <div className="avoid-break mt-6">
             <p className="mb-2 text-[11px] font-bold uppercase tracking-widest text-slate-500">Plan des sièges</p>
             <div className="inline-block rounded border border-slate-300 p-4">
               <div className="mb-2 flex justify-between text-[9px] font-bold uppercase tracking-widest text-slate-400">
@@ -150,7 +150,7 @@ export default function ManifestPage() {
         </div>
 
         {/* footer */}
-        <div className="mt-10 flex justify-between text-xs text-slate-500">
+        <div className="avoid-break mt-10 flex justify-between text-xs text-slate-500">
           <div>
             <p className="mb-6">Chauffeur: __________________________</p>
             <p>Signature</p>
@@ -162,7 +162,14 @@ export default function ManifestPage() {
         </div>
       </div>
 
-      <style>{`@media print { @page { size: A4; margin: 0; } body { background: #fff; } .no-print { display: none !important; } }`}</style>
+      <style>{`@media print {
+        @page { size: A4; margin: 12mm; }
+        body { background: #fff; }
+        .no-print { display: none !important; }
+        thead { display: table-header-group; }
+        tr { break-inside: avoid; }
+        .avoid-break { break-inside: avoid; }
+      }`}</style>
     </div>
   );
 }

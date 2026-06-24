@@ -49,7 +49,7 @@ function SignIn() {
 
   return (
     <div>
-      <div className="mb-8 lg:hidden"><Logo /></div>
+      <div className="mb-8 lg:hidden"><Logo width={220} height={50} /></div>
       <h1 className="font-display text-3xl font-bold">{step === "email" ? "Bon retour" : "Entrez le code"}</h1>
       <p className="mt-1 text-ink-soft">
         {step === "email" ? "Connectez-vous avec votre email — pas de mot de passe." : `Code à 6 chiffres envoyé à ${email}.`}
@@ -58,7 +58,7 @@ function SignIn() {
       {step === "email" ? (
         <form onSubmit={sendCode} className="mt-8 space-y-4">
           <Field label="Email"><Input type="email" autoFocus placeholder="vous@exemple.mg" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-          <Button className="w-full" disabled={loading}>{loading ? "Envoi…" : "Recevoir le code"}</Button>
+          <Button className="w-full text-white" disabled={loading}>{loading ? "Envoi…" : "Recevoir le code"}</Button>
         </form>
       ) : (
         <form onSubmit={verify} className="mt-8 space-y-4">
@@ -66,7 +66,7 @@ function SignIn() {
             <Input inputMode="numeric" autoFocus placeholder="123456" maxLength={6} value={code}
               onChange={(e) => setCode(e.target.value)} className="text-center font-mono text-2xl tracking-[0.4em]" required />
           </Field>
-          <Button className="w-full" disabled={loading}>{loading ? "Vérification…" : "Se connecter"}</Button>
+          <Button className="w-full text-white" disabled={loading}>{loading ? "Vérification…" : "Se connecter"}</Button>
           <button type="button" onClick={() => setStep("email")} className="w-full text-center text-sm text-ink-soft hover:text-ink">← Changer d'email</button>
         </form>
       )}

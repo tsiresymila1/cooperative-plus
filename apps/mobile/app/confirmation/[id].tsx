@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
 import {
+  Armchair,
   CheckCircle2,
   Download,
   Printer,
@@ -12,9 +13,11 @@ import {
 import QRCode from "react-native-qrcode-svg";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { SeatMapView } from "@/components/seat-map";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
-import { bookingStatusFr, fmtDateKey, fmtTime } from "@/lib/domain";
+import { bookingStatusFr, fmtDateKey, fmtTime, parseSeatLayout } from "@/lib/domain";
 import { printTicket, shareTicketPdf } from "@/lib/ticket-pdf";
 
 export default function Confirmation() {
@@ -25,13 +28,25 @@ export default function Confirmation() {
     bookings: {
       $: { where: { id: bookingId } },
       tickets: {},
-      tripInstance: { cooperative: {} },
+      tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tickets: {} },
     },
   });
 
   const booking = data?.bookings?.[0];
   const trip = booking?.tripInstance;
   const tickets = booking?.tickets ?? [];
+
+  const [seatsOpen, setSeatsOpen] = useState(false);
+  // Seat map cells = vehicle active map (fallback to snapshot), like the booking page.
+  const cells = (() => {
+    if (!trip) return [];
+    const maps = (trip as any).vehicle?.seatMaps ?? [];
+    const active = maps.find((m: any) => m.isActive) ?? maps[0];
+    const layout = Array.isArray(active?.layout) ? active.layout : trip.seatMapSnapshot;
+    return parseSeatLayout(layout, trip.seatsTotal);
+  })();
+  const mine = new Set<string>(tickets.map((t) => t.seatLabel));
+  const occupied = new Set<string>(((trip as any)?.tickets ?? []).map((t: any) => String(t.seatLabel)));
 
   const [pdfBusy, setPdfBusy] = useState(false);
   const [printBusy, setPrintBusy] = useState(false);
@@ -188,8 +203,16 @@ export default function Confirmation() {
             </Animated.View>
           ))}
 
+          {/* See seats in the vehicle */}
+          {cells.length > 0 && (
+            <Button variant="outline" className="mt-5" onPress={() => setSeatsOpen(true)}>
+              <Armchair size={18} color="#ff7a00" />
+              <Text className="font-sans font-medium text-ink">Voir mes sièges dans le véhicule</Text>
+            </Button>
+          )}
+
           {/* Print / save */}
-          <View className="mt-5 flex-row gap-2">
+          <View className="mt-2 flex-row gap-2">
             <Button
               variant="outline"
               className="flex-1"
@@ -214,7 +237,7 @@ export default function Confirmation() {
 
           <View className="mt-2 gap-2">
             <Button onPress={() => router.replace("/bookings")}>
-              <Text className="font-sans font-medium text-paper">
+              <Text className="font-sans font-medium text-white">
                 Mes réservations
               </Text>
             </Button>
@@ -224,6 +247,15 @@ export default function Confirmation() {
           </View>
         </ScrollView>
       )}
+
+      <Dialog open={seatsOpen} onOpenChange={setSeatsOpen}>
+        <DialogContent className="gap-3">
+          <DialogTitle className="font-display text-lg text-ink">Vos sièges</DialogTitle>
+          <View className="items-center">
+            <SeatMapView cells={cells} occupied={occupied} mine={mine} />
+          </View>
+        </DialogContent>
+      </Dialog>
     </View>
   );
 }

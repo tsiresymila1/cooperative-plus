@@ -14,45 +14,33 @@ import {
   COOP_PERMISSIONS,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
+import { useCreateAssistant } from "@/lib/queries/account";
 
 export default function NewTeamMemberPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
+  const createAssistant = useCreateAssistant();
+  const saving = createAssistant.isPending;
 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [perms, setPerms] = useState<string[]>([]);
-  const [saving, setSaving] = useState(false);
 
   const togglePerm = (key: string) =>
     setPerms((p) => (p.includes(key) ? p.filter((x) => x !== key) : [...p, key]));
 
-  const submit = async () => {
+  const submit = () => {
     const target = (email || "").trim().toLowerCase();
-    if (!target) {
-      toast.error("Email requis");
-      return;
-    }
-    if (password.length < 6) {
-      toast.error("Mot de passe: 6 caractères minimum");
-      return;
-    }
-    setSaving(true);
-    try {
-      const res = await fetch("/api/team", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ coopId, email: target, name, password, permissions: perms }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Échec");
-      toast.success("Compte assistant créé");
-      router.push(`/${slug}/team`);
-    } catch (e: any) {
-      toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
-    }
+    if (!target) { toast.error("Email requis"); return; }
+    if (password.length < 6) { toast.error("Mot de passe: 6 caractères minimum"); return; }
+    createAssistant.mutate(
+      { coopId, email: target, name, password, permissions: perms },
+      {
+        onSuccess: () => { toast.success("Compte assistant créé"); router.push(`/${slug}/team`); },
+        onError: (e) => toast.error("Erreur: " + (e instanceof Error ? e.message : "inconnue")),
+      },
+    );
   };
 
   return (

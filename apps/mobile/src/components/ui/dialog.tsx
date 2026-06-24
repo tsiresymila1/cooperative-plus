@@ -35,7 +35,7 @@ function DialogContent({
             <Pressable onPress={() => {}}>
               <DialogPrimitive.Content
                 className={cn(
-                  "w-full gap-4 rounded-[4px] border border-ink/10 bg-paper p-5 shadow-xl shadow-ink/20",
+                  "w-full gap-4 rounded-[4px] border border-ink/10 bg-paper p-5",
                   className,
                 )}
                 {...props}

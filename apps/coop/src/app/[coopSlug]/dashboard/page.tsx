@@ -9,7 +9,7 @@ import {
 import {
   DashboardShell, coopNav, useCoop, db,
   Card, KpiCard, AreaChart, PageSkeleton,
-  fmtMoney, fmtTime, todayISO, notDeleted,
+  fmtMoney, fmtTime, fmtDateTime, todayISO, notDeleted,
 } from "@cp/ui";
 
 const dk = (ms: number | string) => {
@@ -35,7 +35,7 @@ export default function DashboardPage() {
     tripInstances: { $: { where: { "cooperative.id": coopId } }, tickets: {} },
     payments: { $: { where: { "cooperative.id": coopId, status: "paid" } } },
     vehicles: { $: { where: { "cooperative.id": coopId } } },
-    bookings: { $: { where: { "cooperative.id": coopId }, order: { createdAt: "desc" } } },
+    bookings: { $: { where: { "cooperative.id": coopId }, order: { createdAt: "desc" } }, tripInstance: {} },
   });
 
   const instances = (data?.tripInstances ?? []).filter(notDeleted);
@@ -233,8 +233,13 @@ export default function DashboardPage() {
                         <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor(b.status)}`} />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-ink">{b.contactName ?? "Réservation"}</p>
-                          <p className="truncate text-xs text-ink-soft">Réservation #{b.reference} · {b.seatCount} place(s) · {fmtMoney(b.totalAmount)}</p>
-                          <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-ink-soft/55">{relTime(b.createdAt)}</p>
+                          <p className="truncate text-xs text-ink-soft">
+                            {b.tripInstance ? `${b.tripInstance.originName} → ${b.tripInstance.destName}` : `Réservation #${b.reference}`}
+                            {" · "}{b.seatCount} place(s) · {fmtMoney(b.totalAmount)}
+                          </p>
+                          <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-ink-soft/55">
+                            {b.tripInstance ? `Départ ${fmtDateTime(b.tripInstance.departureAt)}` : relTime(b.createdAt)}
+                          </p>
                         </div>
                       </Link>
                     ))}

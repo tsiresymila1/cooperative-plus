@@ -5,12 +5,14 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ArrowRight, Bus, ChevronLeft, ChevronRight } from "lucide-react-native";
 import { Badge, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
+import { useColors } from "@/lib/colors";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { fmtDateKey, fmtTime, toMs } from "@/lib/domain";
 
 export default function Results() {
   const insets = useSafeAreaInsets();
+  const c = useColors();
   const params = useLocalSearchParams<{ origin?: string; dest?: string; date?: string }>();
   const origin = params.origin ?? "";
   const dest = params.dest ?? "";
@@ -43,7 +45,7 @@ export default function Results() {
       <View className="rounded-b-[4px]  px-5 pb-5" style={{ paddingTop: insets.top + 8 }}>
         <View className="flex-row items-center gap-3">
           <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper">
-            <ChevronLeft size={20} color="#16266b" />
+            <ChevronLeft size={20} color={c.ink} />
           </Pressable>
           <Text className="font-display text-lg text-ink">Recherche de trajet</Text>
         </View>

@@ -1,6 +1,7 @@
 import { View } from "react-native";
 import { Tabs } from "expo-router";
-import { Home, Ticket, User } from "lucide-react-native";
+import { useColorScheme } from "nativewind";
+import { Home, Info, Ticket, User } from "lucide-react-native";
 import { cn } from "@/lib/cn";
 
 function TabIcon({ Icon, color, focused }: { Icon: typeof Home; color: string; focused: boolean }) {
@@ -12,20 +13,21 @@ function TabIcon({ Icon, color, focused }: { Icon: typeof Home; color: string; f
 }
 
 export default function TabsLayout() {
+  const dark = useColorScheme().colorScheme === "dark";
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: "#f5821f",
-        tabBarInactiveTintColor: "#9aa3c0",
+        tabBarActiveTintColor: dark ? "#ff8a33" : "#f5821f",
+        tabBarInactiveTintColor: dark ? "#6b7280" : "#9aa3c0",
         tabBarStyle: {
-          backgroundColor: "#ffffff",
+          backgroundColor: dark ? "#161719" : "#ffffff",
           borderTopWidth: 0,
           height: 76,
           paddingTop: 10,
           paddingBottom: 16,
-          shadowColor: "#16266b",
-          shadowOpacity: 0.08,
+          shadowColor: "#000000",
+          shadowOpacity: dark ? 0.3 : 0.08,
           shadowRadius: 16,
           shadowOffset: { width: 0, height: -4 },
           elevation: 16,
@@ -53,6 +55,13 @@ export default function TabsLayout() {
         options={{
           title: "Profil",
           tabBarIcon: ({ color, focused }) => <TabIcon Icon={User} color={color} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="about"
+        options={{
+          title: "À propos",
+          tabBarIcon: ({ color, focused }) => <TabIcon Icon={Info} color={color} focused={focused} />,
         }}
       />
     </Tabs>

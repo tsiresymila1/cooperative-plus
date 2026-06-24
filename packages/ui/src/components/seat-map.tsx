@@ -6,7 +6,7 @@ import { cn } from "../lib/cn";
 export type CellType = "seat" | "aisle" | "door" | "driver" | "empty";
 export type Cell = { row: number; col: number; type: CellType; label?: string };
 
-const SEAT = "h-11 w-11 rounded-xl border text-[11px] font-mono font-bold flex items-center justify-center transition-all";
+const SEAT = "h-11 w-11 rounded-md border text-[11px] font-mono font-bold flex items-center justify-center transition-all";
 
 /* ---------- Selector (customer / staff booking) ----------
  * occupied (taken): navy + person · reserved (held): orange + clock ·

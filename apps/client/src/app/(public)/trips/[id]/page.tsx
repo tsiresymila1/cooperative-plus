@@ -117,7 +117,7 @@ export default function TripDetail({ params }: { params: Promise<{ id: string }>
                 <span className="text-sm text-ink-soft">Total</span>
                 <span className="font-mono text-2xl font-bold">{fmtMoney(total)}</span>
               </div>
-              <Button className="mt-4 w-full" disabled={!draft.seats.length || reserving} onClick={proceed}>
+              <Button className="mt-4 w-full text-white" disabled={!draft.seats.length || reserving} onClick={proceed}>
                 {reserving ? "Réservation…" : !authed && draft.seats.length ? "Se connecter pour continuer" : "Continuer"} <ArrowRight size={16} />
               </Button>
               <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-soft/70"><ShieldCheck size={13} className="text-baobab" /> Siège garanti, zéro double-réservation</p>

@@ -1,5 +1,6 @@
 "use client";
 import { AdminShell } from "@/components/admin-shell";
+import { useCreateCooperative } from "@/lib/queries/cooperatives";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,10 +37,11 @@ export default function NewCooperativePage() {
     ownerName: "",
     ownerPassword: "",
   });
-  const [saving, setSaving] = useState(false);
+  const createCoop = useCreateCooperative();
+  const saving = createCoop.isPending;
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const submit = async () => {
+  const submit = () => {
     if (!form.slug.trim() || !form.displayName.trim() || !form.legalName.trim()) {
       toast.error("Slug, nom commercial et raison sociale sont requis.");
       return;
@@ -48,21 +50,10 @@ export default function NewCooperativePage() {
       toast.error("Le mot de passe du propriétaire doit faire au moins 6 caractères.");
       return;
     }
-    setSaving(true);
-    try {
-      const res = await fetch("/api/cooperatives", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Échec de la création.");
-      toast.success("Coopérative créée.");
-      router.push("/admin/cooperatives");
-    } catch (e: any) {
-      toast.error(e?.message ?? "Échec de la création.");
-      setSaving(false);
-    }
+    createCoop.mutate(form, {
+      onSuccess: () => { toast.success("Coopérative créée."); router.push("/admin/cooperatives"); },
+      onError: (e) => toast.error(e instanceof Error ? e.message : "Échec de la création."),
+    });
   };
 
   return (

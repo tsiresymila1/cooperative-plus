@@ -7,6 +7,7 @@ import { ChevronLeft, CircleDot, Clock, DoorOpen } from "lucide-react-native";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
+import { useColors } from "@/lib/colors";
 import { cn, fmtMoney } from "@/lib/cn";
 import { db, id, type Chunk } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -23,6 +24,7 @@ import {
 
 export default function TripDetail() {
   const insets = useSafeAreaInsets();
+  const c = useColors();
   const { user } = useAuth();
   const { setSelection } = useSelection();
   const params = useLocalSearchParams<{ id: string }>();
@@ -46,7 +48,6 @@ export default function TripDetail() {
 
   const trip = data?.tripInstances?.[0];
 
-
   // Taken seat labels = booked tickets + live (unexpired) holds.
   const takenLabels = useMemo(() => {
     const set = new Set<string>();
@@ -61,7 +62,9 @@ export default function TripDetail() {
     if (!trip) return [];
     const maps = (trip as any).vehicle?.seatMaps ?? [];
     const active = maps.find((m: any) => m.isActive) ?? maps[0];
-    const layout = Array.isArray(active?.layout) ? active.layout : trip.seatMapSnapshot;
+    const layout = Array.isArray(active?.layout)
+      ? active.layout
+      : trip.seatMapSnapshot;
     return parseSeatLayout(layout, trip.seatsTotal);
   }, [trip]);
 
@@ -99,7 +102,8 @@ export default function TripDetail() {
         },
       });
       const staleByLabel = new Map<string, string>();
-      for (const h of stale?.tripInstances?.[0]?.holds ?? []) staleByLabel.set(h.seatLabel, h.id);
+      for (const h of stale?.tripInstances?.[0]?.holds ?? [])
+        staleByLabel.set(h.seatLabel, h.id);
 
       // Create one hold per seat. A duplicate create on an ACTIVE key throws
       // (seat just taken by someone else).
@@ -110,17 +114,17 @@ export default function TripDetail() {
         const staleId = staleByLabel.get(label);
         if (staleId) chunks.push(db.tx.seatHolds[staleId]!.delete());
         chunks.push(
-          db.tx.seatHolds[holdId]!
-            .update({
-              seatKey,
-              seatLabel: label,
-              expiresAt,
-              createdAt: Date.now(),
-            })
-            .link({ tripInstance: trip.id, user: user.id }),
+          db.tx.seatHolds[holdId]!.update({
+            seatKey,
+            seatLabel: label,
+            expiresAt,
+            createdAt: Date.now(),
+          }).link({ tripInstance: trip.id, user: user.id }),
         );
         if (trip.cooperative?.id) {
-          chunks.push(db.tx.seatHolds[holdId]!.link({ cooperative: trip.cooperative.id }));
+          chunks.push(
+            db.tx.seatHolds[holdId]!.link({ cooperative: trip.cooperative.id }),
+          );
         }
         await db.transact(chunks);
         created.push({ holdId, seatLabel: label, seatKey });
@@ -152,7 +156,8 @@ export default function TripDetail() {
       console.warn("[trip] hold failed:", e);
       setNotice({
         title: "Siège déjà pris",
-        message: "Un des sièges sélectionnés vient d'être réservé. Choisissez d'autres places.",
+        message:
+          "Un des sièges sélectionnés vient d'être réservé. Choisissez d'autres places.",
       });
     } finally {
       setHolding(false);
@@ -164,56 +169,94 @@ export default function TripDetail() {
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
       <View className="flex-row items-center gap-3 px-5 py-3">
-        <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper">
-          <ChevronLeft size={20} color="#16266b" />
+        <Pressable
+          onPress={() => router.back()}
+          className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
+        >
+          <ChevronLeft size={20} color={c.ink} />
         </Pressable>
         <Text className="font-display text-lg text-ink">Détail du trajet</Text>
       </View>
 
       {isLoading ? (
-        <Spinner />
+        <View className="w-full h-full justify-center items-center">
+          <Spinner />
+        </View>
       ) : error || !trip ? (
-        <Text className="px-5 font-sans text-sm text-laterite-deep">Trajet introuvable.</Text>
+        <Text className="px-5 font-sans text-sm text-laterite-deep">
+          Trajet introuvable.
+        </Text>
       ) : (
         <>
-          <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 160 }} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
+            showsVerticalScrollIndicator={false}
+          >
             <Animated.View entering={FadeIn.duration(300)}>
               <Card>
                 <View className="flex-row items-center gap-2.5">
-                  <CoopLogo url={trip.cooperative?.logoUrl} brandColor={trip.cooperative?.brandColor} name={trip.coopName} size={40} />
+                  <CoopLogo
+                    url={trip.cooperative?.logoUrl}
+                    brandColor={trip.cooperative?.brandColor}
+                    name={trip.coopName}
+                    size={40}
+                  />
                   <View>
-                    <Text className="font-sans text-sm font-semibold text-laterite">{trip.coopName}</Text>
-                    <Text className="font-mono text-[11px] text-ink-soft/60">{trip.vehicleName}</Text>
+                    <Text className="font-sans text-sm font-semibold text-laterite">
+                      {trip.coopName}
+                    </Text>
+                    <Text className="font-mono text-[11px] text-ink-soft/60">
+                      {trip.vehicleName}
+                    </Text>
                   </View>
                 </View>
                 <View className="mt-3 flex-row items-center gap-2">
-                  <Text className="font-display text-2xl text-ink">{trip.originName}</Text>
+                  <Text className="font-display text-2xl text-ink">
+                    {trip.originName}
+                  </Text>
                   <Text className="text-laterite">→</Text>
-                  <Text className="font-display text-2xl text-laterite">{trip.destName}</Text>
+                  <Text className="font-display text-2xl text-laterite">
+                    {trip.destName}
+                  </Text>
                 </View>
                 <View className="mt-3 flex-row items-center gap-4">
                   <View className="flex-row items-center gap-1.5">
                     <Clock size={14} color="#4a5680" />
                     <Text className="font-mono text-sm text-ink-soft">
                       {fmtTime(trip.departureAt)}
-                      {trip.arrivalEstimateAt ? ` → ${fmtTime(trip.arrivalEstimateAt)}` : ""}
+                      {trip.arrivalEstimateAt
+                        ? ` → ${fmtTime(trip.arrivalEstimateAt)}`
+                        : ""}
                     </Text>
                   </View>
-                  <Text className="font-mono text-sm text-ink-soft">{fmtDateKey(trip.departDate)}</Text>
+                  <Text className="font-mono text-sm text-ink-soft">
+                    {fmtDateKey(trip.departDate)}
+                  </Text>
                 </View>
                 <View className="mt-3 flex-row items-center justify-between">
-                  <Text className="font-mono font-bold text-xl text-ink">{fmtMoney(trip.price, trip.currency)} / place</Text>
+                  <Text className="font-mono font-bold text-xl text-ink">
+                    {fmtMoney(trip.price, trip.currency)} / place
+                  </Text>
                   <Badge
-                    tone={(trip.tickets?.length ?? 0) >= trip.seatsTotal ? "danger" : "success"}
+                    tone={
+                      (trip.tickets?.length ?? 0) >= trip.seatsTotal
+                        ? "danger"
+                        : "success"
+                    }
                     label={`${trip.tickets?.length ?? 0}/${trip.seatsTotal} places`}
                   />
                 </View>
               </Card>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(120).duration(420)} className="mt-5">
+            <Animated.View
+              entering={FadeInDown.delay(120).duration(420)}
+              className="mt-5"
+            >
               <View className="mb-3">
-                <Text className="font-display text-lg text-ink">Choisir vos sièges</Text>
+                <Text className="font-display text-lg text-ink">
+                  Choisir vos sièges
+                </Text>
                 <Text className="mt-0.5 font-mono text-xs text-ink-soft/60">
                   {selectedLabels.length > 0
                     ? `${selectedLabels.length} siège${selectedLabels.length > 1 ? "s" : ""} sélectionné${selectedLabels.length > 1 ? "s" : ""}`
@@ -221,7 +264,12 @@ export default function TripDetail() {
                 </Text>
               </View>
               <View className="items-center">
-                <SeatMap cells={cells} takenLabels={takenLabels} selected={selected} onToggle={toggle} />
+                <SeatMap
+                  cells={cells}
+                  takenLabels={takenLabels}
+                  selected={selected}
+                  onToggle={toggle}
+                />
               </View>
             </Animated.View>
           </ScrollView>
@@ -233,13 +281,23 @@ export default function TripDetail() {
           >
             <View className="mb-2 flex-row items-center justify-between">
               <Text className="font-sans text-sm text-ink-soft">
-                {selectedLabels.length > 0 ? selectedLabels.join(", ") : "Aucun siège"}
+                {selectedLabels.length > 0
+                  ? selectedLabels.join(", ")
+                  : "Aucun siège"}
               </Text>
-              <Text className="font-mono font-bold text-lg text-ink">{fmtMoney(total, trip.currency)}</Text>
+              <Text className="font-mono font-bold text-lg text-ink">
+                {fmtMoney(total, trip.currency)}
+              </Text>
             </View>
-            <Button onPress={proceed} loading={holding} disabled={selectedLabels.length === 0}>
-              <Text className="font-sans font-medium text-paper">
-                {user ? "Continuer vers le paiement" : "Se connecter pour réserver"}
+            <Button
+              onPress={proceed}
+              loading={holding}
+              disabled={selectedLabels.length === 0}
+            >
+              <Text className="font-sans font-medium text-white">
+                {user
+                  ? "Continuer vers le paiement"
+                  : "Se connecter pour réserver"}
               </Text>
             </Button>
           </View>
@@ -273,7 +331,11 @@ function SeatMap({
       mc = Math.max(mc, c.col);
       map.set(`${c.row}:${c.col}`, c);
     }
-    return { maxRow: mr, maxCol: mc, at: (r: number, c: number) => map.get(`${r}:${c}`) };
+    return {
+      maxRow: mr,
+      maxCol: mc,
+      at: (r: number, c: number) => map.get(`${r}:${c}`),
+    };
   }, [cells]);
 
   let seatIdx = -1;
@@ -289,14 +351,20 @@ function SeatMap({
               const cell = at(r, col);
               if (cell?.type === "driver") {
                 return (
-                  <View key={col} className="h-14 w-14 items-center justify-center rounded-[4px] border border-ink/15 bg-ink/5">
+                  <View
+                    key={col}
+                    className="h-14 w-14 items-center justify-center rounded-[4px] border border-ink/15 bg-ink/5"
+                  >
                     <CircleDot size={16} color="#4a5680" />
                   </View>
                 );
               }
               if (cell?.type === "door") {
                 return (
-                  <View key={col} className="h-14 w-14 items-center justify-center rounded-[4px] border border-dashed border-ink/20">
+                  <View
+                    key={col}
+                    className="h-14 w-14 items-center justify-center rounded-[4px] border border-dashed border-ink/20"
+                  >
                     <DoorOpen size={16} color="#4a568088" />
                   </View>
                 );
@@ -315,7 +383,13 @@ function SeatMap({
                   onPress={() => onToggle(label)}
                   style={
                     isSel
-                      ? { shadowColor: "#f5821f", shadowOpacity: 0.5, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 6 }
+                      ? {
+                          shadowColor: "#f5821f",
+                          shadowOpacity: 0.5,
+                          shadowRadius: 10,
+                          shadowOffset: { width: 0, height: 6 },
+                          elevation: 0,
+                        }
                       : undefined
                   }
                   className={cn(
@@ -330,7 +404,11 @@ function SeatMap({
                   <Text
                     className={cn(
                       "font-mono text-xs font-semibold",
-                      isTaken ? "text-ink-soft/40 line-through" : isSel ? "text-paper" : "text-ink",
+                      isTaken
+                        ? "text-ink-soft/40 line-through"
+                        : isSel
+                          ? "text-white"
+                          : "text-ink",
                     )}
                   >
                     {label}
@@ -352,7 +430,13 @@ function SeatMap({
   );
 }
 
-function LegendItem({ className, label }: { className: string; label: string }) {
+function LegendItem({
+  className,
+  label,
+}: {
+  className: string;
+  label: string;
+}) {
   return (
     <View className="flex-row items-center gap-1.5">
       <View className={cn("h-4 w-4 rounded-full border", className)} />

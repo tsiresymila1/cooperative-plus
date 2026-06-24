@@ -16,7 +16,7 @@ const button = cva("flex-row items-center justify-center gap-2 rounded-[4px] act
   variants: {
     variant: {
       primary: "bg-laterite",
-      ink: "bg-ink",
+      ink: "bg-strong",
       outline: "border border-ink/15 bg-paper",
       ghost: "bg-transparent",
     },
@@ -26,7 +26,7 @@ const button = cva("flex-row items-center justify-center gap-2 rounded-[4px] act
 });
 const buttonText = cva("font-sans font-medium", {
   variants: {
-    variant: { primary: "text-paper", ink: "text-sand", outline: "text-ink", ghost: "text-ink" },
+    variant: { primary: "text-paper", ink: "text-white", outline: "text-ink", ghost: "text-ink" },
     size: { sm: "text-sm", md: "text-base", lg: "text-base" },
   },
   defaultVariants: { variant: "primary", size: "md" },

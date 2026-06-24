@@ -129,7 +129,7 @@ export default function Landing() {
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-3xl font-bold md:text-4xl">Vous gérez une coopérative ?</h2>
             <p className="mx-auto mt-4 max-w-lg text-lg text-white/70">Routes, véhicules, horaires, réservations et paiements dans un seul tableau de bord. 14 jours d'essai gratuit.</p>
-            <Link href="/sign-up?role=coop"><Button size="lg" className="mt-7">Démarrer gratuitement <ArrowRight size={18} /></Button></Link>
+            <Link href="/account/dashboard"><Button size="lg" className="mt-7">Démarrer gratuitement <ArrowRight size={18} /></Button></Link>
           </div>
         </div>
       </section>

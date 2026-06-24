@@ -7,6 +7,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  useColorScheme,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +16,7 @@ import { router } from "expo-router";
 import { ArrowRight } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { cn } from "@/lib/cn";
+import { useColors } from "@/lib/colors";
 
 const { width, height } = Dimensions.get("window");
 const HERO_H = Math.round(height * 0.5);
@@ -39,6 +41,8 @@ export default function Onboarding() {
   const [index, setIndex] = useState(0);
   const ref = useRef<ScrollView>(null);
   const last = index === SLIDES.length - 1;
+
+  const colorScheme = useColorScheme();
 
   function onScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
     const i = Math.round(e.nativeEvent.contentOffset.x / width);
@@ -65,7 +69,7 @@ export default function Onboarding() {
           resizeMode="cover"
         />
         <LinearGradient
-          colors={["rgba(248,250,252,0)", "rgba(248,250,252,0.2)", "#f8fafc"]}
+          colors={colorScheme === "dark" ? ["rgba(248,250,252,0)", "rgba(248,250,252,0.1)", "#080909ff"]: ["rgba(248,250,252,0)", "rgba(248,250,252,0.2)", "#f8fafc"]}
           locations={[0, 0.6, 1]}
           style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: HERO_H }}
           pointerEvents="none"
@@ -110,7 +114,7 @@ export default function Onboarding() {
             onPress={next}
             className="h-14 flex-row items-center justify-center gap-2 rounded-[4px] bg-laterite active:opacity-90"
           >
-            <Text className="font-sans text-base font-medium text-paper">{last ? "Commencer" : "Suivant"}</Text>
+            <Text className="font-sans text-base font-medium text-white">{last ? "Commencer" : "Suivant"}</Text>
             <ArrowRight size={18} color="#ffffff" />
           </Pressable>
         </View>
