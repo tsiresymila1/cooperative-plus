@@ -4,7 +4,8 @@ import { AdminShell } from "@/components/admin-shell";
 import { useCreateCoopAccount } from "@/lib/queries/cooperatives";
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, Power, Trash2, UserPlus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertTriangle, ArrowLeft, ChevronRight, Power, Trash2, UserPlus } from "lucide-react";
 import {
   adminNav,
   db,
@@ -64,10 +65,98 @@ export default function EditCooperativePage({ params }: { params: Promise<{ id: 
   return (
     <Shell coop={coop}>
       <div className="mx-auto max-w-4xl">
+        {coop.subscriptionStatus === "suspended" && (
+          <div className="mb-6 flex items-start gap-3 rounded-md border border-danger/30 bg-danger/10 px-4 py-3.5 text-danger">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+            <div className="text-sm">
+              <p className="font-semibold">Coopérative suspendue</p>
+              <p className="text-danger/80">Le propriétaire et les assistants sont bloqués, et ses trajets sont masqués côté voyageurs. Réactivez-la pour rétablir l&apos;accès.</p>
+            </div>
+          </div>
+        )}
         <InfoSections coop={coop} plans={plans} sub={sub} />
         <AccountsSection coopId={id} members={coop.members ?? []} />
+        <DangerZone coop={coop} />
       </div>
     </Shell>
+  );
+}
+
+function DangerZone({ coop }: { coop: any }) {
+  const confirm = useConfirm();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const suspended = coop.subscriptionStatus === "suspended";
+
+  async function toggleSuspend() {
+    const ok = await confirm({
+      title: suspended ? "Réactiver la coopérative ?" : "Suspendre la coopérative ?",
+      message: suspended
+        ? "Les membres retrouveront l'accès et ses trajets redeviendront visibles côté voyageurs."
+        : "Le propriétaire et les assistants seront bloqués, et ses trajets masqués côté voyageurs.",
+      confirmLabel: suspended ? "Réactiver" : "Suspendre",
+      tone: suspended ? "default" : "danger",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      await db.transact(tx.cooperatives[coop.id].update({ subscriptionStatus: suspended ? "active" : "suspended" }));
+      toast.success(suspended ? "Coopérative réactivée." : "Coopérative suspendue.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function remove() {
+    const ok = await confirm({
+      title: "Supprimer définitivement ?",
+      message: `${coop.displayName} et tous ses accès seront supprimés. Action irréversible.`,
+      confirmLabel: "Supprimer définitivement",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      // ponytail: delete coop + its memberships/subscriptions; orphan trips/bookings
+      // stay hidden since every query is scoped by cooperative.
+      await db.transact([
+        ...(coop.members ?? []).map((m: any) => tx.memberships[m.id].delete()),
+        ...(coop.subscriptions ?? []).map((s: any) => tx.subscriptions[s.id].delete()),
+        tx.cooperatives[coop.id].delete(),
+      ]);
+      toast.success("Coopérative supprimée définitivement.");
+      router.push("/admin/cooperatives");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de la suppression.");
+      setBusy(false);
+    }
+  }
+
+  return (
+    <FormSection index="03" title="Zone de danger" description="Suspendre l'accès ou supprimer définitivement la coopérative.">
+      <div className="divide-y divide-ink/8 rounded-md border border-danger/25">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-ink">{suspended ? "Réactiver la coopérative" : "Suspendre la coopérative"}</p>
+            <p className="mt-0.5 text-xs text-ink-soft">{suspended ? "Rétablit l'accès des membres et la visibilité des trajets." : "Bloque les membres et masque les trajets côté voyageurs."}</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={toggleSuspend} disabled={busy} className="shrink-0">
+            <Power size={15} /> {suspended ? "Réactiver" : "Suspendre"}
+          </Button>
+        </div>
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-danger">Supprimer définitivement</p>
+            <p className="mt-0.5 text-xs text-ink-soft">Action irréversible. La coopérative et ses accès seront supprimés.</p>
+          </div>
+          <Button size="sm" onClick={remove} disabled={busy} className="shrink-0 bg-danger text-white hover:bg-danger/90">
+            <Trash2 size={15} /> Supprimer
+          </Button>
+        </div>
+      </div>
+    </FormSection>
   );
 }
 

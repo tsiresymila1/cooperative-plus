@@ -3,8 +3,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { ChevronRight, Search, Bell, Menu, X } from "lucide-react";
+import { ChevronRight, Search, Bell, Menu, X, ShieldAlert } from "lucide-react";
 import { CoopLogo } from "./ui";
+import { useCoopOptional } from "./coop-guard";
 import { UserMenu } from "./user-menu";
 import { ThemeToggle } from "./theme";
 import { db } from "../lib/db";
@@ -22,6 +23,7 @@ export function DashboardShell({ nav, title, subtitle, action, children, tenant,
   const main = nav.filter((n) => !isSettings(n));
   const bottom = nav.filter(isSettings);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const suspended = useCoopOptional()?.coop?.subscriptionStatus === "suspended";
 
   return (
     <div className="flex min-h-dvh bg-sand">
@@ -95,7 +97,12 @@ export function DashboardShell({ nav, title, subtitle, action, children, tenant,
             <UserMenu />
           </div>
         </header>
-
+        {suspended && (
+          <div className="mb-5 flex items-start gap-3 rounded-sm border border-danger/30 bg-danger/10 px-4 py-1.5 text-sm bg-red-500 mx-8 my-6">
+            <ShieldAlert size={18} className="mt-0.5 shrink-0" />
+            <p className="text-sm font-medium">Coopérative suspendue — accès administrateur uniquement. Le propriétaire et les assistants sont bloqués, et les trajets sont masqués côté voyageurs.</p>
+          </div>
+        )}
         <main
           className="relative flex-1 px-4 py-6 sm:px-6 sm:py-7 lg:px-8"
           style={{
@@ -115,6 +122,7 @@ export function DashboardShell({ nav, title, subtitle, action, children, tenant,
             </div>
             {action && <div className="shrink-0">{action}</div>}
           </div>
+          
           <div className="stagger-children">
             {children}
           </div>

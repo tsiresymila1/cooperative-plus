@@ -35,6 +35,8 @@ export const useCoop = () => {
   if (!v) throw new Error("useCoop must be used within CoopGuard");
   return v;
 };
+/** Coop context if present, else null (safe outside CoopGuard — e.g. admin shell). */
+export const useCoopOptional = () => useContext(Ctx);
 
 function Denied({ title, message }: { title: string; message: string }) {
   return (
@@ -47,7 +49,7 @@ function Denied({ title, message }: { title: string; message: string }) {
         <h1 className="mt-4 font-display text-xl font-bold text-ink">{title}</h1>
         <p className="mt-2 text-sm text-ink-soft">{message}</p>
         <div className="mt-6 flex justify-center gap-2">
-          <Link href="/coop">
+          <Link href="/">
             <Button variant="outline" size="sm">Mes coopératives</Button>
           </Link>
           <Link href="/">
