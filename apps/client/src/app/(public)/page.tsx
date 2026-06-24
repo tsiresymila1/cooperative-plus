@@ -139,7 +139,12 @@ export default function Landing() {
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 px-5 py-10 text-center text-sm text-ink-soft/60">
           <Logo />
           <p>© 2026 Cooperative Plus · Madagascar</p>
-          <Link href="/coop" className="text-xs text-ink-soft/40 transition-colors hover:text-ink-soft">Espace professionnel</Link>
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-ink-soft/40">
+            <Link href="/privacy" className="transition-colors hover:text-ink-soft">Confidentialité</Link>
+            <Link href="/terms" className="transition-colors hover:text-ink-soft">Conditions</Link>
+            <Link href="/data-deletion" className="transition-colors hover:text-ink-soft">Supprimer mes données</Link>
+            <Link href="/coop" className="transition-colors hover:text-ink-soft">Espace professionnel</Link>
+          </div>
         </div>
       </footer>
     </main>

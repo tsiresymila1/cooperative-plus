@@ -5,12 +5,12 @@
     "scheme": "cooperativeplus",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "icon": "./assets/logo-round.png",
     "backgroundColor": "#ffffff",
-    "ios": { "supportsTablet": true, "bundleIdentifier": "mg.cooperativeplus.app" },
-    "android": { "package": "mg.cooperativeplus.app", "adaptiveIcon": { "foregroundImage": "./assets/logo-round.png", "backgroundColor": "#ffffff" } },
+    "ios": { "supportsTablet": true, "bundleIdentifier": "ts.mila.cooperativeplus" },
+    "android": { "package": "ts.mila.cooperativeplus", "adaptiveIcon": { "foregroundImage": "./assets/logo-round.png", "backgroundColor": "#ffffff" } },
     "plugins": [
       "expo-router",
       [

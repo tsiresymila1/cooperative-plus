@@ -1,0 +1,26 @@
+{
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": { "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45" }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": { "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45" }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": { "buildType": "app-bundle" },
+      "env": { "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45" }
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}

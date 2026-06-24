@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@cp/coop", "dev"],
       "port": 3001
+    },
+    {
+      "name": "client",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@cp/client", "dev"],
+      "port": 3000
     }
   ]
 }
