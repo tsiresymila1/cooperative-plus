@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useMemo } from "react";
-import { ArrowRight, ArrowUpRight, Bus, Clock3, MapPin, MousePointerClick, Play, Quote, ShieldCheck, Star, Ticket, Wallet } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Bus, Clock3, MapPin, MousePointerClick, Quote, ShieldCheck, Star, Ticket, Wallet } from "lucide-react";
 import { Button, Logo, db, notDeleted, todayISO } from "@cp/ui";
 import { SiteHeader } from "@/components/site-header";
 import { SearchBar } from "@/components/search-bar";
@@ -90,10 +90,18 @@ export default function Landing() {
             </p>
             <div className="animate-rise mt-8 flex flex-wrap items-center justify-center gap-4" style={{ animationDelay: "220ms" }}>
               <Link href="/search"><Button size="lg">Réserver maintenant <ArrowRight size={18} /></Button></Link>
-              <Link href="/search" className="group inline-flex items-center gap-3 text-sm font-semibold text-white">
-                <span className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-white/10 backdrop-blur-md transition-colors group-hover:bg-white/20"><Play size={16} className="fill-white" /></span>
-                Voir les trajets
-              </Link>
+              <a
+                href="https://play.google.com/store/apps/details?id=ts.mila.cooperativeplus"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 rounded-full border border-white/30 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-md transition-colors hover:bg-white/20"
+              >
+                <GooglePlayIcon className="h-5 w-5" />
+                <span className="flex flex-col items-start leading-none">
+                  <span className="text-[10px] font-normal text-white/70">Disponible sur</span>
+                  Google Play
+                </span>
+              </a>
             </div>
           </div>
         </div>
@@ -251,5 +259,13 @@ export default function Landing() {
         </div>
       </footer>
     </main>
+  );
+}
+
+function GooglePlayIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden>
+      <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z" />
+    </svg>
   );
 }
