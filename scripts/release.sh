@@ -7,7 +7,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-TAG="${1:-}"
+TAG="v${1:-}"
 if [ -z "$TAG" ]; then
   VERSION="$(node -p "require('./apps/mobile/app.json').expo.version")"
   TAG="v${VERSION}"
