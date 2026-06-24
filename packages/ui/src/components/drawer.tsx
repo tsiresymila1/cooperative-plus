@@ -12,7 +12,7 @@ export function Drawer({ open, onClose, eyebrow, title, children, footer, width 
       {open && (
         <div className="fixed inset-0 z-50">
           <motion.div
-            className="absolute inset-0 bg-ink/30 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={onClose}
           />

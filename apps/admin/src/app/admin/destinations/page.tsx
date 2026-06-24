@@ -179,6 +179,22 @@ export default function DestinationsPage() {
     }
   }
 
+  async function handleDelete(d: Destination) {
+    const ok = await confirm({
+      title: "Supprimer la destination ?",
+      message: `${d.name} sera retirée de la liste. Les trajets existants ne sont pas affectés.`,
+      confirmLabel: "Supprimer",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      await db.transact(tx.destinations[d.id].update({ deletedAt: Date.now() }));
+      toast.success("Destination supprimée.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de la suppression.");
+    }
+  }
+
   const columns: Column<Destination>[] = [
     {
       key: "name",
@@ -237,6 +253,9 @@ export default function DestinationsPage() {
               Promouvoir
             </Button>
           )}
+          <Button variant="ghost" size="sm" className="text-danger hover:bg-danger/10" onClick={() => handleDelete(d)}>
+            Supprimer
+          </Button>
         </div>
       ),
     },

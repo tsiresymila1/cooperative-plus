@@ -83,11 +83,8 @@
 @layer base {
   html { scroll-behavior: smooth; }
   /* Custom thin scrollbar (theme-aware) */
-  * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--color-ink) 28%, transparent) transparent; }
-  ::-webkit-scrollbar { width: 7px; height: 7px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-ink) 22%, transparent); border-radius: 9999px; }
-  ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--color-ink) 40%, transparent); }
+  * { scrollbar-width: none; -ms-overflow-style: none; }
+    ::-webkit-scrollbar { width: 0; height: 0; display: none; }
   body {
     background-color: var(--color-sand);
     color: var(--color-ink);

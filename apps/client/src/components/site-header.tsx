@@ -38,7 +38,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         : "sticky top-0 border-b border-ink/8 bg-sand/80 backdrop-blur-xl",
     )}>
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
-        <Link href="/"><Logo dark={transparent} /></Link>
+        <Link href="/"><Logo dark={transparent} height={40} width={170} /></Link>
         <nav className={cn("hidden items-center gap-7 text-sm font-medium md:flex", navLink)}>
           <Link href="/search" className="transition-colors">Trajets</Link>
           {authed && <Link href="/account/bookings" className="transition-colors">Mes réservations</Link>}
