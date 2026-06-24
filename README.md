@@ -147,6 +147,6 @@ Config build : [`apps/mobile/eas.json`](apps/mobile/eas.json). Détails : voir l
 
 <div align="center">
 
-Fait avec ❤️ à Madagascar · © 2026 Tsiresy Milà
+Made with ❤️ · © 2026 Tsiresy Milà
 
 </div>

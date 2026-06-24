@@ -5,6 +5,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ArrowRight, Bus, ChevronLeft, ChevronRight } from "lucide-react-native";
 import { Badge, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
+import { TagBadge } from "@/components/tag-badge";
 import { useColors } from "@/lib/colors";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
@@ -27,6 +28,7 @@ export default function Results() {
       route: {},
       cooperative: {},
       tickets: {},
+      tag: {},
     },
   });
 
@@ -85,7 +87,12 @@ export default function Results() {
                 const full = booked >= t.seatsTotal;
                 return (
                   <Animated.View key={t.id} entering={FadeInDown.delay(i * 70).duration(420)}>
-                    <Pressable onPress={() => router.push({ pathname: "/trip/[id]", params: { id: t.id } })}>
+                    <Pressable onPress={() => router.push({ pathname: "/trip/[id]", params: { id: t.id } })} className="relative my-2">
+                      {(t as any).tag && (
+                        <View className="absolute right-3 z-20" style={{ top: -8 }}>
+                          <TagBadge name={(t as any).tag.name} color={(t as any).tag.color} />
+                        </View>
+                      )}
                       <Card className="mb-3 p-0">
                         {/* Top: coop + seats */}
                         <View className="flex-row items-center justify-between px-4 pt-3">

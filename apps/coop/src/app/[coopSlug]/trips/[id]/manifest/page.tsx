@@ -15,6 +15,7 @@ export default function ManifestPage() {
       tickets: { booking: {} },
       vehicle: { seatMaps: {} },
       route: {},
+      tag: {},
     },
   });
   const trip = data?.tripInstances?.[0];
@@ -68,7 +69,14 @@ export default function ManifestPage() {
               : <div className="grid h-12 w-12 place-items-center rounded bg-[#0f2d5c] text-sm font-bold text-white">CP</div>}
             <div>
               <p className="text-lg font-extrabold leading-tight">{coop.displayName}</p>
-              <p className="text-[11px] uppercase tracking-widest text-slate-500">Manifeste des passagers</p>
+              <div className="flex items-center gap-2">
+                <p className="text-[11px] uppercase tracking-widest text-slate-500">Manifeste des passagers</p>
+                {trip.tag && (
+                  <span className="inline-block rounded px-2 py-0.5 text-[10px] font-bold uppercase text-white" style={{ backgroundColor: trip.tag.color || "#0f2d5c" }}>
+                    {trip.tag.name}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           <div className="text-right text-xs text-slate-600">

@@ -18,6 +18,7 @@ import {
   tripStatus,
   toMoney,
   combineDateTime,
+  notDeleted,
 } from "@cp/ui";
 import {
   Select,
@@ -41,9 +42,11 @@ export default function EditTripPage() {
   const tripId = params.id;
 
   const { data, isLoading } = db.useQuery({
-    tripInstances: { $: { where: { id: tripId, "cooperative.id": coopId } }, bookings: {} },
+    tripInstances: { $: { where: { id: tripId, "cooperative.id": coopId } }, bookings: {}, tag: {} },
+    tags: { $: {}, cooperative: {} },
   });
   const trip = data?.tripInstances?.[0];
+  const tags = (data?.tags ?? []).filter(notDeleted).filter((t: any) => t.isGlobal || t.cooperative?.id === coopId);
   const activeBookings = (trip?.bookings ?? []).filter(
     (b: any) => !["cancelled", "expired"].includes(b.status),
   );
@@ -53,6 +56,7 @@ export default function EditTripPage() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("06:00");
   const [price, setPrice] = useState("");
+  const [tagId, setTagId] = useState("");
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -65,6 +69,7 @@ export default function EditTripPage() {
         `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`,
       );
       setPrice(String(trip.price ?? ""));
+      setTagId((trip as any).tag?.id ?? "");
       setHydrated(true);
     }
   }, [trip, hydrated]);
@@ -73,14 +78,17 @@ export default function EditTripPage() {
     if (!trip) return;
     setSaving(true);
     try {
-      await db.transact(
-        db.tx.tripInstances[tripId].update({
-          status,
-          departDate: date,
-          departureAt: combineDateTime(date, time),
-          price: toMoney(price),
-        }),
-      );
+      let chunk = db.tx.tripInstances[tripId].update({
+        status,
+        departDate: date,
+        departureAt: combineDateTime(date, time),
+        price: toMoney(price),
+      });
+      // `tag` is a one-link: linking replaces; unlink clears it.
+      const prevTag = (trip as any).tag?.id ?? "";
+      if (tagId) chunk = chunk.link({ tag: tagId });
+      else if (prevTag) chunk = chunk.unlink({ tag: prevTag });
+      await db.transact(chunk);
       toast.success("Trajet mis à jour");
       router.push(`/${slug}/trips`);
     } catch (e: any) {
@@ -176,6 +184,19 @@ export default function EditTripPage() {
                   className="pl-9"
                 />
               </div>
+            </Field>
+            <Field label="Tag (optionnel)" hint="Affiché en badge en haut à gauche du trajet.">
+              <Select value={tagId || "none"} onValueChange={(v) => setTagId(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Aucun" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Aucun —</SelectItem>
+                  {tags.map((t: any) => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </Field>
           </div>
           </FormSection>

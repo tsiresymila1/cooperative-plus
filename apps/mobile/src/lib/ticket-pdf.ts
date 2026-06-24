@@ -17,6 +17,8 @@ type Args = {
   departureAt?: number | string | null;
   totalAmount: number;
   currency: string;
+  tagName?: string | null;
+  tagColor?: string | null;
   tickets: TicketLike[];
 };
 
@@ -106,6 +108,7 @@ async function html(a: Args): Promise<string> {
           <span class="ref"><span class="lbl">Réf</span><br /><span class="val">${esc(a.reference)}</span></span>
         </div>
         <div class="route">${esc(a.originName)} &rarr; ${esc(a.destName)}</div>
+        ${a.tagName ? `<div style="margin-top:4px"><span style="display:inline-block;background:${esc(a.tagColor) || "#0f2d5c"};color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:4px">${esc(a.tagName)}</span></div>` : ""}
         <div class="when">${esc(longDepart(a.departDate, a.departureAt))}</div>
       </div>
       <div class="seam"></div>

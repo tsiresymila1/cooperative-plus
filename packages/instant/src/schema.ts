@@ -111,6 +111,15 @@ const schema = i.schema({
       deletedAt: i.date().optional(),
     }),
 
+    // Trip tags (Standard / Premium / VIP…). Global (admin) or per-coop.
+    tags: i.entity({
+      name: i.string().indexed(),
+      color: i.string(),            // background hex; badge text is always white
+      isGlobal: i.boolean().indexed(),
+      createdAt: i.date(),
+      deletedAt: i.date().optional(),
+    }),
+
     routes: i.entity({
       name: i.string(),
       basePrice: i.number(),
@@ -255,6 +264,8 @@ const schema = i.schema({
     seatMapCoop: { forward: { on: "seatMaps", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "seatMaps" } },
 
     destCoop: { forward: { on: "destinations", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "destinations" } },
+    tagCoop: { forward: { on: "tags", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "tags" } },
+    instanceTag: { forward: { on: "tripInstances", has: "one", label: "tag" }, reverse: { on: "tags", has: "many", label: "tripInstances" } },
     routeCoop: { forward: { on: "routes", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "routes" } },
     routeOrigin: { forward: { on: "routes", has: "one", label: "origin" }, reverse: { on: "destinations", has: "many", label: "routesFrom" } },
     routeDest: { forward: { on: "routes", has: "one", label: "destination" }, reverse: { on: "destinations", has: "many", label: "routesTo" } },

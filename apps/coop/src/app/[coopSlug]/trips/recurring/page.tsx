@@ -82,13 +82,16 @@ export default function RecurringTripPage() {
   const { data } = db.useQuery({
     routes: { $: { where: { "cooperative.id": coopId } }, origin: {}, destination: {} },
     vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {} },
+    tags: { $: {}, cooperative: {} },
   });
   const routes = (data?.routes ?? []).filter(notDeleted);
   const vehicles = (data?.vehicles ?? []).filter(notDeleted);
+  const tags = (data?.tags ?? []).filter(notDeleted).filter((t: any) => t.isGlobal || t.cooperative?.id === coopId);
 
   // 01 Trajet & véhicule
   const [routeId, setRouteId] = useState("");
   const [vehicleId, setVehicleId] = useState("");
+  const [tagId, setTagId] = useState("");
   const [price, setPrice] = useState("");
 
   // 02 Récurrence
@@ -245,7 +248,7 @@ export default function RecurringTripPage() {
             seatsBooked: 0,
             createdAt: now,
           })
-          .link({ cooperative: coopId, route: routeId, vehicle: vehicleId }),
+          .link({ cooperative: coopId, route: routeId, vehicle: vehicleId, ...(tagId ? { tag: tagId } : {}) }),
       );
 
       // Batch ≤ 50 steps each (template counts as a step in the first chunk)
@@ -323,6 +326,19 @@ export default function RecurringTripPage() {
                     <SelectItem key={v.id} value={v.id}>
                       {v.name} ({v.registrationNo})
                     </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field label="Tag (optionnel)" hint="Appliqué à tous les trajets générés.">
+              <Select value={tagId || "none"} onValueChange={(v) => setTagId(v === "none" ? "" : v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Aucun" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— Aucun —</SelectItem>
+                  {tags.map((t: any) => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

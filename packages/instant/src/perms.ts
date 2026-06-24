@@ -34,6 +34,7 @@ const rules = {
     allow: { view: "true", create: admin, update: `(${admin} || ${selfMember})`, delete: admin },
   },
   destinations: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
+  tags: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   routes: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   vehicles: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   seatMaps: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },

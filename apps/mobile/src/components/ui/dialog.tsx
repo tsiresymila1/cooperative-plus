@@ -29,7 +29,8 @@ function DialogContent({
       <DialogPrimitive.Overlay asChild>
         <Pressable
           onPress={() => onOpenChange(false)}
-          className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center bg-ink/40 p-5"
+          style={{ backgroundColor: "rgba(0,0,0,0.9)" }}
+          className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center p-5"
         >
           <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(140)} className="w-full max-w-[420px]">
             {/* Swallow taps so pressing the card doesn't close the dialog. */}
@@ -45,7 +46,7 @@ function DialogContent({
                 {showClose && (
                   <DialogPrimitive.Close
                     hitSlop={12}
-                    className="absolute right-3 top-3 h-7 w-7 items-center justify-center rounded-[4px] bg-sand active:opacity-80"
+                    className="absolute right-3 top-3 h-7 w-7 items-center justify-center rounded-[4px] bg-ink/10 active:opacity-80"
                   >
                     <X size={15} color={colorScheme === "dark" ? "#ffffff" : "#000000"} />
                   </DialogPrimitive.Close>

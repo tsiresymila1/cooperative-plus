@@ -18,6 +18,7 @@ import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { bookingStatusFr, fmtTime, parseSeatLayout } from "@/lib/domain";
 import { printTicket, shareTicketPdf } from "@/lib/ticket-pdf";
+import { TagBadge } from "@/components/tag-badge";
 
 export default function Confirmation() {
   const insets = useSafeAreaInsets();
@@ -27,7 +28,7 @@ export default function Confirmation() {
     bookings: {
       $: { where: { id: bookingId } },
       tickets: {},
-      tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tickets: {} },
+      tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tickets: {}, tag: {} },
     },
   });
 
@@ -74,6 +75,8 @@ export default function Confirmation() {
       departureAt: (trip?.departureAt ?? null) as number | string | null,
       totalAmount: booking!.totalAmount,
       currency: booking!.currency,
+      tagName: (trip as any)?.tag?.name ?? null,
+      tagColor: (trip as any)?.tag?.color ?? null,
       tickets: tickets.map((t) => ({
         seatLabel: t.seatLabel,
         passengerName: t.passengerName,
@@ -121,9 +124,15 @@ export default function Confirmation() {
           {/* Ticket — single card for the whole booking (image layout) */}
           <Animated.View
             entering={FadeInDown.delay(100).duration(420)}
-            className="mt-6"
+            className="mt-6 relative"
           >
+            {trip?.tag ? (
+              <View className="absolute right-3 z-100" style={{ top: -8 }}>
+                <TagBadge name={trip.tag.name} color={trip.tag.color} />
+              </View>
+            ) : null}
             <View className="overflow-hidden rounded-[16px] border-0 border-ink/8 bg-paper">
+
               {/* Navy header: coop + reference, then route + date */}
               <View className="bg-navy-deep px-5 pb-6 pt-5">
                 <View className="flex-row items-start justify-between">

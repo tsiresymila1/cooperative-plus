@@ -111,7 +111,7 @@ export default function About() {
         </Animated.View>
 
         <Text className="mt-6 text-center font-sans text-xs text-ink-soft/50">
-          Fait avec ❤️ à Madagascar · © {new Date().getFullYear()} Tsiresy Milà
+          Made with ❤️ · © {new Date().getFullYear()} Tsiresy Milà
         </Text>
       </ScrollView>
     </View>

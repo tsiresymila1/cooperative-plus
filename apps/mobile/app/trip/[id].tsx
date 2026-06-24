@@ -6,6 +6,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, CircleDot, Clock, DoorOpen, User } from "lucide-react-native";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
+import { TagBadge } from "@/components/tag-badge";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
 import { cn, fmtMoney } from "@/lib/cn";
@@ -43,6 +44,7 @@ export default function TripDetail() {
       tickets: {},
       holds: { $: { where: { expiresAt: { $gt: new Date(nowKey) } } } },
       vehicle: { seatMaps: {} },
+      tag: {},
     },
   });
 
@@ -193,7 +195,12 @@ export default function TripDetail() {
             showsVerticalScrollIndicator={false}
           >
             <Animated.View entering={FadeIn.duration(300)}>
-              <Card>
+              <Card className="relative">
+                {(trip as any).tag && (
+                  <View className="absolute right-3 z-20" style={{ top: -8 }}>
+                    <TagBadge name={(trip as any).tag.name} color={(trip as any).tag.color} />
+                  </View>
+                )}
                 <View className="flex-row items-center gap-2.5">
                   <CoopLogo
                     url={trip.cooperative?.logoUrl}

@@ -9,6 +9,7 @@ import {
   db,
   Button,
   Badge,
+  TagBadge,
   DataTable,
   FilterBar,
   KpiCard,
@@ -49,7 +50,7 @@ export default function TripsPage() {
   const today = todayISO();
 
   const { data, isLoading } = db.useQuery({
-    tripInstances: { $: { where: { "cooperative.id": coopId } }, route: {}, vehicle: {}, tickets: {} },
+    tripInstances: { $: { where: { "cooperative.id": coopId } }, route: {}, vehicle: {}, tickets: {}, tag: {} },
     routes: { $: { where: { "cooperative.id": coopId } }, origin: {}, destination: {} },
   });
 
@@ -158,6 +159,7 @@ export default function TripsPage() {
     render: (r) => (
       <span className="inline-flex items-center gap-1.5 font-medium text-ink">
         {r.originName} <ArrowRight size={13} className="text-ink-soft/50" /> {r.destName}
+        {r.tag && <TagBadge name={r.tag.name} color={r.tag.color} />}
       </span>
     ),
   };

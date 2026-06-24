@@ -16,11 +16,26 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.ver.outputs.tag }}
     env:
       # Public by design (shipped in the bundle) — safe to keep here.
       EXPO_PUBLIC_INSTANT_APP_ID: feb5e50f-21d7-4880-9de5-49eba48f2a45
     steps:
       - uses: actions/checkout@v4
+
+      # Tag for naming: the pushed git tag (v1.0.0), else v<app.json version>.
+      - name: Resolve tag
+        id: ver
+        working-directory: apps/mobile
+        run: |
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            TAG="${{ github.ref_name }}"
+          else
+            TAG="v$(node -p "require('./app.json').expo.version")"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Tag = $TAG"
 
       # No `version:` — it's read from package.json "packageManager" (pnpm@9.12.0).
       - uses: pnpm/action-setup@v4
@@ -77,19 +92,38 @@ jobs:
         working-directory: apps/mobile/android
         run: ./gradlew :app:bundleRelease :app:assembleRelease --no-daemon
 
+      # Rename to cooperative-plus_<tag>.{aab,apk} so artifact + release assets are tagged.
+      - name: Rename outputs
+        working-directory: apps/mobile/android/app/build/outputs
+        run: |
+          TAG="${{ steps.ver.outputs.tag }}"
+          cp bundle/release/app-release.aab "cooperative-plus_${TAG}.aab"
+          cp apk/release/app-release.apk "cooperative-plus_${TAG}.apk"
+
       - name: Upload AAB (Play Store)
         uses: actions/upload-artifact@v4
         with:
-          name: cooperative-plus_${{ github.run_number }}_aab
-          path: apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
+          name: cooperative-plus_${{ steps.ver.outputs.tag }}_aab
+          path: apps/mobile/android/app/build/outputs/cooperative-plus_${{ steps.ver.outputs.tag }}.aab
           if-no-files-found: error
 
       - name: Upload APK (sideload / test)
         uses: actions/upload-artifact@v4
         with:
-          name: cooperative-plus_${{ github.run_number }}_apk
-          path: apps/mobile/android/app/build/outputs/apk/release/app-release.apk
+          name: cooperative-plus_${{ steps.ver.outputs.tag }}_apk
+          path: apps/mobile/android/app/build/outputs/cooperative-plus_${{ steps.ver.outputs.tag }}.apk
           if-no-files-found: error
+
+      # Attach APK + AAB to a GitHub Release (only on tag push).
+      - name: Publish GitHub Release
+        if: ${{ github.ref_type == 'tag' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          files: |
+            apps/mobile/android/app/build/outputs/cooperative-plus_${{ steps.ver.outputs.tag }}.apk
+            apps/mobile/android/app/build/outputs/cooperative-plus_${{ steps.ver.outputs.tag }}.aab
 
   # ── Deploy: upload the built AAB to the Play Store (internal track). ──
   # Runs after `build`; skipped automatically when the Play secret is absent.
@@ -104,7 +138,7 @@ jobs:
         if: ${{ env.PLAY_JSON != '' }}
         uses: actions/download-artifact@v4
         with:
-          name: cooperative-plus_${{ github.run_number }}_aab
+          name: cooperative-plus_${{ needs.build.outputs.tag }}_aab
           path: dist
 
       - name: Upload to Play Store (internal)
@@ -113,6 +147,6 @@ jobs:
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: ts.mila.cooperativeplus
-          releaseFiles: dist/app-release.aab
+          releaseFiles: dist/cooperative-plus_${{ needs.build.outputs.tag }}.aab
           track: internal
           status: completed

@@ -40,12 +40,16 @@ export default function NewTripPage() {
   const { data } = db.useQuery({
     routes: { $: { where: { "cooperative.id": coopId } }, origin: {}, destination: {} },
     vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {} },
+    tags: { $: {}, cooperative: {} },
   });
   const routes = (data?.routes ?? []).filter(notDeleted);
   const vehicles = (data?.vehicles ?? []).filter(notDeleted);
+  // Tags usable on this trip: global + this coop's own.
+  const tags = (data?.tags ?? []).filter(notDeleted).filter((t: any) => t.isGlobal || t.cooperative?.id === coopId);
 
   const [routeId, setRouteId] = useState("");
   const [vehicleId, setVehicleId] = useState("");
+  const [tagId, setTagId] = useState("");
   const [date, setDate] = useState(todayISO());
   const [time, setTime] = useState("06:00");
   const [price, setPrice] = useState("");
@@ -93,7 +97,7 @@ export default function NewTripPage() {
             seatsBooked: 0,
             createdAt: Date.now(),
           })
-          .link({ cooperative: coopId, route: routeId, vehicle: vehicleId }),
+          .link({ cooperative: coopId, route: routeId, vehicle: vehicleId, ...(tagId ? { tag: tagId } : {}) }),
       );
       toast.success("Trajet créé");
       router.push(`/${slug}/trips`);
@@ -190,6 +194,19 @@ export default function NewTripPage() {
                 className="pl-9"
               />
             </div>
+          </Field>
+          <Field label="Tag (optionnel)" hint="Affiché en badge en haut à gauche du trajet.">
+            <Select value={tagId || "none"} onValueChange={(v) => setTagId(v === "none" ? "" : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Aucun" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">— Aucun —</SelectItem>
+                {tags.map((t: any) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </Field>
           </div>
         </FormSection>

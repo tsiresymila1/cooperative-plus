@@ -9,7 +9,7 @@ import {
 import {
   DashboardShell, coopNav, useCoop, db,
   Card, KpiCard, AreaChart, PageSkeleton,
-  fmtMoney, fmtTime, fmtDateTime, todayISO, notDeleted,
+  fmtMoney, fmtTime, fmtDateTime, todayISO, notDeleted, TagBadge,
 } from "@cp/ui";
 
 const dk = (ms: number | string) => {
@@ -32,10 +32,10 @@ export default function DashboardPage() {
   const [range, setRange] = useState<7 | 30>(7);
 
   const { data, isLoading } = db.useQuery({
-    tripInstances: { $: { where: { "cooperative.id": coopId } }, tickets: {} },
+    tripInstances: { $: { where: { "cooperative.id": coopId } }, tickets: {}, tag: {} },
     payments: { $: { where: { "cooperative.id": coopId, status: "paid" } } },
     vehicles: { $: { where: { "cooperative.id": coopId } } },
-    bookings: { $: { where: { "cooperative.id": coopId }, order: { createdAt: "desc" } }, tripInstance: {} },
+    bookings: { $: { where: { "cooperative.id": coopId }, order: { createdAt: "desc" } }, tripInstance: { tag: {} } },
   });
 
   const instances = (data?.tripInstances ?? []).filter(notDeleted);
@@ -173,6 +173,7 @@ export default function DashboardPage() {
                                   {String(t.originName ?? "?").slice(0, 2).toUpperCase()}
                                 </span>
                                 <span className="font-medium text-ink">{t.originName} → {t.destName}</span>
+                                {t.tag && <TagBadge name={t.tag.name} color={t.tag.color} />}
                               </div>
                             </td>
                             <td className="px-6 py-3.5 font-mono text-ink-soft">{fmtTime(t.departureAt)}</td>
@@ -232,7 +233,10 @@ export default function DashboardPage() {
                       <Link key={b.id} href={`/${slug}/bookings/${b.id}`} className="flex gap-3.5">
                         <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor(b.status)}`} />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-ink">{b.contactName ?? "Réservation"}</p>
+                          <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
+                            {b.contactName ?? "Réservation"}
+                            {b.tripInstance?.tag && <TagBadge name={b.tripInstance.tag.name} color={b.tripInstance.tag.color} />}
+                          </p>
                           <p className="truncate text-xs text-ink-soft">
                             {b.tripInstance ? `${b.tripInstance.originName} → ${b.tripInstance.destName}` : `Réservation #${b.reference}`}
                             {" · "}{b.seatCount} place(s) · {fmtMoney(b.totalAmount)}

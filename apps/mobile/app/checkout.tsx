@@ -6,6 +6,7 @@ import { router } from "expo-router";
 import { Check, ChevronLeft, CreditCard, Smartphone, Wallet } from "lucide-react-native";
 import { Button, Card, Field, Input } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
 import { scheduleDepartureReminders } from "@/lib/notifications";
@@ -51,6 +52,7 @@ export default function Checkout() {
     selection ? Math.max(0, selection.holdExpiresAt - Date.now()) : 0,
   );
   const [submitting, setSubmitting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
   const expiredRef = useRef(false);
   const completedRef = useRef(false);
@@ -144,6 +146,7 @@ export default function Checkout() {
 
   async function confirm() {
     if (!selection || !canSubmit) return;
+    setConfirmOpen(false);
     setSubmitting(true);
 
     const bookingId = id();
@@ -352,14 +355,47 @@ export default function Checkout() {
           <Text className="font-sans font-bold text-sm text-ink-soft">Total</Text>
           <Text className="font-mono  font-bold text-xl text-ink">{fmtMoney(total, selection.currency)}</Text>
         </View>
-        <Button onPress={confirm} loading={submitting} disabled={!canSubmit}>
+        <Button onPress={() => setConfirmOpen(true)} loading={submitting} disabled={!canSubmit}>
           <Text className="font-sans font-medium text-white">
             {method === "cash" ? "Réserver (payer à bord)" : "Payer maintenant"}
           </Text>
         </Button>
       </View>
 
+      {/* Confirmation before finalizing the booking + payment. */}
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="gap-3">
+          <DialogTitle className="font-display text-lg text-ink">Confirmer la réservation</DialogTitle>
+          <View className="gap-2">
+            <ConfirmRow k="Trajet" v={`${selection.originName} → ${selection.destName}`} />
+            <ConfirmRow k="Sièges" v={selection.seats.map((s) => s.seatLabel).join(", ")} />
+            <ConfirmRow k="Passager" v={name.trim()} />
+            <ConfirmRow k="Paiement" v={metaFor(method).label} />
+            <ConfirmRow k="Total" v={fmtMoney(total, selection.currency)} />
+          </View>
+          <View className="mt-1 flex-row gap-2">
+            <Button variant="outline" className="flex-1" onPress={() => setConfirmOpen(false)}>
+              <Text className="font-sans font-medium text-ink">Annuler</Text>
+            </Button>
+            <Button className="flex-1" onPress={confirm}>
+              <Text className="font-sans font-medium text-white">
+                {method === "cash" ? "Réserver" : "Payer"}
+              </Text>
+            </Button>
+          </View>
+        </DialogContent>
+      </Dialog>
+
       <MessageDialog notice={notice} onDismiss={() => setNotice(null)} />
+    </View>
+  );
+}
+
+function ConfirmRow({ k, v }: { k: string; v: string }) {
+  return (
+    <View className="flex-row items-center justify-between">
+      <Text className="font-sans text-sm text-ink-soft">{k}</Text>
+      <Text className="font-sans text-sm font-bold text-ink" numberOfLines={1}>{v}</Text>
     </View>
   );
 }

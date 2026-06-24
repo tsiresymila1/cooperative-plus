@@ -5,14 +5,14 @@ import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
 import { CheckCircle2, Download } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Button, Card, CoopLogo, SeatSelector, type Cell } from "@cp/ui";
+import { Button, Card, CoopLogo, SeatSelector, TagBadge, type Cell } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
 
 export default function Confirmation({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = use(params);
   const { data, isLoading } = db.useQuery({
-    bookings: { $: { where: { reference } }, tickets: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} } } },
+    bookings: { $: { where: { reference } }, tickets: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} } },
   });
   const bk = data?.bookings?.[0];
   const trip = bk?.tripInstance;
@@ -20,6 +20,8 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
   // Seat-map preview for the ticket: layout from the vehicle (or snapshot),
   // with the passenger's own seats highlighted.
   const ownSeats = (bk?.tickets ?? []).map((t) => t.seatLabel as string);
+  // tag may come back as object or single-item array depending on the link traversal.
+  const tag: any = Array.isArray((trip as any)?.tag) ? (trip as any).tag[0] : (trip as any)?.tag;
   const activeMap = (trip?.vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ?? (trip?.vehicle?.seatMaps ?? [])[0];
   const layout: Cell[] = Array.isArray(activeMap?.layout)
     ? (activeMap.layout as Cell[])
@@ -29,7 +31,7 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
     <>
       <SiteHeader />
       {/* Print: show only the ticket */}
-      <style>{`@media print { body * { visibility: hidden !important; } #ticket, #ticket * { visibility: visible !important; } #ticket { position: absolute; inset: 0 auto auto 0; width: 100%; } }`}</style>
+      <style>{`@media print { body * { visibility: hidden !important; } #ticket, #ticket * { visibility: visible !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } #ticket { position: absolute; inset: 0 auto auto 0; width: 100%; } }`}</style>
       <main className="mx-auto max-w-lg px-5 py-12">
         <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", damping: 14 }}
           className="mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full bg-baobab/15 text-baobab">
@@ -51,8 +53,9 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
                   <span className="font-mono text-base font-bold tracking-wider text-clay">{reference}</span>
                 </span>
               </div>
-              <div className="mt-4 font-display text-2xl font-bold">
+              <div className="mt-4 flex flex-wrap items-center gap-2 font-display text-2xl font-bold">
                 {trip ? `${trip.originName} → ${trip.destName}` : (isLoading ? "Chargement…" : "—")}
+                {tag && <TagBadge name={tag.name} color={tag.color} />}
               </div>
               {trip && <p className="mt-1 font-mono text-sm text-white/70">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>}
             </div>

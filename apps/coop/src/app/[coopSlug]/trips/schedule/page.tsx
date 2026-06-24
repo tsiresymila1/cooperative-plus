@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Plus, List, CalendarPlus, Users, CalendarClock, Bus, ArrowRight, ExternalLink, Activity, Calendar } from "lucide-react";
 import {
   DashboardShell, coopNav, useCoop, db,
-  Button, Card, Badge, KpiCard, Drawer, PageSkeleton,
+  Button, Card, Badge, KpiCard, Drawer, PageSkeleton, TagBadge,
   fmtTime, fmtMoney, fmtDateTime, tripStatus, toast, notDeleted,
 } from "@cp/ui";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@cp/ui/shadcn";
@@ -37,7 +37,7 @@ export default function SchedulePage() {
   const todayKey = dk(now);
 
   const { data, isLoading } = db.useQuery({
-    tripInstances: { $: { where: { "cooperative.id": coopId } }, tickets: {} },
+    tripInstances: { $: { where: { "cooperative.id": coopId } }, tickets: {}, tag: {} },
   });
   const instances = (data?.tripInstances ?? []).filter(notDeleted);
 
@@ -93,7 +93,10 @@ export default function SchedulePage() {
     return (
       <button onClick={() => openTrip(t)}
         className={`block w-full rounded-md px-1.5 py-1 text-left transition-opacity hover:opacity-90 ${chipBg[t.status] ?? "bg-strong text-white"}`}>
-        <span className="block truncate text-[10.5px] font-bold leading-tight">{fmtTime(t.departureAt)} · {t.originName}→{t.destName}</span>
+        <span className="block truncate text-[10.5px] font-bold leading-tight">
+          {t.tag && <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle ring-1 ring-white/60" style={{ backgroundColor: t.tag.color || "#0f2d5c" }} title={t.tag.name} />}
+          {fmtTime(t.departureAt)} · {t.originName}→{t.destName}
+        </span>
         <span className="mt-0.5 block h-0.5 w-full overflow-hidden rounded-full bg-white/25">
           <span className="block h-full rounded-full bg-white/80" style={{ width: `${Math.max(8, ratio * 100)}%` }} />
         </span>
@@ -224,11 +227,14 @@ export default function SchedulePage() {
           const st = tripStatus[selected.status] ?? { label: selected.status, tone: "neutral" as const };
           return (
             <div className="space-y-5">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <p className="flex items-center gap-2 font-display text-lg font-bold text-ink">
                   {selected.originName} <ArrowRight size={15} className="text-laterite" /> {selected.destName}
                 </p>
-                <Badge tone={st.tone}>{st.label}</Badge>
+                <div className="flex shrink-0 items-center gap-2">
+                  {selected.tag && <TagBadge name={selected.tag.name} color={selected.tag.color} />}
+                  <Badge tone={st.tone}>{st.label}</Badge>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -302,6 +308,7 @@ function DayView({ trips, onOpen, isToday }: { trips: any[]; onOpen: (t: any) =>
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-2 font-display text-base font-bold text-ink">
                   {t.originName} <ArrowRight size={14} className="text-laterite" /> {t.destName}
+                  {t.tag && <TagBadge name={t.tag.name} color={t.tag.color} />}
                 </p>
                 <p className="mt-1 inline-flex items-center gap-3 text-sm text-ink-soft">
                   <span className="inline-flex items-center gap-1.5"><Bus size={14} className="text-ink-soft/50" />{t.vehicleName}</span>

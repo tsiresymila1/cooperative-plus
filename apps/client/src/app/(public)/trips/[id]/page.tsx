@@ -3,7 +3,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, MapPin, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Badge, Button, Card, CoopLogo, Spinner } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo, Spinner, TagBadge } from "@cp/ui";
 import { SeatSelector, type Cell } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db, id } from "@cp/ui";
@@ -21,7 +21,7 @@ export default function TripDetail({ params }: { params: Promise<{ id: string }>
   const authed = !!user && !(user as { isGuest?: boolean }).isGuest;
 
   const { data, isLoading } = db.useQuery({
-    tripInstances: { $: { where: { id: instanceId } }, cooperative: {}, tickets: {}, holds: {}, vehicle: { seatMaps: {} } },
+    tripInstances: { $: { where: { id: instanceId } }, cooperative: {}, tickets: {}, holds: {}, vehicle: { seatMaps: {} }, tag: {} },
   });
   const trip = data?.tripInstances?.[0];
 
@@ -89,7 +89,10 @@ export default function TripDetail({ params }: { params: Promise<{ id: string }>
         <div className="mb-6 flex items-center gap-4">
           <CoopLogo url={trip.cooperative?.logoUrl} name={trip.coopName} size={56} />
           <div>
-            <div className="flex items-center gap-2 text-sm text-ink-soft"><MapPin size={14} className="text-orange" />{trip.coopName} · {trip.vehicleName}</div>
+            <div className="flex items-center gap-2 text-sm text-ink-soft">
+              <MapPin size={14} className="text-orange" />{trip.coopName} · {trip.vehicleName}
+              {(trip as any).tag && <TagBadge name={(trip as any).tag.name} color={(trip as any).tag.color} />}
+            </div>
             <h1 className="mt-1 font-display text-3xl font-bold">{trip.originName} → {trip.destName}</h1>
             <div className="mt-1 flex items-center gap-4 font-mono text-ink-soft">
               <span className="text-lg font-semibold text-ink">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>

@@ -105,6 +105,18 @@ export function CoopLogo({ url, name, size = 40, className }: { url?: string | n
   );
 }
 
+/** Trip tag badge — white text on the tag's colour. */
+export function TagBadge({ name, color, className }: { name: string; color?: string | null; className?: string }) {
+  return (
+    <span
+      className={cn("inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm", className)}
+      style={{ backgroundColor: color || "#0f2d5c" }}
+    >
+      {name}
+    </span>
+  );
+}
+
 export function Logo({ className, withName = false, dark, width, height }: { className?: string; withName?: boolean; dark?: boolean; width?: number, height?: number }) {
   return (
     <span className={cn("inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight", dark ? "text-paper" : "text-navy", className)}>

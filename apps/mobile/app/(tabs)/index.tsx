@@ -14,6 +14,7 @@ import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { fmtDateKey, fmtTime, toDateKey, toMs } from "@/lib/domain";
+import { TagBadge } from "@/components/tag-badge";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -51,11 +52,13 @@ export default function Home() {
   const today = toDateKey(new Date());
   const { data: popularData } = db.useQuery({
     tripInstances: {
-      $: { where: { status: "scheduled", departDate: { $gte: today } }, limit: 20, order: { departureAt: "asc" } },
+      $: { where: { status: "scheduled", departDate: { $gte: today } }, limit: 100, order: { departureAt: "asc" } },
       tickets: {},
       cooperative: {},
+      tag:{}
     },
   });
+
   const popular = (popularData?.tripInstances ?? [])
     .filter((t) => toMs(t.departureAt) > Date.now())
     .slice(0, 4);
@@ -171,7 +174,12 @@ export default function Home() {
                 const full = booked >= total;
                 return (
                   <Animated.View key={r.id} entering={FadeInDown.delay(240 + i * 70).duration(420)}>
-                    <Card className="mb-3">
+                    <Card className="mb-3 relative">
+                      {r.tag ? (
+                        <View className="absolute right-3 z-20" style={{ top: -8 }}>
+                          <TagBadge name={r.tag.name} color={r.tag.color} />
+                        </View>
+                      ) : null}
                       {/* Coop + occupancy */}
                       <View className="flex-row items-center gap-3">
                         <CoopLogo url={r.cooperative?.logoUrl} brandColor={r.cooperative?.brandColor} name={r.coopName} size={40} />
@@ -205,10 +213,7 @@ export default function Home() {
                         className="mt-3"
                         disabled={full}
                         onPress={() =>
-                          router.push({
-                            pathname: "/results",
-                            params: { origin: r.originName, dest: r.destName, date: r.departDate },
-                          })
+                          router.push({ pathname: "/trip/[id]", params: { id: r.id } })
                         }
                       >
                         <Text className="font-sans font-medium text-white">Réserver</Text>

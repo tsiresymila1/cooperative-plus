@@ -17,7 +17,7 @@ const button = cva("flex-row items-center justify-center gap-2 rounded-[4px] act
     variant: {
       primary: "bg-laterite",
       ink: "bg-strong",
-      outline: "border border-ink/15 bg-paper",
+      outline: "border border-ink/15 bg-ink/5",
       ghost: "bg-transparent",
     },
     size: { sm: "h-10 px-4", md: "h-12 px-5", lg: "h-[54px] px-6" },

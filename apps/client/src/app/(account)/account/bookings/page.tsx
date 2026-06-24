@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ChevronRight, Ticket } from "lucide-react";
-import { Badge, Button, Card, CoopLogo } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo, TagBadge } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
 
@@ -33,7 +33,7 @@ export default function Bookings() {
               order: { createdAt: "desc" },
             },
             tickets: {},
-            tripInstance: { cooperative: {} },
+            tripInstance: { cooperative: {}, tag: {} },
           },
         }
       : null,
@@ -41,7 +41,7 @@ export default function Bookings() {
   const bookings = data?.bookings ?? [];
 
   return (
-    <div className="reveal space-y-3">
+    <div className=" space-y-3">
       <h1 className="font-display text-2xl font-bold">Mes réservations</h1>
       {isLoading ? (
         [0, 1].map((i) => (
@@ -57,8 +57,11 @@ export default function Bookings() {
         </Card>
       ) : (
         <div className="gap-2 flex flex-col">
-          {bookings.map((b) => (
-            <Link key={b.id} href={`/bookings/${b.reference}`}>
+          {bookings.map((b) => {
+            const ti: any = b.tripInstance;
+            const tg = Array.isArray(ti?.tag) ? ti.tag[0] : ti?.tag;
+            return (
+            <Link className="" key={b.id} href={`/bookings/${b.reference}`}>
               <Card className="flex items-center gap-4 p-5 transition-colors hover:bg-ink/[.02]">
                 <CoopLogo url={b.tripInstance?.cooperative?.logoUrl} name={b.tripInstance?.coopName} size={44} className="border border-ink/10" />
                 <div className="flex-1">
@@ -66,6 +69,7 @@ export default function Bookings() {
                     <span className="truncate text-sm font-semibold text-ink">
                       {b.tripInstance?.coopName ?? "Cooperative Plus"}
                     </span>
+                    {tg && <TagBadge name={tg.name} color={tg.color} />}
                     <Badge tone={tone[b.status] ?? "neutral"}>
                       {label[b.status] ?? b.status}
                     </Badge>
@@ -100,7 +104,8 @@ export default function Bookings() {
                 <ChevronRight size={18} className="text-ink-soft/50" />
               </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

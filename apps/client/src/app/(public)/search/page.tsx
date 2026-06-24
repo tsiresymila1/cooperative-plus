@@ -3,9 +3,9 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowRightLeft, Bus, Clock, MapPin, Search, Users } from "lucide-react";
+import { ArrowRight, ArrowRightLeft, Bus, Calendar, Clock, MapPin, Search, Users } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Badge, Button, Card, CoopLogo, Spinner, cn, db, fmtMoney, notDeleted } from "@cp/ui";
+import { Badge, Button, Card, CoopLogo, Spinner, TagBadge, cn, db, fmtMoney, notDeleted } from "@cp/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 
@@ -36,7 +36,7 @@ function SearchInner() {
   const { data, isLoading } = db.useQuery({
     tripInstances: {
       $: { where: { originName: from, destName: to, departDate: dk, status: "scheduled" }, order: { departureAt: "asc" } },
-      route: {}, cooperative: {}, tickets: {}, holds: {},
+      route: {}, cooperative: {}, tickets: {}, holds: {}, tag: {},
     },
   });
 
@@ -111,7 +111,7 @@ function SearchInner() {
 
       {/* Results */}
       {isLoading ? (
-        <div className="space-y-3">{[0, 1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-ink/5" />)}</div>
+        <div className="grid gap-4 sm:grid-cols-2">{[0, 1, 2, 3].map((i) => <div key={i} className="h-44 animate-pulse rounded-2xl bg-ink/5" />)}</div>
       ) : results.length === 0 ? (
         <Card className="flex flex-col items-center gap-2 p-12 text-center">
           <Search className="text-ink-soft/40" />
@@ -119,27 +119,33 @@ function SearchInner() {
           <p className="text-sm text-ink-soft">Essayez une autre date ou destination.</p>
         </Card>
       ) : (
-        <div className="reveal space-y-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {results.map((t, i) => (
-            <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-              <Card className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-                <CoopLogo url={t.cooperative?.logoUrl} name={t.coopName} size={48} />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 text-xs font-medium text-ink-soft/70">
-                    <Bus size={14} /> {t.coopName} · {t.vehicleName}
-                  </div>
-                  <div className="mt-2 flex items-center gap-3 font-display text-2xl font-bold">
-                    <span className="font-mono">{new Date(t.departureAt).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}</span>
-                    {t.route?.durationMin ? (
-                      <span className="flex items-center gap-1 text-sm font-normal text-ink-soft"><Clock size={14} />{Math.floor(t.route.durationMin / 60)}h{String(t.route.durationMin % 60).padStart(2, "0")}</span>
-                    ) : null}
+            <motion.div key={t.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="relative">
+              {(t as any).tag && (
+                <div className="absolute -top-2 right-4 z-20">
+                  <TagBadge name={(t as any).tag.name} color={(t as any).tag.color} className="shadow-md" />
+                </div>
+              )}
+              <Card className="flex h-full flex-col gap-4 p-5">
+                <div className="flex items-center gap-3">
+                  <CoopLogo url={t.cooperative?.logoUrl} name={t.coopName} size={44} />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-ink">{t.coopName}</p>
+                    <p className="flex items-center gap-1.5 text-xs text-ink-soft/70"><Bus size={12} /> {t.vehicleName}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-5 sm:flex-col sm:items-end">
+                <div className="flex items-end justify-between">
+                  <div className="space-y-2">
+                    <span className="font-mono flex gap-1 font-display text-sm font-bold leading-none"><Calendar size={13} />{new Date(t.departureAt).toLocaleDateString("fr")}</span>
+                      <p className="mt-1.5 flex items-center gap-1 text-sm font-bold leading-none"><Clock size={13} />{new Date(t.departureAt).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
                   <Badge tone={t.avail <= 3 ? "warning" : "success"}>{t.avail} place{t.avail > 1 ? "s" : ""}</Badge>
-                  <span className="font-mono text-2xl font-bold">{fmtMoney(t.price)}</span>
                 </div>
-                <Link href={`/trips/${t.id}`}><Button className="w-full sm:w-auto">Choisir <ArrowRight size={16} /></Button></Link>
+                <div className="mt-auto flex items-center justify-between border-t border-ink/8 pt-4">
+                  <span className="font-mono text-md font-bold">{fmtMoney(t.price)}</span>
+                  <Link href={`/trips/${t.id}`}><Button size="sm">Choisir <ArrowRight size={16} /></Button></Link>
+                </div>
               </Card>
             </motion.div>
           ))}

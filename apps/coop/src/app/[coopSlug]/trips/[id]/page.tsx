@@ -36,6 +36,7 @@ import {
   Button,
   Card,
   Badge,
+  TagBadge,
   Field,
   SeatSelector,
   Dialog,
@@ -83,6 +84,7 @@ export default function TripViewPage() {
       holds: {},
       route: {},
       vehicle: { seatMaps: {} },
+      tag: {},
     },
     vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {} },
   });
@@ -372,6 +374,7 @@ export default function TripViewPage() {
                   {trip.originName}
                   <ArrowRight size={20} className="text-laterite" />
                   {trip.destName}
+                  {(trip as any).tag && <TagBadge name={(trip as any).tag.name} color={(trip as any).tag.color} />}
                 </h2>
                 <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-ink-soft">
                   <span className="inline-flex items-center gap-1.5">

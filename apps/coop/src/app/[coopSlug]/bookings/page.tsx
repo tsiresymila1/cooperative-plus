@@ -9,6 +9,7 @@ import {
   db,
   Button,
   Badge,
+  TagBadge,
   Card,
   Drawer,
   DataTable,
@@ -72,7 +73,7 @@ export default function BookingsPage() {
   const { data, isLoading } = db.useQuery({
     bookings: {
       $: { where: { "cooperative.id": coopId } },
-      tripInstance: {},
+      tripInstance: { tag: {} },
       tickets: {},
       payments: {},
     },
@@ -122,6 +123,7 @@ export default function BookingsPage() {
           >
             {r.tripInstance.originName} <ArrowRight size={13} className="text-ink-soft/50" /> {r.tripInstance.destName}
             <ExternalLink size={12} className="text-laterite/70" />
+            {r.tripInstance.tag && <TagBadge name={r.tripInstance.tag.name} color={r.tripInstance.tag.color} />}
           </button>
         ) : (
           "—"
@@ -270,7 +272,10 @@ function BookingDrawerBody({ b, checkIn }: { b: any; checkIn: (id: string, cur?:
           <p className="truncate font-display text-base font-bold text-ink">{b.contactName ?? "—"}</p>
           <p className="inline-flex items-center gap-1.5 text-sm text-ink-soft"><Phone size={13} /> {b.contactPhone ?? "—"}</p>
         </div>
-        <Badge tone={s.tone}>{s.label}</Badge>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <Badge tone={s.tone}>{s.label}</Badge>
+          {b.tripInstance?.tag && <TagBadge name={b.tripInstance.tag.name} color={b.tripInstance.tag.color} />}
+        </div>
       </Card>
 
       {/* facts */}

@@ -10,6 +10,7 @@ import { cn, fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { bookingStatusFr, fmtDateKey, fmtTime, toDateKey } from "@/lib/domain";
+import { TagBadge } from "@/components/tag-badge";
 
 type Tab = "active" | "expired";
 
@@ -22,9 +23,12 @@ export default function Bookings() {
     user
       ? {
           bookings: {
-            $: { where: { "customer.id": user.id }, order: { createdAt: "desc" } },
+            $: {
+              where: { "customer.id": user.id },
+              order: { createdAt: "desc" },
+            },
             tickets: {},
-            tripInstance: { cooperative: {} },
+            tripInstance: { cooperative: {}, tag: {} },
           },
         }
       : null,
@@ -33,8 +37,11 @@ export default function Bookings() {
   const today = toDateKey(new Date());
   const all = data?.bookings ?? [];
   const isExpired = (b: (typeof all)[number]) =>
-    b.status === "cancelled" || (b.tripInstance ? b.tripInstance.departDate < today : false);
-  const bookings = all.filter((b) => (tab === "expired" ? isExpired(b) : !isExpired(b)));
+    b.status === "cancelled" ||
+    (b.tripInstance ? b.tripInstance.departDate < today : false);
+  const bookings = all.filter((b) =>
+    tab === "expired" ? isExpired(b) : !isExpired(b),
+  );
 
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
@@ -50,12 +57,26 @@ export default function Bookings() {
               onPress={() => setTab(k)}
               style={
                 tab === k
-                  ? { shadowColor: "#16266b", shadowOpacity: 0.1, shadowRadius: 8, shadowOffset: { width: 0, height: 3 }, elevation: 2 }
+                  ? {
+                      shadowColor: "#16266b",
+                      shadowOpacity: 0.1,
+                      shadowRadius: 8,
+                      shadowOffset: { width: 0, height: 3 },
+                      elevation: 2,
+                    }
                   : undefined
               }
-              className={cn("flex-1 items-center rounded-[4px] py-2.5", tab === k && "bg-paper")}
+              className={cn(
+                "flex-1 items-center rounded-[4px] py-2.5",
+                tab === k && "bg-paper",
+              )}
             >
-              <Text className={cn("font-sans text-sm font-medium", tab === k ? "text-ink" : "text-ink-soft/60")}>
+              <Text
+                className={cn(
+                  "font-sans text-sm font-medium",
+                  tab === k ? "text-ink" : "text-ink-soft/60",
+                )}
+              >
                 {k === "active" ? "Actifs" : "Expirés"}
               </Text>
             </Pressable>
@@ -76,15 +97,31 @@ export default function Bookings() {
         <Spinner />
       ) : bookings.length === 0 ? (
         <EmptyState
-          title={tab === "active" ? "Aucun billet actif" : "Aucun billet expiré"}
-          message={tab === "active" ? "Vos prochains voyages apparaîtront ici." : "Vos voyages passés apparaîtront ici."}
+          title={
+            tab === "active" ? "Aucun billet actif" : "Aucun billet expiré"
+          }
+          message={
+            tab === "active"
+              ? "Vos prochains voyages apparaîtront ici."
+              : "Vos voyages passés apparaîtront ici."
+          }
           actionLabel="Chercher un trajet"
           onAction={() => router.replace("/")}
         />
       ) : (
-        <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 4, paddingBottom: 24 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={{
+            padding: 20,
+            paddingTop: 8,
+            paddingBottom: 24,
+          }}
+          showsVerticalScrollIndicator={false}
+        >
           {bookings.map((b, i) => (
-            <Animated.View key={b.id} entering={FadeInDown.delay(i * 70).duration(420)}>
+            <Animated.View
+              key={b.id}
+              entering={FadeInDown.delay(i * 70).duration(420)}
+            >
               <TicketCard booking={b} expired={tab === "expired"} />
             </Animated.View>
           ))}
@@ -94,18 +131,44 @@ export default function Bookings() {
   );
 }
 
-function TicketCard({ booking: b, expired }: { booking: any; expired: boolean }) {
+function TicketCard({
+  booking: b,
+  expired,
+}: {
+  booking: any;
+  expired: boolean;
+}) {
   const trip = b.tripInstance;
 
   return (
-    <Card className={cn("mb-4 p-0", expired && "opacity-70")}>
+    <Card className={cn("mb-4 p-0 relative", expired && "opacity-70")}>
+      {(trip as any).tag && (
+        <View className="absolute right-3 z-20" style={{ top: -8 }}>
+          <TagBadge
+            name={(trip as any).tag.name}
+            color={(trip as any).tag.color}
+          />
+        </View>
+      )}
       {/* Header */}
       <View className="flex-row items-center justify-between px-5 pt-4">
         <View className="flex-1 flex-row items-center gap-2">
-          <CoopLogo url={trip?.cooperative?.logoUrl} brandColor={trip?.cooperative?.brandColor} name={trip?.coopName ?? ""} size={30} />
+          <CoopLogo
+            url={trip?.cooperative?.logoUrl}
+            brandColor={trip?.cooperative?.brandColor}
+            name={trip?.coopName ?? ""}
+            size={30}
+          />
           <View className="flex-1">
-            <Text className="font-sans text-xs font-bold text-laterite" numberOfLines={1}>{trip?.coopName ?? "—"}</Text>
-            <Text className="font-mono text-[10px] text-ink-soft/90 font-bold">{b.reference}</Text>
+            <Text
+              className="font-sans text-xs font-bold text-laterite"
+              numberOfLines={1}
+            >
+              {trip?.coopName ?? "—"}
+            </Text>
+            <Text className="font-mono text-[10px] text-ink-soft/90 font-bold">
+              {b.reference}
+            </Text>
           </View>
         </View>
         <Badge {...bookingStatusFr(b.status)} />
@@ -114,8 +177,15 @@ function TicketCard({ booking: b, expired }: { booking: any; expired: boolean })
       {/* Route timeline */}
       <View className="flex-row items-center px-5 pb-4 pt-3">
         <View className="flex-1">
-          <Text className="font-mono text-2xl text-ink">{trip ? fmtTime(trip.departureAt) : "--:--"}</Text>
-          <Text className="mt-0.5 font-display text-base text-ink" numberOfLines={1}>{trip?.originName ?? "—"}</Text>
+          <Text className="font-mono text-2xl text-ink">
+            {trip ? fmtTime(trip.departureAt) : "--:--"}
+          </Text>
+          <Text
+            className="mt-0.5 font-display text-base text-ink"
+            numberOfLines={1}
+          >
+            {trip?.originName ?? "—"}
+          </Text>
         </View>
         <View className="flex-[1.2] items-center px-1">
           <View className="w-full flex-row items-center">
@@ -130,8 +200,15 @@ function TicketCard({ booking: b, expired }: { booking: any; expired: boolean })
           </Text>
         </View>
         <View className="flex-1 items-end">
-          <Text className="font-mono text-2xl text-ink-soft">{trip?.arrivalEstimateAt ? fmtTime(trip.arrivalEstimateAt) : "—"}</Text>
-          <Text className="mt-0.5 font-display text-base text-laterite" numberOfLines={1}>{trip?.destName ?? "—"}</Text>
+          <Text className="font-mono text-2xl text-ink-soft">
+            {trip?.arrivalEstimateAt ? fmtTime(trip.arrivalEstimateAt) : "—"}
+          </Text>
+          <Text
+            className="mt-0.5 font-display text-base text-laterite"
+            numberOfLines={1}
+          >
+            {trip?.destName ?? "—"}
+          </Text>
         </View>
       </View>
 
@@ -148,14 +225,23 @@ function TicketCard({ booking: b, expired }: { booking: any; expired: boolean })
           <Text className="font-mono text-[10px] uppercase tracking-wider text-ink-soft/50">
             {b.seatCount} {b.seatCount > 1 ? "places" : "place"}
           </Text>
-          <Text className="mt-0.5 font-mono text-lg text-ink">{fmtMoney(b.totalAmount, b.currency)}</Text>
+          <Text className="mt-0.5 font-mono text-lg text-ink">
+            {fmtMoney(b.totalAmount, b.currency)}
+          </Text>
         </View>
         <Pressable
-          onPress={() => router.push({ pathname: "/confirmation/[id]", params: { id: b.id } })}
+          onPress={() =>
+            router.push({
+              pathname: "/confirmation/[id]",
+              params: { id: b.id },
+            })
+          }
           className="flex-row items-center gap-2 rounded-[4px] bg-navy dark:bg-[#003366] px-4 py-2.5 active:opacity-90"
         >
           <QrCode size={16} color="#ffffff" />
-          <Text className="font-sans text-sm font-medium text-white">Voir le billet</Text>
+          <Text className="font-sans text-sm font-medium text-white">
+            Voir le billet
+          </Text>
           <ArrowRight size={15} color="#f5821f" />
         </Pressable>
       </View>
@@ -180,7 +266,9 @@ function EmptyState({
         <Frown size={44} color="#f5821f" />
       </View>
       <Text className="mt-5 font-display text-xl text-ink">{title}</Text>
-      <Text className="mt-1.5 text-center font-sans text-sm text-ink-soft/70">{message}</Text>
+      <Text className="mt-1.5 text-center font-sans text-sm text-ink-soft/70">
+        {message}
+      </Text>
       <Button size="md" className="mt-6 w-full" onPress={onAction}>
         <Text className="font-sans font-medium text-paper">{actionLabel}</Text>
       </Button>
