@@ -263,6 +263,13 @@ const schema = i.schema({
       after: i.json().optional(),
       createdAt: i.date().indexed(),
     }),
+
+    // Server-side only — API keys for third-party payment providers.
+    // Perms: view/write restricted to coop members + platform admins.
+    coopSecrets: i.entity({
+      papiApiKey: i.string().optional(),
+      updatedAt: i.date().optional(),
+    }),
   },
 
   links: {
@@ -321,6 +328,8 @@ const schema = i.schema({
 
     auditCoop: { forward: { on: "auditLogs", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "auditLogs" } },
     auditActor: { forward: { on: "auditLogs", has: "one", label: "actor" }, reverse: { on: "$users", has: "many", label: "audits" } },
+
+    secretCoop: { forward: { on: "coopSecrets", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "one", label: "secrets" } },
   },
 });
 

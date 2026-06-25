@@ -1,18 +1,42 @@
 "use client";
-import { use } from "react";
+import { use, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
-import { CheckCircle2, Clock, Download, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, Download, Loader2, X, XCircle, CreditCard } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Button, Card, CoopLogo, SeatSelector, TagBadge, type Cell } from "@cp/ui";
+import { Button, Card, CoopLogo, SeatSelector, TagBadge, useConfirm, type Cell } from "@cp/ui";
 import { db } from "@cp/ui";
-import { fmtMoney } from "@cp/ui";
+import { fmtMoney, toast } from "@cp/ui";
 
 export default function Confirmation({ params }: { params: Promise<{ reference: string }> }) {
   const { reference } = use(params);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const paymentParam = searchParams.get("payment"); // "success" | "failed" | null
+  const [paying, setPaying] = useState(false);
+  const confirm = useConfirm();
+
+  const payOnline = async () => {
+    setPaying(true);
+    try {
+      const res = await fetch("/api/payment/initiate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingReference: reference }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error ?? "Erreur paiement"); setPaying(false); return; }
+      window.location.href = data.url;
+    } catch {
+      toast.error("Erreur réseau");
+      setPaying(false);
+    }
+  };
+
   const { data, isLoading } = db.useQuery({
-    bookings: { $: { where: { reference } }, tickets: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} } },
+    bookings: { $: { where: { reference } }, tickets: {}, payments: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} } },
   });
   const bk = data?.bookings?.[0];
   const trip = bk?.tripInstance;
@@ -30,15 +54,34 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
   // Status-aware header + label.
   const status = bk?.status ?? "";
   const dead = ["cancelled", "expired", "refunded", "no_show"].includes(status);
+  const awaitingPayment = status === "pending" && paymentParam === "success";
   const head = dead
     ? { Icon: XCircle, wrap: "bg-danger/15 text-danger",
         title: { cancelled: "Réservation annulée", expired: "Réservation expirée", refunded: "Réservation remboursée", no_show: "Passager absent" }[status] ?? "Réservation annulée",
         sub: "Cette réservation n'est plus valide." }
-    : status === "pending"
-      ? { Icon: Clock, wrap: "bg-warning/15 text-warning", title: "Réservation enregistrée", sub: "Payez à la gare avant le départ." }
-      : { Icon: CheckCircle2, wrap: "bg-baobab/15 text-baobab", title: "Réservation confirmée", sub: "Présentez le QR code à l'embarquement." };
+    : awaitingPayment
+      ? { Icon: Loader2, wrap: "bg-baobab/15 text-baobab", title: "Vérification du paiement…", sub: "Paiement en cours de traitement. Page mise à jour automatiquement." }
+      : status === "pending"
+        ? { Icon: Clock, wrap: "bg-warning/15 text-warning", title: "Réservation enregistrée", sub: "Payez à la gare avant le départ." }
+        : { Icon: CheckCircle2, wrap: "bg-baobab/15 text-baobab", title: "Réservation confirmée", sub: "Présentez le QR code à l'embarquement." };
   const STATUS_FR: Record<string, string> = { pending: "En attente", confirmed: "Confirmé", paid: "Payé", cancelled: "Annulé", refunded: "Remboursé", expired: "Expiré", completed: "Terminé", no_show: "Absent" };
+  const canPayOnline = status === "pending";
   const statusTone = dead ? "bg-danger/15 text-danger" : status === "pending" ? "bg-warning/15 text-warning" : "bg-baobab/15 text-baobab";
+
+  // Cancellable only while unpaid (pending). Frees the seats (delete own tickets).
+  const cancelBooking = async () => {
+    if (!bk) return;
+    if (!(await confirm({ title: "Annuler la réservation ?", message: `${reference} · ${fmtMoney(bk.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" }))) return;
+    try {
+      await db.transact([
+        db.tx.bookings[bk.id].update({ status: "cancelled", cancelledAt: Date.now() }),
+        ...(bk.tickets ?? []).map((t: any) => db.tx.tickets[t.id].delete()),
+      ]);
+      toast.success("Réservation annulée");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec de l'annulation.");
+    }
+  };
 
   return (
     <>
@@ -48,10 +91,23 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
       <main className="mx-auto max-w-lg px-5 py-12">
         <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", damping: 14 }}
           className={`mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full ${head.wrap}`}>
-          <head.Icon size={36} />
+          <head.Icon size={36} className={awaitingPayment ? "animate-spin" : undefined} />
         </motion.div>
         <h1 className="text-center font-display text-3xl font-bold">{head.title}</h1>
         <p className="mt-2 text-center text-ink-soft">{head.sub}</p>
+
+        {/* Payment redirect banner */}
+        {paymentParam === "success" && status === "pending" && (
+          <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-baobab/10 px-4 py-3 text-sm text-baobab">
+            <Loader2 size={15} className="animate-spin" />
+            Paiement en cours de vérification…
+          </div>
+        )}
+        {paymentParam === "failed" && (
+          <div className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-center text-sm text-danger">
+            Le paiement a échoué. Réessayez ou payez à la gare.
+          </div>
+        )}
 
         <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }} className="mt-8">
           <Card className="overflow-hidden p-0 border-0">
@@ -106,6 +162,21 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
           <Button variant="outline" className="flex-1" onClick={() => window.print()}><Download size={16} /> Télécharger</Button>
           <Link href="/account/bookings" className="flex-1"><Button className="w-full">Mes réservations</Button></Link>
         </div>
+        {canPayOnline && (
+          <div className="mt-3 print:hidden">
+            <Button className="w-full" onClick={payOnline} disabled={paying}>
+              {paying ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
+              {paying ? "Redirection…" : "Payer en ligne"}
+            </Button>
+          </div>
+        )}
+        {status === "pending" && (
+          <div className="mt-3 print:hidden">
+            <Button variant="outline" className="w-full text-danger hover:bg-danger/5" onClick={cancelBooking}>
+              <X size={16} /> Annuler la réservation
+            </Button>
+          </div>
+        )}
       </main>
     </>
   );

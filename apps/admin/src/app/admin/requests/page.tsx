@@ -29,6 +29,7 @@ type Req = {
   contactName: string;
   email: string;
   phone: string;
+  address?: string;
   message?: string;
   status: string;
   createdAt: number | string;
@@ -83,6 +84,9 @@ export default function RequestsPage() {
         displayName: sel.displayName,
         legalName: sel.legalName || sel.displayName,
         region: sel.region || undefined,
+        phone: sel.phone || undefined,
+        email: sel.email || undefined,
+        address: sel.address || undefined,
         ownerEmail: sel.email,
         ownerName: sel.contactName,
         ownerPassword: password,
@@ -179,6 +183,7 @@ export default function RequestsPage() {
               <Info icon={<MapPin size={14} />} label="Région" value={sel.region ?? "—"} />
               <Info icon={<Mail size={14} />} label="Email" value={sel.email} />
               <Info icon={<Phone size={14} />} label="Téléphone" value={sel.phone} />
+              <Info icon={<MapPin size={14} />} label="Adresse" value={sel.address ?? "—"} />
               <Info label="Contact" value={sel.contactName} />
               {sel.message && <Info label="Message" value={sel.message} />}
             </div>

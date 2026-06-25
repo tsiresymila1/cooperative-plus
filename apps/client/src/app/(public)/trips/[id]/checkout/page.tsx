@@ -98,31 +98,60 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     setLoading(true);
     const reference = ref();
     const bookingId = id();
-    const paid = method !== "cash";
+    const isOnline = method === "mobile_money";
+    // PAPI validDuration = 30 min — holds stay active until payment confirmed or expired
+    const holdExpiresAt = Date.now() + 30 * 60 * 1000;
+    const holdIds = Object.values(draft.holds);
+    const coopId = draft.coopId;
+    // Seat/passenger info passed to initiate API → stored in payment.meta for webhook
+    const seatMeta = seats.map((label) => ({
+      label,
+      passengerName: passengers[label] || contact.name,
+      price: trip.price,
+    }));
     try {
       await db.transact([
         db.tx.bookings[bookingId].update({
           reference, source: "customer", contactName: contact.name, contactPhone: contact.phone,
           contactEmail: contact.email || undefined, seatCount: seats.length, totalAmount: total,
-          currency: trip.currency, status: paid ? "confirmed" : "pending", createdAt: Date.now(),
+          currency: trip.currency, status: "pending", createdAt: Date.now(),
+          ...(isOnline ? { holdExpiresAt } : {}),
         }).link({ cooperative: draft.coopId ?? undefined, tripInstance: instanceId, customer: user?.id }),
-        ...seats.map((label) =>
-          db.tx.tickets[id()].update({
-            seatKey: `${instanceId}_${label}`, seatLabel: label,
-            passengerName: passengers[label] || contact.name, price: trip.price,
-            qrToken: id(), createdAt: Date.now(),
-          }).link({ booking: bookingId, cooperative: draft.coopId ?? undefined, tripInstance: instanceId })),
-        db.tx.payments[id()].update({
-          method: m.id, provider: m.provider, amount: total, currency: trip.currency,
-          status: paid ? "paid" : "pending", paidAt: paid ? Date.now() : undefined, createdAt: Date.now(),
-        }).link({ cooperative: draft.coopId ?? undefined, booking: bookingId }),
-        // NOTE: seatsBooked counter NOT updated here — customers can't write tripInstances
-        // (perms). Availability is derived from tickets + active holds everywhere.
-        ...Object.values(draft.holds).map((hid) => db.tx.seatHolds[hid].delete()),
+        // Online: extend holds to match payment window — seats blocked until paid or expired.
+        // Cash: create tickets + delete holds immediately.
+        ...(!isOnline ? [
+          ...seats.map((label) =>
+            db.tx.tickets[id()].update({
+              seatKey: `${instanceId}_${label}`, seatLabel: label,
+              passengerName: passengers[label] || contact.name, price: trip.price,
+              qrToken: id(), createdAt: Date.now(),
+            }).link({ booking: bookingId, cooperative: draft.coopId ?? undefined, tripInstance: instanceId })),
+          ...holdIds.map((hid) => db.tx.seatHolds[hid].delete()),
+        ] : [
+          ...holdIds.map((hid) => db.tx.seatHolds[hid].update({ expiresAt: holdExpiresAt })),
+        ]),
       ]);
-      draft.reset();
-      toast.success(paid ? "Paiement confirmé · billet émis" : "Réservation enregistrée");
-      router.push(`/bookings/${reference}`);
+      if (isOnline) {
+        const res = await fetch("/api/payment/initiate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingReference: reference, seatMeta, holdIds, instanceId, coopId }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          draft.reset();
+          toast.error(data.error ?? "Erreur paiement en ligne");
+          router.push(`/bookings/${reference}`);
+          return;
+        }
+        // Don't reset draft before redirect — would flash "Aucun siège" during navigation.
+        // Draft clears naturally when user leaves the page.
+        window.location.href = data.url;
+      } else {
+        draft.reset();
+        toast.success("Réservation enregistrée · payez à la gare");
+        router.push(`/bookings/${reference}`);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Échec de la réservation");
       setLoading(false);
@@ -174,7 +203,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
               </div>
               {method === "mobile_money" && (
                 <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
-                  <Field label="Numéro Mobile Money"><Input placeholder="034 00 000 00" inputMode="tel" /></Field>
+                  <p className="text-sm text-ink-soft">Vous serez redirigé vers la page de paiement PAPI pour finaliser via MVola, Orange Money ou Airtel Money.</p>
                 </motion.div>
               )}
             </Card>
@@ -192,7 +221,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
                 <span className="text-sm text-ink-soft">Total</span><span className="font-mono text-2xl font-bold">{fmtMoney(total)}</span>
               </div>
               <Button className="mt-4 w-full" disabled={loading || !contact.name || !contact.phone} onClick={pay}>
-                {loading ? "Traitement…" : method === "cash" ? "Réserver (payer à la gare)" : `Payer ${fmtMoney(total)}`}
+                {loading ? "Traitement…" : method === "mobile_money" ? `Payer ${fmtMoney(total)} en ligne` : "Réserver · payer à la gare"}
               </Button>
               <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-soft/70"><Lock size={13} /> Paiement sécurisé</p>
             </Card>

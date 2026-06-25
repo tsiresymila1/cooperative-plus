@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { ChevronRight, Trash2 } from "lucide-react";
+import { ChevronRight, Eye, EyeOff, Trash2 } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
@@ -32,11 +32,13 @@ export default function SettingsPage() {
       routes: {},
       tripInstances: {},
       members: {},
+      secrets: {},
     },
   });
 
   const co = data?.cooperatives?.[0];
   const sub = (co?.subscriptions ?? [])[0];
+  const secrets = (co as any)?.secrets;
   const plan = sub?.plan;
 
   const vehicles = (co?.vehicles ?? []).filter(notDeleted).length;
@@ -62,6 +64,7 @@ export default function SettingsPage() {
       <div className="mx-auto max-w-4xl">
         <ProfileSections coop={coop} coopId={coopId} />
         <PaymentMethodsSection coop={coop} coopId={coopId} />
+        <PapiSection coopId={coopId} secrets={secrets} />
         <SubscriptionSection sub={sub} plan={plan} />
         <QuotaSection plan={plan} usage={{ vehicles, routes, assistants, trips }} />
       </div>
@@ -286,10 +289,76 @@ function PaymentMethodsSection({ coop, coopId }: { coop: any; coopId: string }) 
   );
 }
 
+function PapiSection({ coopId, secrets }: { coopId: string; secrets: any }) {
+  const [key, setKey] = useState("");
+  const [show, setShow] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setKey(secrets?.papiApiKey ?? "");
+  }, [secrets]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      if (secrets?.id) {
+        await db.transact(db.tx.coopSecrets[secrets.id].update({ papiApiKey: key || undefined, updatedAt: Date.now() }));
+      } else {
+        const newId = crypto.randomUUID();
+        await db.transact(
+          db.tx.coopSecrets[newId].update({ papiApiKey: key || undefined, updatedAt: Date.now() }).link({ cooperative: coopId }),
+        );
+      }
+      toast.success("Clé PAPI enregistrée");
+    } catch (e: any) {
+      toast.error("Erreur: " + (e?.message ?? "inconnue"));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <FormSection
+      index="04"
+      title="Paiement en ligne (PAPI)"
+      description="Clé API PAPI pour activer le paiement en ligne. Obtenez-la depuis votre tableau de bord PAPI → Développeur."
+    >
+      <div className="grid gap-4">
+        <Field label="Clé API PAPI" hint="Gardez cette clé secrète. Visible uniquement par les membres de la coopérative.">
+          <div className="relative flex items-center">
+            <Input
+              type={show ? "text" : "password"}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              placeholder="Coller votre clé API ici…"
+              className="pr-10 font-mono text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => setShow((s) => !s)}
+              className="absolute right-3 text-ink-soft/60 hover:text-ink"
+            >
+              {show ? <EyeOff size={15} /> : <Eye size={15} />}
+            </button>
+          </div>
+        </Field>
+        {secrets?.papiApiKey && (
+          <p className="text-xs text-baobab">✓ Paiement en ligne actif — les clients voient le bouton "Payer en ligne".</p>
+        )}
+        <div className="flex justify-end">
+          <Button size="sm" onClick={save} disabled={saving}>
+            {saving ? "…" : "Enregistrer"}
+          </Button>
+        </div>
+      </div>
+    </FormSection>
+  );
+}
+
 function SubscriptionSection({ sub, plan }: { sub: any; plan: any }) {
   const s = sub ? subStatus[sub.status] ?? { label: sub.status, tone: "neutral" as const } : null;
   return (
-    <FormSection index="04" title="Abonnement" description="Votre formule et son statut de facturation.">
+    <FormSection index="05" title="Abonnement" description="Votre formule et son statut de facturation.">
       {plan ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -327,7 +396,7 @@ function QuotaSection({
     { label: "Trajets / mois", used: usage.trips, max: plan.maxTripsMonth },
   ];
   return (
-    <FormSection index="05" title="Quotas" description="Utilisation par rapport aux limites de votre formule.">
+    <FormSection index="06" title="Quotas" description="Utilisation par rapport aux limites de votre formule.">
       <div className="space-y-4">
         {bars.map((b) => {
           const pct = b.max > 0 ? Math.min(100, Math.round((b.used / b.max) * 100)) : 0;

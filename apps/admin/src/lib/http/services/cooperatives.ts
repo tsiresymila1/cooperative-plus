@@ -5,6 +5,7 @@ import { HttpError } from "../errors";
 export type CreateCoopInput = {
   slug: string; displayName: string; legalName: string;
   region?: string; planId?: string;
+  phone?: string; email?: string; address?: string;
   ownerEmail?: string; ownerName?: string; ownerPassword?: string;
 };
 
@@ -25,6 +26,9 @@ export async function createCooperative(input: CreateCoopInput): Promise<{ ok: t
     adminDb.tx.cooperatives[coopId].update({
       slug, displayName: input.displayName.trim(), legalName: input.legalName.trim(),
       region: input.region?.trim() || undefined,
+      phone: input.phone?.trim() || undefined,
+      email: input.email?.trim().toLowerCase() || undefined,
+      address: input.address?.trim() || undefined,
       currency: "MGA", timezone: "Indian/Antananarivo",
       subscriptionStatus: "active", cutoffHours: 2, refundPct: 50, createdAt: now,
     }),

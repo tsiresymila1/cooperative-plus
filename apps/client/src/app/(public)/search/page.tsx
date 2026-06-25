@@ -44,6 +44,8 @@ function SearchInner() {
   const results = useMemo(() => {
     const rows = (data?.tripInstances ?? [])
       .filter((t) => (t.cooperative as any)?.subscriptionStatus !== "suspended")
+      // Hide trips whose departure time has already passed (same-day past hours).
+      .filter((t) => +new Date(t.departureAt) > now)
       .map((t) => {
         const held = (t.holds ?? []).filter((h) => +new Date(h.expiresAt) > now).length;
         const dead = ["cancelled", "expired", "refunded"];

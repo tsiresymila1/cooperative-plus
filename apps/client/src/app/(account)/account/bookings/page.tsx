@@ -1,9 +1,24 @@
 "use client";
 import Link from "next/link";
-import { ChevronRight, Ticket } from "lucide-react";
-import { Badge, Button, Card, CoopLogo, TagBadge } from "@cp/ui";
+import { ChevronRight, Ticket, X } from "lucide-react";
+import { Badge, Button, Card, CoopLogo, TagBadge, useConfirm, toast } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
+
+// Cancellable only while not yet paid (cash bookings sit in "pending").
+async function cancelOwnBooking(b: any, confirm: ReturnType<typeof useConfirm>) {
+  if (b.status !== "pending") return;
+  if (!(await confirm({ title: "Annuler la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" }))) return;
+  try {
+    await db.transact([
+      db.tx.bookings[b.id].update({ status: "cancelled", cancelledAt: Date.now() }),
+      ...(b.tickets ?? []).map((t: any) => db.tx.tickets[t.id].delete()),
+    ]);
+    toast.success("Réservation annulée");
+  } catch (e: any) {
+    toast.error(e?.message ?? "Échec de l'annulation.");
+  }
+}
 
 const tone: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   confirmed: "success",
@@ -24,6 +39,7 @@ const label: Record<string, string> = {
 
 export default function Bookings() {
   const { user } = db.useAuth();
+  const confirm = useConfirm();
   const { data, isLoading } = db.useQuery(
     user
       ? {
@@ -101,6 +117,15 @@ export default function Bookings() {
                 <p className="font-mono text-lg font-bold">
                   {fmtMoney(b.totalAmount)}
                 </p>
+                {b.status === "pending" && (
+                  <button
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelOwnBooking(b, confirm); }}
+                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-soft/50 transition-colors hover:bg-danger/10 hover:text-danger"
+                    title="Annuler la réservation"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
                 <ChevronRight size={18} className="text-ink-soft/50" />
               </Card>
             </Link>

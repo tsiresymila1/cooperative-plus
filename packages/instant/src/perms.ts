@@ -69,7 +69,9 @@ const rules = {
       view: `(auth.id in data.ref('booking.customer.id') || ${memberOrAdmin})`,
       create: authed,
       update: memberOrAdmin,
-      delete: memberOrAdmin,
+      // Booking owner may delete their own tickets (cancel an unpaid booking →
+      // frees the unique seatKey); coop members/admins manage the rest.
+      delete: `(auth.id in data.ref('booking.customer.id') || ${memberOrAdmin})`,
     },
   },
 
@@ -91,6 +93,9 @@ const rules = {
     },
   },
   auditLogs: { allow: { view: memberOrAdmin, create: authed, update: "false", delete: "false" } },
+
+  // Payment provider secrets — never public, coop members + admins only.
+  coopSecrets: { allow: { view: memberOrAdmin, create: memberOrAdmin, update: memberOrAdmin, delete: admin } },
 } satisfies InstantRules;
 
 export default rules;

@@ -6,7 +6,7 @@ import { SiteHeader } from "@/components/site-header";
 import { Button, Card, db, id, toast } from "@cp/ui";
 import { Input } from "@/components/ui/input";
 
-const empty = { displayName: "", legalName: "", region: "", contactName: "", email: "", phone: "", message: "" };
+const empty = { displayName: "", legalName: "", region: "", contactName: "", email: "", phone: "", address: "", message: "" };
 
 export default function CoopRequest() {
   const [form, setForm] = useState(empty);
@@ -29,6 +29,7 @@ export default function CoopRequest() {
           contactName: form.contactName.trim(),
           email: form.email.trim().toLowerCase(),
           phone: form.phone.trim(),
+          address: form.address.trim() || undefined,
           message: form.message.trim() || undefined,
           status: "pending",
           createdAt: Date.now(),
@@ -83,6 +84,9 @@ export default function CoopRequest() {
               </div>
               <Field label="Email *">
                 <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="contact@coop.mg" />
+              </Field>
+              <Field label="Adresse">
+                <Input value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Lot II… Antananarivo" />
               </Field>
               <Field label="Message (optionnel)">
                 <textarea value={form.message} onChange={(e) => set("message", e.target.value)} rows={3}
