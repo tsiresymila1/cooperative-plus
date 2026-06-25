@@ -1,18 +1,21 @@
 import { useState } from "react";
-import { Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Dimensions, Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ChevronRight, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
-import { Button, Card } from "@/components/ui";
+import { ArrowRight, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
+import { Badge, Button, Card } from "@/components/ui";
 import { DateField, DestinationField, type Dest } from "@/components/picker";
+import { CoopLogo } from "@/components/coop-logo";
+import { TagBadge } from "@/components/tag-badge";
 import { useColors } from "@/lib/colors";
 import { cn, fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
-import { fmtTime, toDateKey, toMs } from "@/lib/domain";
+import { fmtDateKey, fmtTime, toDateKey, toMs } from "@/lib/domain";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -84,45 +87,56 @@ export default function Home() {
   }
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="h-full w-full" >
-      <View className="w-full h-full">
-        {/* Header */}
-        <Animated.View entering={FadeIn.duration(500)} className="flex-row items-center justify-between pr-5 py-4">
-          <View className="flex-row items-center gap-2">
-            <Image source={require("../../assets/logo-long.png")} style={{ width: 170, height: 40, borderRadius: 8 }} resizeMode="contain" />
-          </View>
+    <SafeAreaView edges={['bottom']} className="h-full w-full" >
+      <View className="relative w-full h-full bg-sand">
+        {/* Hero image with fade to sand (onboarding style) */}
+        <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: Dimensions.get("window").height * 0.4 + insets.top }}>
+          <Image source={require("../../assets/onboarding-bus.png")} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
+          <LinearGradient
+            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0.1)", dark ? c.sand: "#0a0a0a"]}
+            locations={[0, 0.45, 1]}
+            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
+            pointerEvents="none"
+          />
+        </View>
+
+        {/* Header (over image) */}
+        <Animated.View entering={FadeIn.duration(500)} className="flex-row items-center justify-between px-5 pb-4" style={{ paddingTop: insets.top + 8 }}>
+          <Image source={require("../../assets/logo-long.png")} style={{ width: 170, height: 40, borderRadius: 8 }} resizeMode="contain" />
           <View className="flex-row items-center gap-2">
             <Pressable
               onPress={toggleTheme}
-              className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
+              className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
             >
-              {dark ? <Sun size={18} color={c.laterite} /> : <Moon size={18} color={c.ink} />}
+              {dark ? <Sun size={18} color="#ffffff" /> : <Moon size={18} color="#ffffff" />}
             </Pressable>
             <Pressable
               onPress={() => router.push(user ? "/profile" : "/sign-in")}
-              className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
+              className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
             >
-              <UserIcon size={18} color={c.ink} />
+              <UserIcon size={18} color="#ffffff" />
             </Pressable>
           </View>
         </Animated.View>
         <ScrollView
-          className="flex-1 bg-sand"
+          className="flex-1"
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingTop: 6, paddingBottom: 40 }}
+          contentContainerStyle={{ paddingTop: 6}}
           showsVerticalScrollIndicator={false}
         >
-          {/* Greeting */}
-          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-6">
-            <Text className="font-sans text-sm text-ink-soft/70">
+          {/* Greeting (over image) */}
+          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-12 pb-12">
+            <Text className="font-sans text-sm text-white/80" style={{ textShadowColor: "rgba(0,0,0,0.4)", textShadowRadius: 8 }}>
               {user?.email ? `Bonjour, ${user.email.split("@")[0]} 👋` : "Bonjour 👋"}
             </Text>
-            <Text className="mt-1 font-display text-3xl text-ink">Où allez-vous ?</Text>
+            <Text className="mt-1 font-display text-3xl text-white" style={{ textShadowColor: "rgba(0,0,0,0.4)", textShadowRadius: 10 }}>
+              Où allez-vous ?
+            </Text>
           </Animated.View>
 
           {/* Search card — primary focus, gets the most space */}
           <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-15">
-            <Card className="gap-4 p-5 shadow-lg">
+            <Card className="gap-6 p-5 shadow-lg">
               <DestinationField
                 label="Départ"
                 value={origin}
@@ -142,12 +156,10 @@ export default function Home() {
                 tint={c.laterite}
                 error={destErr}
               />
-
-              <DateField value={date} onChange={setDate} />
-
+              <DateField value={date} onChange={setDate} className="py-2" />
+              <View className="h-px bg-ink/8" />
               {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
-
-              <Button size="lg" className="mt-1" onPress={goSearch} loading={searching}>
+              <Button size="md" className="mt-1" onPress={goSearch} loading={searching}>
                 {!searching && <Search size={18} color="#ffffff" />}
                 <Text className="font-sans text-base font-medium text-white">Rechercher</Text>
               </Button>
@@ -162,33 +174,53 @@ export default function Home() {
             {popular.length === 0 ? (
               <Text className="mt-3 font-sans text-sm text-ink-soft/70">Aucun départ programmé pour le moment.</Text>
             ) : (
-              popular.map((r, i) => {
-                const booked = r.tickets?.length ?? 0;
-                const full = booked >= r.seatsTotal;
-                return (
-                  <Animated.View key={r.id} entering={FadeInDown.delay(220 + i * 60).duration(380)}>
-                    <Pressable
-                      disabled={full}
-                      onPress={() => router.push({ pathname: "/trip/[id]", params: { id: r.id } })}
-                      className="flex-row items-center gap-3 border-b border-ink/8 py-3.5 active:opacity-70"
-                    >
-                      <Text className={cn("w-14 font-mono text-base", full ? "text-ink-soft/50" : "text-ink")}>
-                        {fmtTime(r.departureAt)}
-                      </Text>
-                      <View className="flex-1">
-                        <Text className="font-sans text-[15px] text-ink" numberOfLines={1}>
-                          {r.originName} <Text className="text-ink-soft/50">→</Text> {r.destName}
-                        </Text>
-                        <Text className="mt-0.5 font-mono text-[11px] text-ink-soft/60" numberOfLines={1}>
-                          {r.coopName} · {full ? "Complet" : `${r.seatsTotal - booked} places`}
-                        </Text>
-                      </View>
-                      <Text className="font-mono text-sm text-ink">{fmtMoney(r.price, r.currency)}</Text>
-                      <ChevronRight size={18} color={c.inkSoft} />
-                    </Pressable>
-                  </Animated.View>
-                );
-              })
+              <View className="mt-2 gap-2.5">
+                {popular.map((r, i) => {
+                  const booked = r.tickets?.length ?? 0;
+                  const full = booked >= r.seatsTotal;
+                  return (
+                    <Animated.View key={r.id} entering={FadeInDown.delay(220 + i * 60).duration(380)}>
+                      <Pressable
+                        disabled={full}
+                        onPress={() => router.push({ pathname: "/trip/[id]", params: { id: r.id } })}
+                        className={cn(
+                          "rounded-[4px] border border-ink/8 bg-paper p-3.5 active:opacity-80",
+                          full && "opacity-60",
+                        )}
+                      >
+                        {/* Coop + tag */}
+                        <View className="flex-row items-center gap-2">
+                          <CoopLogo url={r.cooperative?.logoUrl} brandColor={r.cooperative?.brandColor} name={r.coopName} size={26} />
+                          <Text className="flex-1 font-sans text-xs font-bold text-laterite" numberOfLines={1}>{r.coopName}</Text>
+                          {r.tag ? <TagBadge name={r.tag.name} color={r.tag.color} /> : null}
+                        </View>
+
+                        {/* Route */}
+                        <View className="mt-2.5 flex-row items-center gap-2">
+                          <Text className="font-display text-lg text-ink" numberOfLines={1}>{r.originName}</Text>
+                          <ArrowRight size={15} color="#f5821f" />
+                          <Text className="flex-1 font-display text-lg text-laterite" numberOfLines={1}>{r.destName}</Text>
+                          <Text className="font-mono text-sm font-bold text-ink">{fmtMoney(r.price, r.currency)}</Text>
+                        </View>
+
+                        {/* Date · time + seats */}
+                        <View className="mt-2.5 flex-row items-center justify-between">
+                          <View className="flex-row items-center gap-1.5">
+                            <Clock size={13} color={c.inkSoft} />
+                            <Text className="font-mono text-[11px] text-ink-soft/70">
+                              {fmtDateKey(r.departDate)} · {fmtTime(r.departureAt)}
+                            </Text>
+                          </View>
+                          <Badge
+                            tone={full ? "danger" : booked / r.seatsTotal >= 0.8 ? "warning" : "success"}
+                            label={full ? "Complet" : `${r.seatsTotal - booked}/${r.seatsTotal} places`}
+                          />
+                        </View>
+                      </Pressable>
+                    </Animated.View>
+                  );
+                })}
+              </View>
             )}
           </View>
         </ScrollView>
