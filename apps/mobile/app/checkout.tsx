@@ -303,6 +303,7 @@ export default function Checkout() {
   }
 
   const expiring = remaining < 60_000;
+  const isOnline = method === "mobile_money"; // PAPI online payment
 
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
@@ -418,7 +419,7 @@ export default function Checkout() {
         </View>
         <Button onPress={() => setConfirmOpen(true)} loading={submitting} disabled={!canSubmit}>
           <Text className="font-sans font-medium text-white">
-            {method === "cash" ? "Réserver (payer à bord)" : "Payer maintenant"}
+            {isOnline ? `Payer ${fmtMoney(total, selection.currency)} en ligne` : "Réserver · payer à la gare"}
           </Text>
         </Button>
       </View>
@@ -440,7 +441,7 @@ export default function Checkout() {
             </Button>
             <Button className="flex-1" onPress={confirm}>
               <Text className="font-sans font-medium text-white">
-                {method === "cash" ? "Réserver" : "Payer"}
+                {isOnline ? "Payer en ligne" : "Réserver"}
               </Text>
             </Button>
           </View>
