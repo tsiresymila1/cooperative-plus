@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   Star,
   Ticket,
-  Wallet,
 } from "lucide-react";
 import { Button, Logo, TagBadge, db, notDeleted, todayISO } from "@cp/ui";
 import { SiteHeader } from "@/components/site-header";
@@ -224,9 +223,28 @@ export default function Landing() {
             <span className="inline-flex items-center gap-2">
               <ShieldCheck size={15} className="text-green" /> Sièges garantis
             </span>
-            <span className="inline-flex items-center gap-2">
-              <Wallet size={15} className="text-green" /> MVola · Orange ·
-              Airtel · Carte
+            <span className="inline-flex flex-wrap items-center gap-1.5">
+              <PayChip>
+                <b style={{ color: "#15c226ff" }}>MVola</b>
+              </PayChip>
+              <PayChip>
+                <span className="inline-grid h-3.5 w-3.5 place-items-center rounded-[2px] bg-[#FF7900] text-[8px] font-extrabold leading-none text-white">
+                  o
+                </span>
+                <b className="text-[#222]">Orange Money</b>
+              </PayChip>
+              <PayChip>
+                <span className="inline-grid h-3.5 w-3.5 place-items-center rounded-[2px] bg-[#E40000] text-[8px] font-extrabold leading-none text-white">
+                  o
+                </span>
+                <b style={{ color: "#E40000" }}>Airtel Money</b>
+              </PayChip>
+              <PayChip>
+                <b className="italic tracking-tight text-[#1A1F71]">VISA</b>
+              </PayChip>
+              <PayChip>
+                <MastercardIcon className="h-3.5 w-auto" />
+              </PayChip>
             </span>
             <span className="inline-flex items-center gap-2">
               <Ticket size={15} className="text-green" /> Billet QR
@@ -483,6 +501,25 @@ export default function Landing() {
         </div>
       </footer>
     </main>
+  );
+}
+
+/** White pill holding a payment-brand mark (pops on the dark hero). */
+function PayChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] font-bold leading-none shadow-sm">
+      {children}
+    </span>
+  );
+}
+
+function MastercardIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 20" className={className} aria-hidden>
+      <circle cx="13" cy="10" r="8" fill="#EB001B" />
+      <circle cx="19" cy="10" r="8" fill="#F79E1B" />
+      <path d="M16 4a8 8 0 0 0 0 12 8 8 0 0 0 0-12z" fill="#FF5F00" />
+    </svg>
   );
 }
 

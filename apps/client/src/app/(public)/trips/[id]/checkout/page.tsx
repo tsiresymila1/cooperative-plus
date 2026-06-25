@@ -16,7 +16,7 @@ const methodLabel = (m: string) =>
   m.charAt(0).toUpperCase() + m.slice(1);
 
 const METHOD_META: Record<string, { provider: string; desc: string; icon: typeof Smartphone }> = {
-  mobile_money: { provider: "mvola", desc: "MVola · Orange · Airtel", icon: Smartphone },
+  mobile_money: { provider: "mvola", desc: "MVola · Orange Money · Airtel Money", icon: Smartphone },
   card: { provider: "stripe", desc: "Visa · Mastercard", icon: CreditCard },
   cash: { provider: "manual", desc: "Payer avant le départ", icon: Banknote },
 };
