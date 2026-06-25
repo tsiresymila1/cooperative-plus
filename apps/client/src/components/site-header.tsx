@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ChevronDown, LogOut, Ticket, User } from "lucide-react";
-import { Button, Logo, ThemeToggle, cn } from "@cp/ui";
+import { Button, Logo, ThemeToggle, cn, useConfirm } from "@cp/ui";
 import { db } from "@cp/ui";
 
 function isReal(user: unknown): user is { id: string; email: string } {
@@ -16,6 +16,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const confirm = useConfirm();
   const authed = isReal(user);
 
   // Overlay header turns into a solid sticky bar once the hero scrolls past.
@@ -65,7 +66,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
                   </div>
                   <Item href="/account/dashboard" icon={<User size={15} />} label="Mon compte" />
                   <Item href="/account/bookings" icon={<Ticket size={15} />} label="Mes réservations" />
-                  <button onClick={async () => { if (!confirm("Se déconnecter ?")) return; await db.auth.signOut(); router.push("/"); }}
+                  <button onClick={async () => { if (!(await confirm({ title: "Se déconnecter ?", message: "Vous devrez vous reconnecter pour accéder à votre compte.", confirmLabel: "Déconnexion", tone: "danger" }))) return; await db.auth.signOut(); router.push("/"); }}
                     className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-danger hover:bg-ink/5">
                     <LogOut size={15} /> Déconnexion
                   </button>
