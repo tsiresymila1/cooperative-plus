@@ -221,21 +221,24 @@ export default function Landing() {
           <SearchBar />
           <div className="mt-6 flex flex-wrap items-center justify-center gap-x-7 gap-y-2 text-sm font-medium text-white/85">
             <span className="inline-flex items-center gap-2">
-              <ShieldCheck size={15} className="text-green" /> Sièges garantis
+              <ShieldCheck size={15} className="text-green-700" /> Sièges garantis
             </span>
             <span className="inline-flex flex-wrap items-center gap-1.5">
               <PayChip>
-                <b style={{ color: "#15c226ff" }}>MVola</b>
+                <span className="inline-grid h-3.5 w-3.5 place-items-center rounded-[2px] bg-[#0f7c1aff] text-[8px] font-extrabold leading-none text-white">
+                  M
+                </span>
+                <b style={{ color: "#0f7c1aff" }}>MVola</b>
               </PayChip>
               <PayChip>
                 <span className="inline-grid h-3.5 w-3.5 place-items-center rounded-[2px] bg-[#FF7900] text-[8px] font-extrabold leading-none text-white">
-                  o
+                  O
                 </span>
                 <b className="text-[#222]">Orange Money</b>
               </PayChip>
               <PayChip>
-                <span className="inline-grid h-3.5 w-3.5 place-items-center rounded-[2px] bg-[#E40000] text-[8px] font-extrabold leading-none text-white">
-                  o
+                <span className="inline-grid h-3.5 w-3.5 place-items-center rounded-[2px] text-[#E40000] bg-[#E40000] text-[8px] font-extrabold leading-none ">
+                  E
                 </span>
                 <b style={{ color: "#E40000" }}>Airtel Money</b>
               </PayChip>
@@ -507,7 +510,7 @@ export default function Landing() {
 /** White pill holding a payment-brand mark (pops on the dark hero). */
 function PayChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-[11px] font-bold leading-none shadow-sm">
+    <span className="inline-flex items-center gap-1 rounded-sm bg-white px-2 py-1 text-[11px] font-bold leading-none shadow-sm">
       {children}
     </span>
   );
