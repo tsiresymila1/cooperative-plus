@@ -189,9 +189,12 @@ export default function Home() {
                         )}
                       >
                         {/* Coop + tag */}
-                        <View className="flex-row items-center gap-2">
-                          <CoopLogo url={r.cooperative?.logoUrl} brandColor={r.cooperative?.brandColor} name={r.coopName} size={26} />
-                          <Text className="flex-1 font-sans text-xs font-bold text-laterite" numberOfLines={1}>{r.coopName}</Text>
+                        <View className="flex-row items-center gap-3">
+                          <CoopLogo url={r.cooperative?.logoUrl} brandColor={r.cooperative?.brandColor} name={r.coopName} size={30} />
+                          <View className="flex-1 gap-1">
+                            <Text className="font-sans text-sm font-bold text-laterite" numberOfLines={1}>{r.coopName}</Text>
+                            <Text className="font-mono text-xs font-bold text-ink-soft/70" numberOfLines={1}>{r.vehicleName}</Text>
+                          </View>
                           {r.tag ? <TagBadge name={r.tag.name} color={r.tag.color} /> : null}
                         </View>
 
