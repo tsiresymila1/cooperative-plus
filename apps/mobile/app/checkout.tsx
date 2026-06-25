@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
 import { scheduleDepartureReminders } from "@/lib/notifications";
+import { initiatePapi, openPapi } from "@/lib/payment";
 import { cn, fmtMoney } from "@/lib/cn";
 import { db, id, type Chunk } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
@@ -153,10 +154,70 @@ export default function Checkout() {
     const paymentId = id();
     const reference = makeReference();
     const now = Date.now();
+    const isOnline = method === "mobile_money"; // PAPI hosted payment
     const isCash = method === "cash";
     const chosen = metaFor(method);
 
     try {
+      // ── Online (Mobile Money via PAPI) ─────────────────────────────────
+      // Booking stays `pending` and the seat holds are extended to the payment
+      // window. NO tickets here: the PAPI webhook (client web app) issues them
+      // on SUCCESS. The confirmation screen reflects the status in real time.
+      if (isOnline) {
+        const holdExpiresAt = now + 30 * 60 * 1000; // PAPI validDuration = 30 min
+        const holdIds = selection.seats.map((s) => s.holdId);
+        const seatMeta = selection.seats.map((s) => ({
+          label: s.seatLabel,
+          passengerName: name.trim(),
+          price: selection.price,
+        }));
+
+        let booking = db.tx.bookings[bookingId]!
+          .update({
+            reference,
+            source: "mobile",
+            contactName: name.trim(),
+            contactPhone: phone.trim(),
+            contactEmail: email.trim() || undefined,
+            seatCount,
+            totalAmount: total,
+            currency: selection.currency,
+            status: "pending",
+            holdExpiresAt,
+            createdAt: now,
+          })
+          .link({ tripInstance: selection.tripInstanceId });
+        if (user?.id) booking = booking.link({ customer: user.id });
+        if (selection.cooperativeId) booking = booking.link({ cooperative: selection.cooperativeId });
+
+        const online: Chunk[] = [booking];
+        for (const seat of selection.seats) {
+          online.push(db.tx.seatHolds[seat.holdId]!.update({ expiresAt: holdExpiresAt }));
+        }
+        await db.transact(online);
+
+        const url = await initiatePapi({
+          bookingReference: reference,
+          instanceId: selection.tripInstanceId,
+          coopId: selection.cooperativeId ?? null,
+          holdIds,
+          seatMeta,
+        });
+
+        // Holds are intentionally kept (webhook consumes them) — don't release on unmount.
+        completedRef.current = true;
+        scheduleDepartureReminders({
+          route: `${selection.originName} → ${selection.destName}`,
+          departureAt: selection.departureAt,
+          reference,
+        }).catch(() => {});
+        setSelection(null);
+        await openPapi(url);
+        router.replace({ pathname: "/confirmation/[id]", params: { id: bookingId } });
+        return;
+      }
+
+      // ── Offline (cash / card) ──────────────────────────────────────────
       // Booking (+ customer / cooperative links).
       let booking = db.tx.bookings[bookingId]!
         .update({

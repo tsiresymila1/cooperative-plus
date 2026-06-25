@@ -60,6 +60,7 @@ export async function initiatePayment(input: InitiateInput): Promise<{ url: stri
   });
 
   const papiData = await papiRes.json();
+  console.log("papiData:::",papiData)
   if (!papiRes.ok || !papiData?.data?.paymentLink)
     throw new HttpError(502, papiData?.message ?? "Erreur PAPI");
 
