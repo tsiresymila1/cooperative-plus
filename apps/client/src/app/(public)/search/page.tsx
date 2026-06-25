@@ -36,7 +36,7 @@ function SearchInner() {
   const { data, isLoading } = db.useQuery({
     tripInstances: {
       $: { where: { originName: from, destName: to, departDate: dk, status: "scheduled" }, order: { departureAt: "asc" } },
-      route: {}, cooperative: {}, tickets: {}, holds: {}, tag: {},
+      route: {}, cooperative: {}, tickets: { booking: {} }, holds: {}, tag: {},
     },
   });
 
@@ -46,7 +46,9 @@ function SearchInner() {
       .filter((t) => (t.cooperative as any)?.subscriptionStatus !== "suspended")
       .map((t) => {
         const held = (t.holds ?? []).filter((h) => +new Date(h.expiresAt) > now).length;
-        const taken = (t.tickets ?? []).length + held;
+        const dead = ["cancelled", "expired", "refunded"];
+        const ticketed = (t.tickets ?? []).filter((tk: any) => !dead.includes(tk.booking?.status)).length;
+        const taken = ticketed + held;
         return { ...t, avail: Math.max(0, t.seatsTotal - taken) };
       }).filter((t) => t.avail >= pax);
     return [...rows].sort((a, b) =>

@@ -60,8 +60,18 @@ export default function BookingsPage() {
       await setStatus(b.id, "paid");
   };
   const cancelBooking = async (b: any) => {
-    if (await confirm({ title: "Annuler la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" }))
-      await setStatus(b.id, "cancelled", { cancelledAt: Date.now() });
+    if (await confirm({ title: "Annuler la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" })) {
+      try {
+        // Free the seats: delete the tickets (seat occupancy is derived from tickets).
+        await db.transact([
+          db.tx.bookings[b.id].update({ status: "cancelled", cancelledAt: Date.now() }),
+          ...(b.tickets ?? []).map((t: any) => db.tx.tickets[t.id].delete()),
+        ]);
+        toast.success("Réservation annulée");
+      } catch (e: any) {
+        toast.error("Erreur: " + (e?.message ?? "inconnue"));
+      }
+    }
   };
   const checkIn = async (ticketId: string, current?: number) => {
     await db.transact(db.tx.tickets[ticketId].update({ checkedInAt: current ? undefined : Date.now() }));

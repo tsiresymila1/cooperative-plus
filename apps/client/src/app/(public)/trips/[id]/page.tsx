@@ -21,13 +21,15 @@ export default function TripDetail({ params }: { params: Promise<{ id: string }>
   const authed = !!user && !(user as { isGuest?: boolean }).isGuest;
 
   const { data, isLoading } = db.useQuery({
-    tripInstances: { $: { where: { id: instanceId } }, cooperative: {}, tickets: {}, holds: {}, vehicle: { seatMaps: {} }, tag: {} },
+    tripInstances: { $: { where: { id: instanceId } }, cooperative: {}, tickets: { booking: {} }, holds: {}, vehicle: { seatMaps: {} }, tag: {} },
   });
   const trip = data?.tripInstances?.[0];
 
   const now = Date.now();
+  const dead = ["cancelled", "expired", "refunded"];
   const takenByOthers = [
-    ...(trip?.tickets ?? []).map((t) => t.seatLabel),
+    // Ignore tickets whose booking is cancelled/expired (orphan seats).
+    ...(trip?.tickets ?? []).filter((t) => !dead.includes((t as any).booking?.status)).map((t) => t.seatLabel),
     ...(trip?.holds ?? []).filter((h) => +new Date(h.expiresAt) > now).map((h) => h.seatLabel),
   ].filter((label) => !draft.seats.includes(label));
 

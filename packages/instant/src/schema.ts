@@ -111,6 +111,22 @@ const schema = i.schema({
       deletedAt: i.date().optional(),
     }),
 
+    // Public onboarding requests — a coop applies, admin reviews & approves.
+    coopRequests: i.entity({
+      displayName: i.string(),
+      legalName: i.string().optional(),
+      region: i.string().optional(),
+      contactName: i.string(),
+      email: i.string().indexed(),
+      phone: i.string(),
+      address: i.string().optional(),
+      message: i.string().optional(),
+      status: i.string().indexed(),   // pending | approved | rejected
+      createdAt: i.date().indexed(),
+      reviewedAt: i.date().optional(),
+      deletedAt: i.date().optional(),
+    }),
+
     // Trip tags (Standard / Premium / VIP…). Global (admin) or per-coop.
     tags: i.entity({
       name: i.string().indexed(),
@@ -265,6 +281,7 @@ const schema = i.schema({
 
     destCoop: { forward: { on: "destinations", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "destinations" } },
     tagCoop: { forward: { on: "tags", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "tags" } },
+    requestCoop: { forward: { on: "coopRequests", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "requests" } },
     instanceTag: { forward: { on: "tripInstances", has: "one", label: "tag" }, reverse: { on: "tags", has: "many", label: "tripInstances" } },
     routeCoop: { forward: { on: "routes", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "routes" } },
     routeOrigin: { forward: { on: "routes", has: "one", label: "origin" }, reverse: { on: "destinations", has: "many", label: "routesFrom" } },

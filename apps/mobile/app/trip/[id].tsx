@@ -41,7 +41,7 @@ export default function TripDetail() {
       $: { where: { id: tripId } },
       route: {},
       cooperative: {},
-      tickets: {},
+      tickets: { booking: {} },
       holds: { $: { where: { expiresAt: { $gt: new Date(nowKey) } } } },
       vehicle: { seatMaps: {} },
       tag: {},
@@ -52,8 +52,10 @@ export default function TripDetail() {
 
   // Taken seat labels = booked tickets + live (unexpired) holds.
   const takenLabels = useMemo(() => {
+    const dead = ["cancelled", "expired", "refunded"];
     const set = new Set<string>();
-    for (const tk of trip?.tickets ?? []) set.add(tk.seatLabel);
+    // Skip tickets whose booking is cancelled/expired (orphan seats).
+    for (const tk of trip?.tickets ?? []) if (!dead.includes((tk as any).booking?.status)) set.add(tk.seatLabel);
     for (const h of trip?.holds ?? []) set.add(h.seatLabel);
     return set;
   }, [trip]);

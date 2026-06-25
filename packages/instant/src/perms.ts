@@ -35,6 +35,8 @@ const rules = {
   },
   destinations: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   tags: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
+  // Public can submit a coop application; only platform admins read/manage them.
+  coopRequests: { allow: { view: admin, create: "true", update: admin, delete: admin } },
   routes: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   vehicles: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   seatMaps: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },

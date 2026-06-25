@@ -27,14 +27,17 @@ export default function Results() {
       },
       route: {},
       cooperative: {},
-      tickets: {},
+      tickets: { booking: {} },
       tag: {},
     },
   });
 
-  // Availability is derived from issued tickets (the booking source of truth).
-  const seatsLeft = (t: { seatsTotal: number; tickets?: unknown[] }) =>
-    t.seatsTotal - (t.tickets?.length ?? 0);
+  // Availability from issued tickets — excluding cancelled/expired bookings.
+  const DEAD = ["cancelled", "expired", "refunded"];
+  const liveTickets = (t: { tickets?: any[] }) =>
+    (t.tickets ?? []).filter((tk) => !DEAD.includes(tk.booking?.status));
+  const seatsLeft = (t: { seatsTotal: number; tickets?: any[] }) =>
+    t.seatsTotal - liveTickets(t).length;
   const nowMs = Date.now();
   // Only seats left AND departure still in the future (hide departed trips).
   const trips = (data?.tripInstances ?? []).filter(
@@ -83,7 +86,7 @@ export default function Results() {
           ) : (
             <>
               {trips.map((t, i) => {
-                const booked = t.tickets?.length ?? 0;
+                const booked = liveTickets(t).length;
                 const full = booked >= t.seatsTotal;
                 return (
                   <Animated.View key={t.id} entering={FadeInDown.delay(i * 70).duration(420)}>

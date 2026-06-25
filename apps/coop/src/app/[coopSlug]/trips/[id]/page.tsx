@@ -1,7 +1,7 @@
 "use client";
 import { PageSkeleton } from "@cp/ui";
 import { BoardingScanner } from "@/components/boarding-scanner";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -80,7 +80,7 @@ export default function TripViewPage() {
     tripInstances: {
       $: { where: { id: tripId, "cooperative.id": coopId } },
       bookings: { tickets: {}, payments: {} },
-      tickets: {},
+      tickets: { booking: {} },
       holds: {},
       route: {},
       vehicle: { seatMaps: {} },
@@ -90,7 +90,7 @@ export default function TripViewPage() {
   });
 
   const trip = data?.tripInstances?.[0];
-  const bookings = (trip?.bookings ?? []).filter((b: any) => b.status !== "cancelled");
+  const bookings = (trip?.bookings ?? []).filter((b: any) => !["cancelled", "expired", "refunded"].includes(b.status));
   const tickets = trip?.tickets ?? [];
   const holds = trip?.holds ?? [];
 
@@ -106,11 +106,26 @@ export default function TripViewPage() {
   const layout: Cell[] = Array.isArray(activeMap?.layout)
     ? (activeMap.layout as Cell[])
     : Array.isArray(trip?.seatMapSnapshot) ? (trip!.seatMapSnapshot as Cell[]) : [];
-  const takenSeats = useMemo(() => tickets.map((t: any) => t.seatLabel), [tickets]);
+  // Occupancy from LIVE bookings' tickets only — excludes cancelled/expired/
+  // refunded bookings and orphan tickets left behind by older cancellations.
+  const takenSeats = useMemo(
+    () => bookings.flatMap((b: any) => (b.tickets ?? []).map((t: any) => t.seatLabel)),
+    [bookings],
+  );
   const heldSeats = useMemo(
     () => holds.filter((h: any) => new Date(h.expiresAt).getTime() > Date.now()).map((h: any) => h.seatLabel),
     [holds],
   );
+
+  // Self-heal: purge orphan tickets whose booking is cancelled/expired/refunded.
+  // Frees their unique `seatKey` so the seat can be re-booked — including by
+  // customers/mobile, who lack permission to delete other people's tickets.
+  useEffect(() => {
+    const dead = ["cancelled", "expired", "refunded"];
+    const orphans = ((trip?.tickets ?? []) as any[]).filter((t) => t.booking && dead.includes(t.booking.status));
+    if (orphans.length) db.transact(orphans.map((t) => db.tx.tickets[t.id].delete())).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trip?.id, (trip?.tickets ?? []).length]);
 
   // ----- anonymous reservation state -----
   const [selected, setSelected] = useState<string[]>([]);
@@ -151,8 +166,18 @@ export default function TripViewPage() {
       await setBookingStatus(b.id, "paid");
   };
   const cancelBookingRow = async (b: any) => {
-    if (await confirm({ title: "Annuler la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" }))
-      await setBookingStatus(b.id, "cancelled", { cancelledAt: Date.now() });
+    if (await confirm({ title: "Annuler la réservation ?", message: `${b.reference} · ${fmtMoney(b.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" })) {
+      try {
+        // Free the seats: delete the tickets (seat occupancy is derived from tickets).
+        await db.transact([
+          db.tx.bookings[b.id].update({ status: "cancelled", cancelledAt: Date.now() }),
+          ...(b.tickets ?? []).map((t: any) => db.tx.tickets[t.id].delete()),
+        ]);
+        toast.success("Réservation annulée");
+      } catch (e: any) {
+        toast.error("Erreur: " + (e?.message ?? "inconnue"));
+      }
+    }
   };
 
   const occupiedForSelector = useMemo(
@@ -250,6 +275,18 @@ export default function TripViewPage() {
 
     try {
       const txs: any[] = [];
+
+      // Free seatKey (unique) held by orphan tickets — those of a cancelled/
+      // expired/refunded booking, or with no booking — for the chosen seats.
+      const deadStatus = ["cancelled", "expired", "refunded"];
+      const selectedSet = new Set(selected);
+      for (const tk of (trip.tickets ?? []) as any[]) {
+        const st = tk.booking?.status;
+        if (selectedSet.has(tk.seatLabel) && (!tk.booking || deadStatus.includes(st))) {
+          txs.push(db.tx.tickets[tk.id].delete());
+        }
+      }
+
       txs.push(
         db.tx.bookings[bookingId]
           .update({

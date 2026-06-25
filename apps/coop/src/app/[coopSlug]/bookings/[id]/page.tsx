@@ -101,7 +101,16 @@ export default function BookingViewPage() {
         tone: "danger",
       })
     ) {
-      await setStatus("cancelled", { cancelledAt: Date.now(), cancelReason: reason });
+      try {
+        // Free the seats: delete the tickets (seat occupancy is derived from tickets).
+        await db.transact([
+          db.tx.bookings[bookingId].update({ status: "cancelled", cancelledAt: Date.now(), cancelReason: reason }),
+          ...(booking?.tickets ?? []).map((t: any) => db.tx.tickets[t.id].delete()),
+        ]);
+        toast.success("Réservation annulée");
+      } catch (e: any) {
+        toast.error("Erreur: " + (e?.message ?? "inconnue"));
+      }
     }
   };
 
