@@ -142,7 +142,7 @@ function TicketCard({
 
   return (
     <Card className={cn("mb-4 p-0 relative", expired && "opacity-70")}>
-      {(trip as any).tag && (
+      {(trip as any)?.tag && (
         <View className="absolute right-3 z-20" style={{ top: -8 }}>
           <TagBadge
             name={(trip as any).tag.name}

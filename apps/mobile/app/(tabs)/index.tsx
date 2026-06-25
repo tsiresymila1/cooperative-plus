@@ -115,7 +115,7 @@ export default function Home() {
           showsVerticalScrollIndicator={false}
         >
           {/* Hero */}
-          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-6">
+          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-9">
             <Text className="font-sans text-sm text-ink-soft/70">
               {user?.email ? `Bonjour, ${user.email.split("@")[0]} 👋` : "Bonjour 👋"}
             </Text>
@@ -129,7 +129,7 @@ export default function Home() {
           </Animated.View>
 
           {/* Search card */}
-          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-6">
+          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-9">
             <Card className="gap-3 p-4">
               <DestinationField
                 label="Départ"
@@ -163,7 +163,7 @@ export default function Home() {
           </Animated.View>
 
           {/* Popular / upcoming */}
-          <View className="px-5 pt-9">
+          <View className="px-5 pt-10">
             <Text className="mb-3 font-display text-2xl text-ink">Prochains départs</Text>
             {popular.length === 0 ? (
               <Text className="font-sans text-sm text-ink-soft/70">Aucun départ programmé pour le moment.</Text>
@@ -173,7 +173,7 @@ export default function Home() {
                 const total = r.seatsTotal;
                 const full = booked >= total;
                 return (
-                  <Animated.View key={r.id} entering={FadeInDown.delay(240 + i * 70).duration(420)}>
+                  <Animated.View className="pt-4" key={r.id} entering={FadeInDown.delay(240 + i * 70).duration(420)}>
                     <Card className="mb-3 relative">
                       {r.tag ? (
                         <View className="absolute right-3 z-20" style={{ top: -8 }}>

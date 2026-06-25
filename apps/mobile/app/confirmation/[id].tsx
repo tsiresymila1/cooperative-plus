@@ -10,7 +10,7 @@ import {
   Printer,
 } from "lucide-react-native";
 import QRCode from "react-native-qrcode-svg";
-import { Button, Spinner } from "@/components/ui";
+import { Badge, Button, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SeatMapView } from "@/components/seat-map";
@@ -184,7 +184,10 @@ export default function Confirmation() {
                   <TicketRow label="Sièges" value={tickets.map((t) => t.seatLabel).join(", ") || "—"} />
                   <TicketRow label="Passagers" value={String(tickets.length)} />
                   <TicketRow label="Total" value={fmtMoney(booking.totalAmount, booking.currency)} />
-                  <TicketRow label="Statut" value={bookingStatusFr(booking.status).label} />
+                  <View className="flex-row items-center justify-between">
+                    <Text className="font-sans text-sm text-ink-soft">Statut</Text>
+                    <Badge {...bookingStatusFr(booking.status)} />
+                  </View>
                 </View>
               </View>
             </View>

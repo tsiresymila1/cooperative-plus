@@ -190,9 +190,18 @@ export default function Checkout() {
         if (user?.id) booking = booking.link({ customer: user.id });
         if (selection.cooperativeId) booking = booking.link({ cooperative: selection.cooperativeId });
 
+        // Extend the holds to the payment window. `update` upserts, so include the
+        // required attrs — the hold may have been GC'd after the 5-min selection TTL.
         const online: Chunk[] = [booking];
         for (const seat of selection.seats) {
-          online.push(db.tx.seatHolds[seat.holdId]!.update({ expiresAt: holdExpiresAt }));
+          online.push(
+            db.tx.seatHolds[seat.holdId]!.update({
+              seatKey: seat.seatKey,
+              seatLabel: seat.seatLabel,
+              expiresAt: holdExpiresAt,
+              createdAt: now,
+            }),
+          );
         }
         await db.transact(online);
 
@@ -292,7 +301,7 @@ export default function Checkout() {
       setSelection(null);
       router.replace({ pathname: "/confirmation/[id]", params: { id: bookingId } });
     } catch (e) {
-      console.warn("[checkout] booking failed:", e);
+      console.log("[checkout] booking failed:", e);
       setNotice({
         title: "Échec de la réservation",
         message: "Impossible de finaliser pour le moment. Réessayez.",

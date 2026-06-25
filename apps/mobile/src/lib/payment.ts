@@ -19,12 +19,22 @@ export async function initiatePapi(input: {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
   });
-  const data = await res.json().catch(() => ({}) as any);
+  const data = await res.json().catch(() => ({}));
   if (!res.ok || !data?.url) throw new Error(data?.error ?? "Paiement en ligne indisponible");
   return data.url as string;
 }
 
-/** Open the PAPI hosted payment page; resolves when the user closes the browser. */
-export async function openPapi(url: string): Promise<void> {
-  await WebBrowser.openBrowserAsync(url, { dismissButtonStyle: "close" });
+export type PapiResult = "success" | "failed" | "dismiss";
+
+/**
+ * Open the PAPI hosted payment page. PAPI redirects to successUrl/failureUrl
+ * (`${APP_URL}/bookings/<ref>?payment=...`) when done; openAuthSessionAsync
+ * intercepts that redirect, auto-closes the in-app browser and returns the URL.
+ */
+export async function openPapi(url: string): Promise<PapiResult> {
+  const res = await WebBrowser.openAuthSessionAsync(url, `${API}/bookings/`);
+  if (res.type === "success" && res.url) {
+    return res.url.includes("payment=success") ? "success" : "failed";
+  }
+  return "dismiss"; // user closed manually — webhook is still the source of truth
 }
