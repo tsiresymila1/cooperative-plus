@@ -88,28 +88,33 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
       <SiteHeader />
       {/* Print: show only the ticket */}
       <style>{`@media print { body * { visibility: hidden !important; } #ticket, #ticket * { visibility: visible !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; } #ticket { position: absolute; inset: 0 auto auto 0; width: 100%; } }`}</style>
-      <main className="mx-auto max-w-lg px-5 py-12">
-        <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", damping: 14 }}
-          className={`mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full ${head.wrap}`}>
-          <head.Icon size={36} className={awaitingPayment ? "animate-spin" : undefined} />
-        </motion.div>
-        <h1 className="text-center font-display text-3xl font-bold">{head.title}</h1>
-        <p className="mt-2 text-center text-ink-soft">{head.sub}</p>
+      <main className="mx-auto max-w-5xl px-5 py-12">
+        <div className="mx-auto max-w-lg">
+          <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", damping: 14 }}
+            className={`mx-auto mb-6 grid h-16 w-16 place-items-center rounded-full ${head.wrap}`}>
+            <head.Icon size={36} className={awaitingPayment ? "animate-spin" : undefined} />
+          </motion.div>
+          <h1 className="text-center font-display text-3xl font-bold">{head.title}</h1>
+          <p className="mt-2 text-center text-ink-soft">{head.sub}</p>
 
-        {/* Payment redirect banner */}
-        {paymentParam === "success" && status === "pending" && (
-          <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-baobab/10 px-4 py-3 text-sm text-baobab">
-            <Loader2 size={15} className="animate-spin" />
-            Paiement en cours de vérification…
-          </div>
-        )}
-        {paymentParam === "failed" && (
-          <div className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-center text-sm text-danger">
-            Le paiement a échoué. Réessayez ou payez à la gare.
-          </div>
-        )}
+          {/* Payment redirect banner */}
+          {paymentParam === "success" && status === "pending" && (
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-baobab/10 px-4 py-3 text-sm text-baobab">
+              <Loader2 size={15} className="animate-spin" />
+              Paiement en cours de vérification…
+            </div>
+          )}
+          {paymentParam === "failed" && (
+            <div className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-center text-sm text-danger">
+              Le paiement a échoué. Réessayez ou payez à la gare.
+            </div>
+          )}
+        </div>
 
-        <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }} className="mt-8">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+        {/* ── Left: ticket + seat preview ── */}
+        <div className="space-y-6">
+        <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}>
           <Card className="overflow-hidden p-0 border-0">
             <div className="bg-strong p-5 text-white">
               <div className="flex items-center justify-between gap-3">
@@ -148,7 +153,7 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
 
         {/* Seat preview — screen only (excluded from print) */}
         {layout.length > 0 && !["cancelled", "expired", "refunded", "no_show"].includes(status) && (
-          <Card className="mt-6 p-5 print:hidden">
+          <Card className="p-5 print:hidden">
             <p className="mb-3 text-center text-[11px] font-bold uppercase tracking-widest text-ink-soft/60">Vos places</p>
             <div className="flex justify-center overflow-x-auto">
               <div className="pointer-events-none origin-top scale-90">
@@ -157,26 +162,25 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
             </div>
           </Card>
         )}
-
-        <div className="mt-6 flex gap-3 print:hidden">
-          <Button variant="outline" className="flex-1" onClick={() => window.print()}><Download size={16} /> Télécharger</Button>
-          <Link href="/account/bookings" className="flex-1"><Button className="w-full">Mes réservations</Button></Link>
         </div>
-        {canPayOnline && (
-          <div className="mt-3 print:hidden">
+
+        {/* ── Right: actions (sticky) ── */}
+        <div className="space-y-3 print:hidden lg:sticky lg:top-20">
+          {canPayOnline && (
             <Button className="w-full" onClick={payOnline} disabled={paying}>
               {paying ? <Loader2 size={16} className="animate-spin" /> : <CreditCard size={16} />}
               {paying ? "Redirection…" : "Payer en ligne"}
             </Button>
-          </div>
-        )}
-        {status === "pending" && (
-          <div className="mt-3 print:hidden">
+          )}
+          <Button variant="outline" className="w-full" onClick={() => window.print()}><Download size={16} /> Télécharger</Button>
+          <Link href="/account/bookings" className="block"><Button variant="outline" className="w-full">Mes réservations</Button></Link>
+          {status === "pending" && (
             <Button variant="outline" className="w-full text-danger hover:bg-danger/5" onClick={cancelBooking}>
               <X size={16} /> Annuler la réservation
             </Button>
-          </div>
-        )}
+          )}
+        </div>
+        </div>
       </main>
     </>
   );
