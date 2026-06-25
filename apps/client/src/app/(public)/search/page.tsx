@@ -140,7 +140,7 @@ function SearchInner() {
                     <span className="font-mono flex gap-1 font-display text-sm font-bold leading-none"><Calendar size={13} />{new Date(t.departureAt).toLocaleDateString("fr")}</span>
                       <p className="mt-1.5 flex items-center gap-1 text-sm font-bold leading-none"><Clock size={13} />{new Date(t.departureAt).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
-                  <Badge tone={t.avail <= 3 ? "warning" : "success"}>{t.avail} place{t.avail > 1 ? "s" : ""}</Badge>
+                  <Badge tone={t.seatsBooked >= t.seatsTotal ? "warning" : "success"}>{t.seatsTotal-t.seatsBooked}/{t.seatsTotal} place{t.avail > 1 ? "s" : ""}</Badge>
                 </div>
                 <div className="mt-auto flex items-center justify-between border-t border-ink/8 pt-4">
                   <span className="font-mono text-md font-bold">{fmtMoney(t.price)}</span>
