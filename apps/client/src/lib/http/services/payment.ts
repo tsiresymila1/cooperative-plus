@@ -1,4 +1,5 @@
 import { adminDb, id as newId } from "@cp/instant/admin";
+import { decrypt, isEncrypted } from "@cp/crypto";
 import { HttpError } from "../errors";
 
 const PAPI_URL = "https://app.papi.mg/dashboard/api/payment-links";
@@ -36,7 +37,8 @@ export async function initiatePayment(input: InitiateInput): Promise<{ url: stri
   const resolvedCoopId = coopId ?? (booking as any).cooperative?.id ?? null;
 
   const coop = (booking as any).cooperative;
-  const papiApiKey = (coop?.secrets as any)?.papiApiKey ?? PAPI_FALLBACK_KEY;
+  const rawKey = (coop?.secrets as any)?.papiApiKey ?? PAPI_FALLBACK_KEY;
+const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
   if (!papiApiKey)
     throw new HttpError(422, "Paiement en ligne non configuré pour cette coopérative");
 

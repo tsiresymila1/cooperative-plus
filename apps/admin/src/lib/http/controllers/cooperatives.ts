@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { factory } from "../factory";
 import { jsonBody } from "../validate";
-import { createCooperative, createCoopAccount } from "../services/cooperatives";
+import { createCooperative, createCoopAccount, purgeCooperative, deleteCooperative } from "../services/cooperatives";
 
 const coopSchema = z.object({
   slug: z.string().min(1, "Slug requis."),
@@ -35,4 +35,18 @@ export const createCooperativeHandler = factory.createHandlers(
 export const createCoopAccountHandler = factory.createHandlers(
   jsonBody(coopAccountSchema),
   async (c) => c.json(await createCoopAccount(c.req.valid("json"))),
+);
+
+const coopIdSchema = z.object({ coopId: z.string().min(1, "Coopérative manquante.") });
+
+/** POST /cooperatives/purge — wipe a coop's operational data (fresh reset). */
+export const purgeCooperativeHandler = factory.createHandlers(
+  jsonBody(coopIdSchema),
+  async (c) => c.json(await purgeCooperative(c.req.valid("json").coopId)),
+);
+
+/** POST /cooperatives/delete — permanently delete a coop + accounts + data. */
+export const deleteCooperativeHandler = factory.createHandlers(
+  jsonBody(coopIdSchema),
+  async (c) => c.json(await deleteCooperative(c.req.valid("json").coopId)),
 );

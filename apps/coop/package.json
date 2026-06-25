@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@bprogress/next": "^3.2.12",
+    "@cp/crypto": "workspace:^",
     "@cp/instant": "workspace:*",
     "@cp/ui": "workspace:*",
     "@cp/validation": "workspace:*",

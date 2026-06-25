@@ -112,6 +112,9 @@ importers:
 
   apps/client:
     dependencies:
+      '@cp/crypto':
+        specifier: workspace:^
+        version: link:../../packages/crypto
       '@cp/instant':
         specifier: workspace:*
         version: link:../../packages/instant
@@ -200,6 +203,9 @@ importers:
       '@bprogress/next':
         specifier: ^3.2.12
         version: 3.2.12(next@15.5.19(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@cp/crypto':
+        specifier: workspace:^
+        version: link:../../packages/crypto
       '@cp/instant':
         specifier: workspace:*
         version: link:../../packages/instant
@@ -448,6 +454,8 @@ importers:
       typescript:
         specifier: ^5.7.0
         version: 5.9.3
+
+  packages/crypto: {}
 
   packages/instant:
     dependencies:

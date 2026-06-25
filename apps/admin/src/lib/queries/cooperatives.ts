@@ -27,3 +27,23 @@ export function useCreateCoopAccount() {
     },
   });
 }
+
+/** Wipe a cooperative's operational data (fresh reset). */
+export function usePurgeCooperative() {
+  return useMutation({
+    mutationFn: async (coopId: string) => {
+      const res = await api.cooperatives.purge.$post({ json: { coopId } });
+      return unwrap(res, await res.json());
+    },
+  });
+}
+
+/** Permanently delete a cooperative + accounts + data. */
+export function useDeleteCooperative() {
+  return useMutation({
+    mutationFn: async (coopId: string) => {
+      const res = await api.cooperatives.delete.$post({ json: { coopId } });
+      return unwrap(res, await res.json());
+    },
+  });
+}

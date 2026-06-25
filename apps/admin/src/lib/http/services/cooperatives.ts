@@ -54,6 +54,66 @@ export async function createCooperative(input: CreateCoopInput): Promise<{ ok: t
   return { ok: true, coopId };
 }
 
+// Operational (activity) namespaces — what clients/coops generate at runtime.
+const OPERATIONAL = ["tickets", "payments", "refunds", "bookings", "holds", "tripInstances", "tripTemplates"] as const;
+// Config the coop set up (deleted only on full delete, kept on purge).
+const CONFIG = ["seatMaps", "vehicles", "routes", "destinations", "tags"] as const;
+
+async function commitBatched(chunks: any[]) {
+  for (let i = 0; i < chunks.length; i += 100) {
+    await adminDb.transact(chunks.slice(i, i + 100));
+  }
+}
+
+const COOP_GRAPH = {
+  tripInstances: {}, tripTemplates: {}, bookings: {}, tickets: {}, payments: {}, refunds: {}, holds: {},
+  routes: {}, vehicles: {}, seatMaps: {}, destinations: {}, tags: {}, subscriptions: {}, requests: {},
+  members: { user: {} },
+} as const;
+
+/** Reset a cooperative to "freshly created" — wipe all trips, bookings, payments,
+ *  tickets, holds, refunds, templates. Keeps the coop, owner/assistants and config. */
+export async function purgeCooperative(coopId: string): Promise<{ ok: true; deleted: number }> {
+  const { cooperatives } = await adminDb.query({ cooperatives: { $: { where: { id: coopId } }, ...COOP_GRAPH } });
+  const coop: any = cooperatives?.[0];
+  if (!coop) throw new HttpError(404, "Coopérative introuvable.");
+
+  const chunks: any[] = [];
+  for (const ns of OPERATIONAL) {
+    for (const it of (coop[ns] ?? [])) chunks.push((adminDb.tx as any)[ns][it.id].delete());
+  }
+  await commitBatched(chunks);
+  return { ok: true, deleted: chunks.length };
+}
+
+/** Permanently delete a cooperative: operational data + config + memberships +
+ *  member credentials (owner & assistants) + subscriptions + requests + the coop.
+ *  ($users are system entities and cannot be deleted — access is revoked instead.) */
+export async function deleteCooperative(coopId: string): Promise<{ ok: true; deleted: number }> {
+  const { cooperatives } = await adminDb.query({ cooperatives: { $: { where: { id: coopId } }, ...COOP_GRAPH } });
+  const coop: any = cooperatives?.[0];
+  if (!coop) throw new HttpError(404, "Coopérative introuvable.");
+
+  const chunks: any[] = [];
+  for (const ns of [...OPERATIONAL, ...CONFIG, "subscriptions", "requests"] as const) {
+    for (const it of (coop[ns] ?? [])) chunks.push((adminDb.tx as any)[ns][it.id].delete());
+  }
+  // Memberships + their login credentials (revoke owner & assistant access).
+  const emails = new Set<string>();
+  for (const m of (coop.members ?? [])) {
+    chunks.push(adminDb.tx.memberships[m.id].delete());
+    if (m.user?.email) emails.add(String(m.user.email).toLowerCase());
+  }
+  if (emails.size) {
+    const { credentials } = await adminDb.query({ credentials: { $: { where: { email: { $in: [...emails] } } } } });
+    for (const c of (credentials ?? [])) chunks.push(adminDb.tx.credentials[c.id].delete());
+  }
+  chunks.push(adminDb.tx.cooperatives[coopId].delete());
+
+  await commitBatched(chunks);
+  return { ok: true, deleted: chunks.length };
+}
+
 export type CreateCoopAccountInput = {
   coopId: string; email: string; name?: string; password: string; role?: "owner" | "assistant";
 };

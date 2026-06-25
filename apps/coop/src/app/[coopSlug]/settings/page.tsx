@@ -294,22 +294,25 @@ function PapiSection({ coopId, secrets }: { coopId: string; secrets: any }) {
   const [show, setShow] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Don't prefill with the encrypted value — show placeholder indicating key exists
   useEffect(() => {
-    setKey(secrets?.papiApiKey ?? "");
-  }, [secrets]);
+    setKey("");
+  }, [secrets?.id]);
 
   const save = async () => {
+    if (!key.trim()) return;
     setSaving(true);
     try {
-      if (secrets?.id) {
-        await db.transact(db.tx.coopSecrets[secrets.id].update({ papiApiKey: key || undefined, updatedAt: Date.now() }));
-      } else {
-        const newId = crypto.randomUUID();
-        await db.transact(
-          db.tx.coopSecrets[newId].update({ papiApiKey: key || undefined, updatedAt: Date.now() }).link({ cooperative: coopId }),
-        );
+      const res = await fetch("/api/secrets/papi-key", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coopId, papiApiKey: key, existingSecretId: secrets?.id }),
+      });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}));
+        throw new Error(d.error ?? "Erreur serveur");
       }
-      toast.success("Clé PAPI enregistrée");
+      toast.success("Clé PAPI enregistrée (chiffrée)");
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
     } finally {

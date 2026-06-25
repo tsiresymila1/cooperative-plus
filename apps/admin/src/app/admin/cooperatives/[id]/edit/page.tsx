@@ -1,11 +1,11 @@
 "use client";
 import { PageSkeleton } from "@cp/ui";
 import { AdminShell } from "@/components/admin-shell";
-import { useCreateCoopAccount } from "@/lib/queries/cooperatives";
+import { useCreateCoopAccount, usePurgeCooperative, useDeleteCooperative } from "@/lib/queries/cooperatives";
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowLeft, ChevronRight, Power, Trash2, UserPlus } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronRight, Eraser, Power, Trash2, UserPlus } from "lucide-react";
 import {
   adminNav,
   db,
@@ -85,8 +85,29 @@ export default function EditCooperativePage({ params }: { params: Promise<{ id: 
 function DangerZone({ coop }: { coop: any }) {
   const confirm = useConfirm();
   const router = useRouter();
+  const purgeCoop = usePurgeCooperative();
+  const deleteCoop = useDeleteCooperative();
   const [busy, setBusy] = useState(false);
   const suspended = coop.subscriptionStatus === "suspended";
+
+  async function purge() {
+    const ok = await confirm({
+      title: "Purger les données ?",
+      message: `Tous les trajets, réservations, paiements et billets de ${coop.displayName} seront supprimés. La coopérative redevient « neuve » (propriétaire et configuration conservés). Action irréversible.`,
+      confirmLabel: "Purger",
+      tone: "danger",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      const res: any = await purgeCoop.mutateAsync(coop.id);
+      toast.success(`Données purgées (${res?.deleted ?? 0} éléments supprimés).`);
+    } catch (e: any) {
+      toast.error(e instanceof Error ? e.message : "Échec de la purge.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function toggleSuspend() {
     const ok = await confirm({
@@ -119,17 +140,12 @@ function DangerZone({ coop }: { coop: any }) {
     if (!ok) return;
     setBusy(true);
     try {
-      // ponytail: delete coop + its memberships/subscriptions; orphan trips/bookings
-      // stay hidden since every query is scoped by cooperative.
-      await db.transact([
-        ...(coop.members ?? []).map((m: any) => tx.memberships[m.id].delete()),
-        ...(coop.subscriptions ?? []).map((s: any) => tx.subscriptions[s.id].delete()),
-        tx.cooperatives[coop.id].delete(),
-      ]);
+      // Server-side cascade: data + config + memberships + member credentials + coop.
+      await deleteCoop.mutateAsync(coop.id);
       toast.success("Coopérative supprimée définitivement.");
       router.push("/admin/cooperatives");
     } catch (e: any) {
-      toast.error(e?.message ?? "Échec de la suppression.");
+      toast.error(e instanceof Error ? e.message : "Échec de la suppression.");
       setBusy(false);
     }
   }
@@ -144,6 +160,15 @@ function DangerZone({ coop }: { coop: any }) {
           </div>
           <Button variant="outline" size="sm" onClick={toggleSuspend} disabled={busy} className="shrink-0">
             <Power size={15} /> {suspended ? "Réactiver" : "Suspendre"}
+          </Button>
+        </div>
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-ink">Purger les données</p>
+            <p className="mt-0.5 text-xs text-ink-soft">Supprime trajets, réservations, paiements et billets. Remet la coopérative à neuf (propriétaire + configuration conservés).</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={purge} disabled={busy} className="shrink-0">
+            <Eraser size={15} /> Purger
           </Button>
         </div>
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">

@@ -5,16 +5,14 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ArrowRight, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
-import { Badge, Button, Card } from "@/components/ui";
+import { ChevronRight, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
+import { Button, Card } from "@/components/ui";
 import { DateField, DestinationField, type Dest } from "@/components/picker";
-import { CoopLogo } from "@/components/coop-logo";
 import { useColors } from "@/lib/colors";
-import { fmtMoney } from "@/lib/cn";
+import { cn, fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
-import { fmtDateKey, fmtTime, toDateKey, toMs } from "@/lib/domain";
-import { TagBadge } from "@/components/tag-badge";
+import { fmtTime, toDateKey, toMs } from "@/lib/domain";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
@@ -61,7 +59,7 @@ export default function Home() {
 
   const popular = (popularData?.tripInstances ?? [])
     .filter((t) => toMs(t.departureAt) > Date.now())
-    .slice(0, 4);
+    .slice(0, 3);
 
   const [tried, setTried] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -114,23 +112,17 @@ export default function Home() {
           contentContainerStyle={{ paddingTop: 6, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Hero */}
-          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-9">
+          {/* Greeting */}
+          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-6">
             <Text className="font-sans text-sm text-ink-soft/70">
               {user?.email ? `Bonjour, ${user.email.split("@")[0]} 👋` : "Bonjour 👋"}
             </Text>
-            <Text className="mt-2 font-display text-4xl leading-[0.95] text-ink">
-              Votre place de{"\n"}
-              <Text className="text-laterite">taxi-brousse</Text>,{"\n"}en 2 minutes.
-            </Text>
-            <Text className="mt-3 font-sans text-base text-ink-soft">
-              Comparez les départs, choisissez votre siège, payez par Mobile Money.
-            </Text>
+            <Text className="mt-1 font-display text-3xl text-ink">Où allez-vous ?</Text>
           </Animated.View>
 
-          {/* Search card */}
-          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-9">
-            <Card className="gap-3 p-4">
+          {/* Search card — primary focus, gets the most space */}
+          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-15">
+            <Card className="gap-4 p-5 shadow-lg">
               <DestinationField
                 label="Départ"
                 value={origin}
@@ -155,70 +147,45 @@ export default function Home() {
 
               {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
 
-              <Button size="md" className="mt-1" onPress={goSearch} loading={searching}>
+              <Button size="lg" className="mt-1" onPress={goSearch} loading={searching}>
                 {!searching && <Search size={18} color="#ffffff" />}
-                <Text className="font-sans font-medium text-white">Rechercher</Text>
+                <Text className="font-sans text-base font-medium text-white">Rechercher</Text>
               </Button>
             </Card>
           </Animated.View>
 
-          {/* Popular / upcoming */}
-          <View className="px-5 pt-10">
-            <Text className="mb-3 font-display text-2xl text-ink">Prochains départs</Text>
+          {/* Prochains départs — secondary, kept compact */}
+          <View className="px-5 pt-15">
+            <Text className="mb-1 font-sans text-xs font-semibold uppercase tracking-wider text-ink-soft/60">
+              Prochains départs
+            </Text>
             {popular.length === 0 ? (
-              <Text className="font-sans text-sm text-ink-soft/70">Aucun départ programmé pour le moment.</Text>
+              <Text className="mt-3 font-sans text-sm text-ink-soft/70">Aucun départ programmé pour le moment.</Text>
             ) : (
               popular.map((r, i) => {
                 const booked = r.tickets?.length ?? 0;
-                const total = r.seatsTotal;
-                const full = booked >= total;
+                const full = booked >= r.seatsTotal;
                 return (
-                  <Animated.View className="pt-4" key={r.id} entering={FadeInDown.delay(240 + i * 70).duration(420)}>
-                    <Card className="mb-3 relative">
-                      {r.tag ? (
-                        <View className="absolute right-3 z-20" style={{ top: -8 }}>
-                          <TagBadge name={r.tag.name} color={r.tag.color} />
-                        </View>
-                      ) : null}
-                      {/* Coop + occupancy */}
-                      <View className="flex-row items-center gap-3">
-                        <CoopLogo url={r.cooperative?.logoUrl} brandColor={r.cooperative?.brandColor} name={r.coopName} size={40} />
-                        <View className="flex-1">
-                          <Text className="font-sans text-sm font-bold text-laterite" numberOfLines={1}>{r.coopName}</Text>
-                          <Text className="font-mono text-[11px] text-ink-soft/60">{fmtDateKey(r.departDate)}</Text>
-                        </View>
-                        <Badge
-                          tone={full ? "danger" : booked / total >= 0.8 ? "warning" : "success"}
-                          label={full ? "Complet" : `${total - booked}/${total} places`}
-                        />
+                  <Animated.View key={r.id} entering={FadeInDown.delay(220 + i * 60).duration(380)}>
+                    <Pressable
+                      disabled={full}
+                      onPress={() => router.push({ pathname: "/trip/[id]", params: { id: r.id } })}
+                      className="flex-row items-center gap-3 border-b border-ink/8 py-3.5 active:opacity-70"
+                    >
+                      <Text className={cn("w-14 font-mono text-base", full ? "text-ink-soft/50" : "text-ink")}>
+                        {fmtTime(r.departureAt)}
+                      </Text>
+                      <View className="flex-1">
+                        <Text className="font-sans text-[15px] text-ink" numberOfLines={1}>
+                          {r.originName} <Text className="text-ink-soft/50">→</Text> {r.destName}
+                        </Text>
+                        <Text className="mt-0.5 font-mono text-[11px] text-ink-soft/60" numberOfLines={1}>
+                          {r.coopName} · {full ? "Complet" : `${r.seatsTotal - booked} places`}
+                        </Text>
                       </View>
-
-                      {/* Route */}
-                      <View className="mt-3 flex-row items-center gap-2">
-                        <Text className="font-display text-lg text-ink">{r.originName}</Text>
-                        <ArrowRight size={15} color="#f5821f" />
-                        <Text className="font-display text-lg text-laterite">{r.destName}</Text>
-                      </View>
-
-                      {/* Time + price */}
-                      <View className="mt-2 flex-row items-center justify-between">
-                        <View className="flex-row items-center gap-1.5">
-                          <Clock size={14} color="#4a5680" />
-                          <Text className="font-mono text-sm text-ink-soft">{fmtTime(r.departureAt)}</Text>
-                        </View>
-                        <Text className="font-mono text-lg text-ink">{fmtMoney(r.price, r.currency)}</Text>
-                      </View>
-
-                      <Button
-                        className="mt-3"
-                        disabled={full}
-                        onPress={() =>
-                          router.push({ pathname: "/trip/[id]", params: { id: r.id } })
-                        }
-                      >
-                        <Text className="font-sans font-medium text-white">Réserver</Text>
-                      </Button>
-                    </Card>
+                      <Text className="font-mono text-sm text-ink">{fmtMoney(r.price, r.currency)}</Text>
+                      <ChevronRight size={18} color={c.inkSoft} />
+                    </Pressable>
                   </Animated.View>
                 );
               })
