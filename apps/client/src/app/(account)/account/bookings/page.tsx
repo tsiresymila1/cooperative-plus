@@ -1,6 +1,7 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
-import { ChevronRight, Ticket, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Ticket, X } from "lucide-react";
 import { Badge, Button, Card, CoopLogo, TagBadge, useConfirm, toast } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
@@ -22,20 +23,25 @@ async function cancelOwnBooking(b: any, confirm: ReturnType<typeof useConfirm>) 
 
 const tone: Record<string, "success" | "warning" | "danger" | "neutral"> = {
   confirmed: "success",
+  paid: "success",
   pending: "warning",
   cancelled: "danger",
+  refunded: "danger",
   expired: "neutral",
   completed: "neutral",
   no_show: "danger",
 };
 const label: Record<string, string> = {
   confirmed: "confirmé",
+  paid: "payé",
   pending: "en attente",
   cancelled: "annulé",
+  refunded: "remboursé",
   expired: "expiré",
   completed: "terminé",
   no_show: "absent",
 };
+const PAGE_SIZE = 8;
 
 export default function Bookings() {
   const { user } = db.useAuth();
@@ -55,6 +61,10 @@ export default function Bookings() {
       : null,
   );
   const bookings = data?.bookings ?? [];
+  const [page, setPage] = useState(0);
+  const pageCount = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount - 1);
+  const shown = bookings.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
   return (
     <div className=" space-y-3">
@@ -73,64 +83,66 @@ export default function Bookings() {
         </Card>
       ) : (
         <div className="gap-2 flex flex-col">
-          {bookings.map((b) => {
+          {shown.map((b) => {
             const ti: any = b.tripInstance;
             const tg = Array.isArray(ti?.tag) ? ti.tag[0] : ti?.tag;
             return (
             <Link className="" key={b.id} href={`/bookings/${b.reference}`}>
               <Card className="flex items-center gap-4 p-5 transition-colors hover:bg-ink/[.02]">
                 <CoopLogo url={b.tripInstance?.cooperative?.logoUrl} name={b.tripInstance?.coopName} size={44} className="border border-ink/10" />
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="truncate text-sm font-semibold text-ink">
                       {b.tripInstance?.coopName ?? "Cooperative Plus"}
                     </span>
                     {tg && <TagBadge name={tg.name} color={tg.color} />}
-                    <Badge tone={tone[b.status] ?? "neutral"}>
-                      {label[b.status] ?? b.status}
-                    </Badge>
                   </div>
                   <p className="mt-1 font-display text-lg font-bold">
                     {b.tripInstance?.originName} → {b.tripInstance?.destName}
                   </p>
-                  <p className="text-sm text-ink-soft">
+                  <p className="truncate text-sm text-ink-soft">
                     {b.tripInstance
-                      ? new Date(b.tripInstance.departureAt).toLocaleString(
-                          "fr",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          },
-                        )
+                      ? new Date(b.tripInstance.departureAt).toLocaleString("fr", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
                       : ""}
                     {" · "}sièges{" "}
-                    {(b.tickets ?? [])
-                      .map((t) => t.seatLabel)
-                      .sort()
-                      .join(", ")}
+                    {(b.tickets ?? []).map((t) => t.seatLabel).sort().join(", ")}
                     {" · "}
                     <span className="font-mono text-orange-deep">{b.reference}</span>
                   </p>
                 </div>
-                <p className="font-mono text-lg font-bold">
-                  {fmtMoney(b.totalAmount)}
-                </p>
-                {b.status === "pending" && (
-                  <button
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelOwnBooking(b, confirm); }}
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-soft/50 transition-colors hover:bg-danger/10 hover:text-danger"
-                    title="Annuler la réservation"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
-                <ChevronRight size={18} className="text-ink-soft/50" />
+
+                <div className="flex shrink-0 flex-col items-end gap-1.5">
+                  <Badge tone={tone[b.status] ?? "neutral"}>{label[b.status] ?? b.status}</Badge>
+                  <div className="flex items-center gap-2">
+                    {b.status === "pending" && (
+                      <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelOwnBooking(b, confirm); }}
+                        className="grid h-8 w-8 place-items-center rounded-full text-ink-soft/50 transition-colors hover:bg-danger/10 hover:text-danger"
+                        title="Annuler la réservation"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                    <p className="font-mono text-lg font-bold">{fmtMoney(b.totalAmount)}</p>
+                    <ChevronRight size={18} className="text-ink-soft/50" />
+                  </div>
+                </div>
               </Card>
             </Link>
             );
           })}
+
+          {pageCount > 1 && (
+            <div className="mt-4 flex items-center justify-center gap-2">
+              <Button variant="outline" size="sm" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
+                <ChevronLeft size={16} /> Précédent
+              </Button>
+              <span className="px-2 text-sm text-ink-soft">Page {safePage + 1} / {pageCount}</span>
+              <Button variant="outline" size="sm" disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)}>
+                Suivant <ChevronRight size={16} />
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
