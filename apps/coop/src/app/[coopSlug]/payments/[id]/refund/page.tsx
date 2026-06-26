@@ -1,8 +1,11 @@
 "use client";
 import { PageSkeleton } from "@cp/ui";
-import { useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import {
   DashboardShell,
@@ -29,26 +32,50 @@ export default function RefundPaymentPage() {
     payments: { $: { where: { id: paymentId, "cooperative.id": coopId } } },
   });
   const payment = data?.payments?.[0];
+  const maxAmount = payment?.amount ?? 0;
 
-  const [amount, setAmount] = useState("");
-  const [reason, setReason] = useState("");
-  const [saving, setSaving] = useState(false);
+  const schema = useMemo(
+    () =>
+      z.object({
+        amount: z
+          .string()
+          .optional()
+          .superRefine((s, ctx) => {
+            if (!s || !s.trim()) return; // empty = full refund
+            const amt = toMoney(s);
+            if (!amt || amt <= 0) {
+              ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Montant invalide" });
+              return;
+            }
+            if (amt > maxAmount) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `Le montant ne peut pas dépasser ${fmtMoney(maxAmount)}`,
+              });
+            }
+          }),
+        reason: z.string().optional(),
+      }),
+    [maxAmount],
+  );
+  type Values = z.infer<typeof schema>;
 
-  const submit = async () => {
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { amount: "", reason: "" },
+  });
+
+  const submit = handleSubmit(async (v) => {
     if (!payment) return;
-    const amt = amount ? toMoney(amount) : payment.amount;
-    if (!amt) {
-      toast.error("Montant invalide");
-      return;
-    }
+    const amt = v.amount && v.amount.trim() ? toMoney(v.amount) : payment.amount;
     const full = amt >= payment.amount;
-    setSaving(true);
     try {
       await db.transact([
         db.tx.refunds[id()]
           .update({
             amount: amt,
-            reason: reason || undefined,
+            reason: v.reason || undefined,
             status: "succeeded",
             createdAt: Date.now(),
           })
@@ -61,9 +88,8 @@ export default function RefundPaymentPage() {
       router.push(`/${slug}/payments`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -99,16 +125,16 @@ export default function RefundPaymentPage() {
             <Field
               label="Montant (MGA)"
               hint={`Laissez vide pour rembourser la totalité (${fmtMoney(payment.amount)})`}
+              error={errors.amount?.message}
             >
               <Input
                 inputMode="numeric"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                {...register("amount")}
                 placeholder={String(payment.amount)}
               />
             </Field>
             <Field label="Motif (optionnel)">
-              <Input value={reason} onChange={(e) => setReason(e.target.value)} />
+              <Input {...register("reason")} />
             </Field>
           </div>
           </FormSection>
@@ -119,8 +145,8 @@ export default function RefundPaymentPage() {
                 Annuler
               </Button>
             </Link>
-            <Button size="sm" onClick={submit} disabled={saving}>
-              {saving ? "…" : "Rembourser"}
+            <Button size="sm" onClick={submit} disabled={isSubmitting}>
+              {isSubmitting ? "…" : "Rembourser"}
             </Button>
           </div>
         </div>

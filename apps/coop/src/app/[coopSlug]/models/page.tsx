@@ -1,5 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Plus, CarFront, ChevronRight } from "lucide-react";
 import {
   DashboardShell,
@@ -25,6 +28,14 @@ import { Input } from "@cp/ui/shadcn";
 
 const FREE_TRIAL_MAX = 3;
 
+const schema = z.object({
+  name: z.string().trim().min(1, "Le nom du modèle est requis"),
+  brand: z.string().optional(),
+  type: z.string(),
+});
+type Values = z.infer<typeof schema>;
+const EMPTY: Values = { name: "", brand: "", type: "minibus" };
+
 export default function ModelsPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const confirm = useConfirm();
@@ -34,32 +45,37 @@ export default function ModelsPage() {
 
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState({ name: "", brand: "", type: "minibus", rows: "5", cols: "4" });
+  const [dims, setDims] = useState({ rows: "5", cols: "4" });
   const [layout, setLayout] = useState<Cell[]>(() => buildLayout(5, 4));
-  const [saving, setSaving] = useState(false);
   const seats = layout.filter((c) => c.type === "seat").length;
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
-  const regen = () => setLayout(buildLayout(toInt(form.rows, 5), toInt(form.cols, 4)));
+  const setDim = (k: "rows" | "cols", v: string) => setDims((d) => ({ ...d, [k]: v }));
+  const regen = () => setLayout(buildLayout(toInt(dims.rows, 5), toInt(dims.cols, 4)));
+
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: EMPTY,
+  });
 
   function openCreate() {
     setEditId(null);
-    setForm({ name: "", brand: "", type: "minibus", rows: "5", cols: "4" });
+    reset(EMPTY);
+    setDims({ rows: "5", cols: "4" });
     setLayout(buildLayout(5, 4));
     setOpen(true);
   }
   function openEdit(m: any) {
     setEditId(m.id);
-    setForm({ name: m.name ?? "", brand: m.brand ?? "", type: m.type ?? "minibus", rows: "5", cols: "4" });
+    reset({ name: m.name ?? "", brand: m.brand ?? "", type: m.type ?? "minibus" });
+    setDims({ rows: "5", cols: "4" });
     setLayout(Array.isArray(m.layout) && m.layout.length ? (m.layout as Cell[]) : buildLayout(5, 4));
     setOpen(true);
   }
 
-  async function save() {
-    if (!form.name.trim()) { toast.error("Le nom du modèle est requis."); return; }
+  const save = handleSubmit(async (v) => {
     if (seats < 1) { toast.error("Le plan doit comporter au moins un siège."); return; }
-    setSaving(true);
     try {
-      const payload = { name: form.name.trim(), brand: form.brand.trim() || undefined, type: form.type, seatCount: seats, layout };
+      const payload = { name: v.name.trim(), brand: v.brand?.trim() || undefined, type: v.type, seatCount: seats, layout };
       if (editId) {
         await db.transact(db.tx.vehicleModels[editId].update(payload));
         toast.success("Modèle mis à jour.");
@@ -69,11 +85,9 @@ export default function ModelsPage() {
       }
       setOpen(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Échec.");
-    } finally {
-      setSaving(false);
+      toast.error("Erreur: " + (e?.message ?? "inconnue"));
     }
-  }
+  });
 
   async function del(m: any) {
     if (await confirm({ title: "Supprimer le modèle ?", message: m.name, confirmLabel: "Supprimer", tone: "danger" })) {
@@ -139,24 +153,24 @@ export default function ModelsPage() {
         width="max-w-2xl"
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={saving}>Annuler</Button>
-            <Button size="sm" onClick={save} disabled={saving}>{saving ? "…" : "Enregistrer"}</Button>
+            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+            <Button size="sm" onClick={save} disabled={isSubmitting}>{isSubmitting ? "…" : "Enregistrer"}</Button>
           </div>
         }
       >
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Nom du modèle"><Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Hiace 15" /></Field>
-            <Field label="Marque"><Input value={form.brand} onChange={(e) => set("brand", e.target.value)} placeholder="Toyota" /></Field>
+            <Field label="Nom du modèle" error={errors.name?.message}><Input {...register("name")} placeholder="Hiace 15" /></Field>
+            <Field label="Marque"><Input {...register("brand")} placeholder="Toyota" /></Field>
           </div>
           <Field label="Type">
-            <Input value={form.type} onChange={(e) => set("type", e.target.value)} placeholder="minibus" />
+            <Input {...register("type")} placeholder="minibus" />
           </Field>
 
           <div className="rounded-md border border-ink/10 p-4">
             <div className="mb-3 flex items-end gap-4">
-              <Field label="Rangées"><Input inputMode="numeric" value={form.rows} onChange={(e) => set("rows", e.target.value)} className="w-20" /></Field>
-              <Field label="Colonnes"><Input inputMode="numeric" value={form.cols} onChange={(e) => set("cols", e.target.value)} className="w-20" /></Field>
+              <Field label="Rangées"><Input inputMode="numeric" value={dims.rows} onChange={(e) => setDim("rows", e.target.value)} className="w-20" /></Field>
+              <Field label="Colonnes"><Input inputMode="numeric" value={dims.cols} onChange={(e) => setDim("cols", e.target.value)} className="w-20" /></Field>
               <Button variant="outline" size="sm" onClick={regen}>Régénérer</Button>
               <span className="ml-auto text-sm font-semibold text-ink">{seats} sièges</span>
             </div>

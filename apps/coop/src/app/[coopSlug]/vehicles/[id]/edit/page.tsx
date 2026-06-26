@@ -3,6 +3,9 @@ import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight, Bus } from "lucide-react";
 import {
   DashboardShell,
@@ -31,6 +34,15 @@ const STATUSES = ["active", "maintenance", "inactive"];
 const seatsOf = (m: any) =>
   Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
 
+const schema = z.object({
+  name: z.string().trim().min(1, "Nom requis"),
+  reg: z.string().trim().min(1, "Immatriculation requise"),
+  modelId: z.string().min(1, "Sélectionnez un modèle"),
+  status: z.string(),
+  notes: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function EditVehiclePage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -45,49 +57,50 @@ export default function EditVehiclePage() {
   const models = (data?.vehicleModels ?? []).filter(notDeleted);
 
   const [hydrated, setHydrated] = useState(false);
-  const [name, setName] = useState("");
-  const [reg, setReg] = useState("");
-  const [modelId, setModelId] = useState("");
-  const [status, setStatus] = useState("active");
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
 
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { name: "", reg: "", modelId: "", status: "active", notes: "" },
+  });
+  const modelId = watch("modelId");
+  const status = watch("status");
   const model = models.find((m: any) => m.id === modelId);
 
   useEffect(() => {
     if (vehicle && !hydrated) {
-      setName(vehicle.name ?? "");
-      setReg(vehicle.registrationNo ?? "");
-      setModelId((vehicle.model as any)?.id ?? "");
-      setStatus(vehicle.status ?? "active");
-      setNotes(vehicle.notes ?? "");
+      reset({
+        name: vehicle.name ?? "",
+        reg: vehicle.registrationNo ?? "",
+        modelId: (vehicle.model as any)?.id ?? "",
+        status: vehicle.status ?? "active",
+        notes: vehicle.notes ?? "",
+      });
       setHydrated(true);
     }
-  }, [vehicle, hydrated]);
+  }, [vehicle, hydrated, reset]);
 
-  const submit = async () => {
-    if (!name || !reg) { toast.error("Nom et immatriculation requis"); return; }
-    if (!model) { toast.error("Sélectionnez un modèle"); return; }
-    setSaving(true);
+  const submit = handleSubmit(async (v) => {
+    const m = models.find((x: any) => x.id === v.modelId);
+    if (!m) return;
     try {
       const prev = (vehicle?.model as any)?.id;
       let chunk = db.tx.vehicles[vehicleId].update({
-        name,
-        registrationNo: reg,
-        type: model.type ?? vehicle?.type ?? "minibus_18",
-        seatCount: seatsOf(model),
-        status,
-        notes,
-      }).link({ model: model.id });
-      if (prev && prev !== model.id) chunk = chunk.unlink({ model: prev });
+        name: v.name.trim(),
+        registrationNo: v.reg.trim(),
+        type: m.type ?? vehicle?.type ?? "minibus_18",
+        seatCount: seatsOf(m),
+        status: v.status,
+        notes: v.notes ?? "",
+      }).link({ model: m.id });
+      if (prev && prev !== m.id) chunk = chunk.unlink({ model: prev });
       await db.transact(chunk);
       toast.success("Véhicule mis à jour");
       router.push(`/${slug}/vehicles`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -121,15 +134,15 @@ export default function EditVehiclePage() {
           <FormSection index="01" title="Identité" description="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Nom">
-                  <Input value={name} onChange={(e) => setName(e.target.value)} />
+                <Field label="Nom" error={errors.name?.message}>
+                  <Input {...register("name")} />
                 </Field>
-                <Field label="Immatriculation">
-                  <Input value={reg} onChange={(e) => setReg(e.target.value)} />
+                <Field label="Immatriculation" error={errors.reg?.message}>
+                  <Input {...register("reg")} />
                 </Field>
               </div>
-              <Field label="Modèle" hint={model ? `${seatsOf(model)} places` : "Le modèle détermine le nombre de places et le plan de sièges."}>
-                <Select value={modelId} onValueChange={setModelId}>
+              <Field label="Modèle" error={errors.modelId?.message} hint={model ? `${seatsOf(model)} places` : "Le modèle détermine le nombre de places et le plan de sièges."}>
+                <Select value={modelId} onValueChange={(v) => setValue("modelId", v, { shouldValidate: true })}>
                   <SelectTrigger>
                     <span className="inline-flex items-center gap-2"><Bus size={15} className="text-ink-soft/60" /><SelectValue placeholder="Choisir un modèle…" /></span>
                   </SelectTrigger>
@@ -139,7 +152,7 @@ export default function EditVehiclePage() {
                 </Select>
               </Field>
               <Field label="Statut">
-                <Select value={status} onValueChange={setStatus}>
+                <Select value={status} onValueChange={(v) => setValue("status", v)}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {STATUSES.map((s) => <SelectItem key={s} value={s}>{vehicleStatus[s]?.label ?? s}</SelectItem>)}
@@ -147,7 +160,7 @@ export default function EditVehiclePage() {
                 </Select>
               </Field>
               <Field label="Notes">
-                <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+                <Textarea rows={2} {...register("notes")} />
               </Field>
               {model && <div><Badge tone="neutral">{seatsOf(model)} places · {model.name}</Badge></div>}
             </div>
@@ -155,7 +168,7 @@ export default function EditVehiclePage() {
               <Link href={`/${slug}/vehicles`}>
                 <Button variant="outline" size="sm">Annuler</Button>
               </Link>
-              <Button size="sm" onClick={submit} disabled={saving}>{saving ? "…" : "Enregistrer"}</Button>
+              <Button size="sm" onClick={submit} disabled={isSubmitting}>{isSubmitting ? "…" : "Enregistrer"}</Button>
             </div>
           </FormSection>
         </div>

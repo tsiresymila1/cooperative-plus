@@ -2,6 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight, Mail } from "lucide-react";
 import {
   DashboardShell,
@@ -16,32 +19,46 @@ import {
 import { Input } from "@cp/ui/shadcn";
 import { useCreateAssistant } from "@/lib/queries/account";
 
+const schema = z.object({
+  name: z.string().optional(),
+  email: z.string().trim().min(1, "Email requis").email("Email invalide"),
+  password: z.string().min(6, "Mot de passe: 6 caractères minimum"),
+});
+type Values = z.infer<typeof schema>;
+
 export default function NewTeamMemberPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const createAssistant = useCreateAssistant();
   const saving = createAssistant.isPending;
 
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
-  const [perms, setPerms] = useState<string[]>([]);
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { name: "", email: "", password: "" },
+  });
+  const password = watch("password");
 
+  const [perms, setPerms] = useState<string[]>([]);
   const togglePerm = (key: string) =>
     setPerms((p) => (p.includes(key) ? p.filter((x) => x !== key) : [...p, key]));
 
-  const submit = () => {
-    const target = (email || "").trim().toLowerCase();
-    if (!target) { toast.error("Email requis"); return; }
-    if (password.length < 6) { toast.error("Mot de passe: 6 caractères minimum"); return; }
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+    let out = "";
+    for (let i = 0; i < 10; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    setValue("password", out, { shouldValidate: true });
+  };
+
+  const submit = handleSubmit(async (v) => {
     createAssistant.mutate(
-      { coopId, email: target, name, password, permissions: perms },
+      { coopId, email: v.email.trim().toLowerCase(), name: v.name ?? "", password: v.password, permissions: perms },
       {
         onSuccess: () => { toast.success("Compte assistant créé"); router.push(`/${slug}/team`); },
         onError: (e) => toast.error("Erreur: " + (e instanceof Error ? e.message : "inconnue")),
       },
     );
-  };
+  });
 
   return (
     <DashboardShell
@@ -69,29 +86,34 @@ export default function NewTeamMemberPage() {
       <div className="mx-auto max-w-4xl">
         <FormSection index="01" title="Compte" description="Un compte assistant avec mot de passe sera créé.">
         <div className="grid gap-4">
-          <Field label="Nom">
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nom de l'assistant" />
+          <Field label="Nom" error={errors.name?.message}>
+            <Input {...register("name")} placeholder="Nom de l'assistant" />
           </Field>
-          <Field label="Email">
+          <Field label="Email" error={errors.email?.message}>
             <div className="relative">
               <Mail size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
               <Input
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
                 placeholder="assistant@exemple.com"
                 className="pl-9"
               />
             </div>
           </Field>
-          <Field label="Mot de passe" hint="6 caractères minimum">
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete="new-password"
-            />
+          <Field label="Mot de passe" hint="6 caractères minimum" error={errors.password?.message}>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={password}
+                onChange={(e) => setValue("password", e.target.value, { shouldValidate: true })}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                className="font-mono"
+              />
+              <Button size="sm" variant="outline" type="button" onClick={generatePassword}>
+                Générer
+              </Button>
+            </div>
           </Field>
         </div>
         </FormSection>
@@ -118,8 +140,8 @@ export default function NewTeamMemberPage() {
               Annuler
             </Button>
           </Link>
-          <Button size="sm" onClick={submit} disabled={saving}>
-            {saving ? "…" : "Ajouter"}
+          <Button size="sm" onClick={submit} disabled={isSubmitting || saving}>
+            {isSubmitting || saving ? "…" : "Ajouter"}
           </Button>
         </div>
       </div>

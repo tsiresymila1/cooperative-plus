@@ -2,6 +2,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import {
   ArrowLeft,
   ChevronRight,
@@ -81,6 +84,12 @@ const FREQ_OPTIONS: { value: Freq; label: string }[] = [
   { value: "dates", label: "Dates précises" },
 ];
 
+const schema = z.object({
+  routeId: z.string().min(1, "Sélectionnez un itinéraire"),
+  price: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function RecurringTripPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -103,12 +112,20 @@ export default function RecurringTripPage() {
   const tags = (data?.tags ?? []).filter(notDeleted).filter((t: any) => t.isGlobal || t.cooperative?.id === coopId);
   const seatsOf = (m: any) => Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
 
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { routeId: "", price: "" },
+  });
+  const routeId = watch("routeId");
+
   // 01 Trajet & véhicules
   type SlotInput = { model: string; driver: string; vehicle: string };
-  const [routeId, setRouteId] = useState("");
   const [slots, setSlots] = useState<SlotInput[]>([{ model: "", driver: "", vehicle: "" }]);
+  const [slotError, setSlotError] = useState("");
   const [tagId, setTagId] = useState("");
-  const [price, setPrice] = useState("");
+  const [timeError, setTimeError] = useState("");
+  const [dateError, setDateError] = useState("");
 
   // 02 Récurrence
   const [freq, setFreq] = useState<Freq>("weekly");
@@ -134,24 +151,33 @@ export default function RecurringTripPage() {
   const [excludePick, setExcludePick] = useState("");
   const [excludedDates, setExcludedDates] = useState<string[]>([]);
 
-  const [saving, setSaving] = useState(false);
-
   const route = routes.find((r: any) => r.id === routeId);
   const chosen = slots.map((s) => models.find((m: any) => m.id === s.model)).filter(Boolean) as any[];
   const totalSeats = chosen.reduce((s, m) => s + seatsOf(m), 0);
-  const setSlot = (i: number, patch: Partial<SlotInput>) => setSlots((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)));
-  const addSlot = () => setSlots((s) => [...s, { model: "", driver: "", vehicle: "" }]);
-  const removeSlot = (i: number) => setSlots((s) => s.filter((_, j) => j !== i));
+  const setSlot = (i: number, patch: Partial<SlotInput>) => {
+    setSlotError("");
+    setSlots((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  };
+  const addSlot = () => {
+    setSlotError("");
+    setSlots((s) => [...s, { model: "", driver: "", vehicle: "" }]);
+  };
+  const removeSlot = (i: number) => {
+    setSlotError("");
+    setSlots((s) => s.filter((_, j) => j !== i));
+  };
 
   const toggle = (arr: number[], v: number, set: (n: number[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
   const addTime = () => {
     if (!timeDraft) return;
+    setTimeError("");
     setTimes((prev) => (prev.includes(timeDraft) ? prev : [...prev, timeDraft].sort()));
   };
   const addExact = () => {
     if (!exactPick) return;
+    setDateError("");
     setExactDates((prev) => (prev.includes(exactPick) ? prev : [...prev, exactPick].sort()));
     setExactPick("");
   };
@@ -198,15 +224,18 @@ export default function RecurringTripPage() {
 
   const total = previewRows.length;
 
-  const submit = async () => {
-    if (!route) { toast.error("Sélectionnez un itinéraire"); return; }
-    if (chosen.length === 0) { toast.error("Ajoutez au moins un véhicule (modèle)"); return; }
+  const submit = handleSubmit(async (v) => {
+    setSlotError("");
+    setTimeError("");
+    setDateError("");
+    if (!route) return;
+    if (chosen.length === 0) { setSlotError("Ajoutez au moins un véhicule (modèle)"); return; }
     if (times.length === 0) {
-      toast.error("Ajoutez au moins une heure de départ");
+      setTimeError("Ajoutez au moins une heure de départ");
       return;
     }
     if (validDates.length === 0) {
-      toast.error("Aucune date valide — vérifiez la période et les exclusions");
+      setDateError("Aucune date valide — vérifiez la période et les exclusions");
       return;
     }
     if (total > MAX_TRIPS) {
@@ -224,10 +253,9 @@ export default function RecurringTripPage() {
       return;
 
     const first = chosen[0];
-    const priceVal = price ? toMoney(price) : route.basePrice;
+    const priceVal = v.price ? toMoney(v.price) : route.basePrice;
     const now = Date.now();
 
-    setSaving(true);
     try {
       // tripTemplate (config for future regeneration)
       const templateTx = db.tx.tripTemplates[id()]
@@ -305,9 +333,8 @@ export default function RecurringTripPage() {
       router.push(`/${slug}/trips`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -340,8 +367,8 @@ export default function RecurringTripPage() {
           description="L'itinéraire et le véhicule définissent le plan de sièges réservable."
         >
           <div className="grid gap-4">
-            <Field label="Itinéraire">
-              <Select value={routeId} onValueChange={setRouteId}>
+            <Field label="Itinéraire" error={errors.routeId?.message}>
+              <Select value={routeId} onValueChange={(v) => setValue("routeId", v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2">
                     <RouteIcon size={15} className="text-ink-soft/60" />
@@ -357,7 +384,7 @@ export default function RecurringTripPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Véhicules" hint="Modèle(s) appliqués à chaque trajet généré. Chauffeur et immatriculation optionnels.">
+            <Field label="Véhicules" error={slotError} hint="Modèle(s) appliqués à chaque trajet généré. Chauffeur et immatriculation optionnels.">
               <div className="grid gap-3">
                 {slots.map((s, i) => {
                   const slotVehicles = vehicles.filter((v: any) => !s.model || (v.model as any)?.id === s.model);
@@ -431,8 +458,7 @@ export default function RecurringTripPage() {
                 <Input
                   inputMode="numeric"
                   placeholder={route ? String(route.basePrice) : "0"}
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  {...register("price")}
                   className="pl-9"
                 />
               </div>
@@ -448,7 +474,7 @@ export default function RecurringTripPage() {
         >
           <div className="grid gap-4">
             <Field label="Fréquence">
-              <Select value={freq} onValueChange={(v) => setFreq(v as Freq)}>
+              <Select value={freq} onValueChange={(v) => { setDateError(""); setFreq(v as Freq); }}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2">
                     <Repeat size={15} className="text-ink-soft/60" />
@@ -490,7 +516,7 @@ export default function RecurringTripPage() {
             )}
 
             {freq === "dates" && (
-              <Field label="Dates précises">
+              <Field label="Dates précises" error={dateError}>
                 <div className="flex items-end gap-2">
                   <div className="flex-1">
                     <DatePicker
@@ -526,16 +552,16 @@ export default function RecurringTripPage() {
 
             {freq !== "dates" && (
               <div className="grid grid-cols-2 gap-4">
-                <Field label="Date de début">
+                <Field label="Date de début" error={dateError}>
                   <DatePicker
                     value={startDate ? new Date(startDate + "T00:00:00") : undefined}
-                    onChange={(d) => setStartDate(d ? dKey(d) : "")}
+                    onChange={(d) => { setDateError(""); setStartDate(d ? dKey(d) : ""); }}
                   />
                 </Field>
                 <Field label="Date de fin">
                   <DatePicker
                     value={endDate ? new Date(endDate + "T00:00:00") : undefined}
-                    onChange={(d) => setEndDate(d ? dKey(d) : "")}
+                    onChange={(d) => { setDateError(""); setEndDate(d ? dKey(d) : ""); }}
                   />
                 </Field>
               </div>
@@ -550,7 +576,7 @@ export default function RecurringTripPage() {
           description="Chaque heure génère un trajet par date valide. Au moins une est requise."
         >
           <div className="grid gap-4">
-            <Field label="Ajouter une heure">
+            <Field label="Ajouter une heure" error={timeError}>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
                   <TimePicker value={timeDraft} onChange={setTimeDraft} />
@@ -568,7 +594,7 @@ export default function RecurringTripPage() {
                       <Clock size={12} /> {t}
                       <button
                         type="button"
-                        onClick={() => setTimes((p) => p.filter((x) => x !== t))}
+                        onClick={() => { setTimeError(""); setTimes((p) => p.filter((x) => x !== t)); }}
                         className="text-ink-soft/60 hover:text-danger"
                       >
                         <Trash2 size={12} />
@@ -698,8 +724,8 @@ export default function RecurringTripPage() {
               Annuler
             </Button>
           </Link>
-          <Button size="sm" onClick={submit} disabled={saving || total === 0}>
-            {saving ? "…" : `Créer ${total > 0 ? total : ""} trajet${total > 1 ? "s" : ""}`}
+          <Button size="sm" onClick={submit} disabled={isSubmitting || total === 0}>
+            {isSubmitting ? "…" : `Créer ${total > 0 ? total : ""} trajet${total > 1 ? "s" : ""}`}
           </Button>
         </div>
       </div>

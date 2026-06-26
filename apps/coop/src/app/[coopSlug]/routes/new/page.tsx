@@ -2,6 +2,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight, MapPin } from "lucide-react";
 import {
   DashboardShell,
@@ -29,6 +32,17 @@ import {
 
 const STATUSES = ["active", "inactive"];
 
+const schema = z.object({
+  name: z.string().optional(),
+  originId: z.string().min(1, "Sélectionnez une origine"),
+  destId: z.string().min(1, "Sélectionnez une destination"),
+  price: z.string().optional(),
+  dist: z.string().optional(),
+  dur: z.string().optional(),
+  status: z.string(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function NewRoutePage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -48,51 +62,47 @@ export default function NewRoutePage() {
     );
   }, [data]);
 
-  const [name, setName] = useState("");
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { name: "", originId: "", destId: "", price: "", dist: "", dur: "", status: "active" },
+  });
   const [nameEdited, setNameEdited] = useState(false);
-  const [originId, setOriginId] = useState("");
-  const [destId, setDestId] = useState("");
-  const [price, setPrice] = useState("");
-  const [dist, setDist] = useState("");
-  const [dur, setDur] = useState("");
-  const [status, setStatus] = useState("active");
-  const [saving, setSaving] = useState(false);
+  const name = watch("name");
+  const originId = watch("originId");
+  const destId = watch("destId");
+  const status = watch("status");
 
   // Auto-fill name "Origine → Destination" until the user types their own.
   useEffect(() => {
     if (nameEdited) return;
     const o = destinations.find((d: any) => d.id === originId)?.name;
     const d = destinations.find((x: any) => x.id === destId)?.name;
-    setName(o && d ? `${o} → ${d}` : "");
+    setValue("name", o && d ? `${o} → ${d}` : "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originId, destId, nameEdited, destinations]);
 
-  const submit = async () => {
-    if (!originId || !destId) {
-      toast.error("Origine et destination requises");
-      return;
-    }
-    const origin = destinations.find((d: any) => d.id === originId);
-    const dest = destinations.find((d: any) => d.id === destId);
-    const finalName = name || `${origin?.name ?? ""} → ${dest?.name ?? ""}`;
+  const submit = handleSubmit(async (v) => {
+    const origin = destinations.find((d: any) => d.id === v.originId);
+    const dest = destinations.find((d: any) => d.id === v.destId);
+    const finalName = v.name || `${origin?.name ?? ""} → ${dest?.name ?? ""}`;
 
-    setSaving(true);
     try {
-      const payload: any = { name: finalName, basePrice: toMoney(price), currency, status };
-      if (dist) payload.distanceKm = toInt(dist);
-      if (dur) payload.durationMin = toInt(dur);
+      const payload: any = { name: finalName, basePrice: toMoney(v.price ?? ""), currency, status: v.status };
+      if (v.dist) payload.distanceKm = toInt(v.dist);
+      if (v.dur) payload.durationMin = toInt(v.dur);
 
       await db.transact(
         db.tx.routes[id()]
           .update({ ...payload, createdAt: Date.now() })
-          .link({ cooperative: coopId, origin: originId, destination: destId }),
+          .link({ cooperative: coopId, origin: v.originId, destination: v.destId }),
       );
       toast.success("Itinéraire créé");
       router.push(`/${slug}/routes`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -121,11 +131,11 @@ export default function NewRoutePage() {
         <FormSection index="01" title="Trajet" description="Origine, destination et nom affiché de l'itinéraire.">
         <div className="grid gap-4">
           <Field label="Nom" hint="Auto-rempli depuis Origine → Destination">
-            <Input value={name} onChange={(e) => { setName(e.target.value); setNameEdited(true); }} placeholder="Origine → Destination" />
+            <Input value={name ?? ""} onChange={(e) => { setValue("name", e.target.value); setNameEdited(true); }} placeholder="Origine → Destination" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Origine">
-              <Select value={originId} onValueChange={setOriginId}>
+            <Field label="Origine" error={errors.originId?.message}>
+              <Select value={originId} onValueChange={(v) => setValue("originId", v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2">
                     <MapPin size={15} className="text-ink-soft/60" />
@@ -141,8 +151,8 @@ export default function NewRoutePage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Destination">
-              <Select value={destId} onValueChange={setDestId}>
+            <Field label="Destination" error={errors.destId?.message}>
+              <Select value={destId} onValueChange={(v) => setValue("destId", v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2">
                     <MapPin size={15} className="text-ink-soft/60" />
@@ -166,17 +176,17 @@ export default function NewRoutePage() {
         <div className="grid gap-4">
           <div className="grid grid-cols-3 gap-4">
             <Field label="Prix (MGA)">
-              <Input inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value)} />
+              <Input inputMode="numeric" {...register("price")} />
             </Field>
             <Field label="Distance (km)">
-              <Input inputMode="numeric" value={dist} onChange={(e) => setDist(e.target.value)} />
+              <Input inputMode="numeric" {...register("dist")} />
             </Field>
             <Field label="Durée (min)">
-              <Input inputMode="numeric" value={dur} onChange={(e) => setDur(e.target.value)} />
+              <Input inputMode="numeric" {...register("dur")} />
             </Field>
           </div>
           <Field label="Statut">
-            <Select value={status} onValueChange={setStatus}>
+            <Select value={status} onValueChange={(v) => setValue("status", v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -198,8 +208,8 @@ export default function NewRoutePage() {
               Annuler
             </Button>
           </Link>
-          <Button size="sm" onClick={submit} disabled={saving}>
-            {saving ? "…" : "Créer"}
+          <Button size="sm" onClick={submit} disabled={isSubmitting}>
+            {isSubmitting ? "…" : "Créer"}
           </Button>
         </div>
       </div>

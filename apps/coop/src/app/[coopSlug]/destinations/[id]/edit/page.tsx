@@ -3,6 +3,9 @@ import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import {
   DashboardShell,
@@ -16,6 +19,16 @@ import {
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
+const slugify = (s: string) => s.toLowerCase().trim().replace(/\s+/g, "-");
+
+const schema = z.object({
+  name: z.string().trim().min(1, "Nom requis"),
+  slug: z.string().optional(),
+  region: z.string().optional(),
+  country: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function EditDestinationPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -28,45 +41,41 @@ export default function EditDestinationPage() {
   const dest = data?.destinations?.[0];
 
   const [hydrated, setHydrated] = useState(false);
-  const [name, setName] = useState("");
-  const [destSlug, setDestSlug] = useState("");
-  const [region, setRegion] = useState("");
-  const [country, setCountry] = useState("Madagascar");
-  const [saving, setSaving] = useState(false);
 
-  const slugify = (s: string) => s.toLowerCase().trim().replace(/\s+/g, "-");
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { name: "", slug: "", region: "", country: "Madagascar" },
+  });
+  const destSlug = watch("slug");
 
   useEffect(() => {
     if (dest && !hydrated) {
-      setName(dest.name ?? "");
-      setDestSlug(dest.slug ?? "");
-      setRegion(dest.region ?? "");
-      setCountry(dest.country ?? "Madagascar");
+      reset({
+        name: dest.name ?? "",
+        slug: dest.slug ?? "",
+        region: dest.region ?? "",
+        country: dest.country ?? "Madagascar",
+      });
       setHydrated(true);
     }
-  }, [dest, hydrated]);
+  }, [dest, hydrated, reset]);
 
-  const submit = async () => {
-    if (!name) {
-      toast.error("Nom requis");
-      return;
-    }
-    setSaving(true);
+  const submit = handleSubmit(async (v) => {
     try {
       const payload: any = {
-        name,
-        country,
-        region: region || undefined,
-        slug: destSlug || slugify(name),
+        name: v.name.trim(),
+        country: v.country,
+        region: v.region || undefined,
+        slug: v.slug || slugify(v.name),
       };
       await db.transact(db.tx.destinations[destinationId].update(payload));
       toast.success("Destination mise à jour");
       router.push(`/${slug}/destinations`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -99,18 +108,22 @@ export default function EditDestinationPage() {
         <div className="mx-auto max-w-4xl">
           <FormSection index="01" title="Localisation" description="Nom, région et pays de la destination.">
           <div className="grid gap-4">
-            <Field label="Nom">
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Field label="Nom" error={errors.name?.message}>
+              <Input {...register("name")} />
             </Field>
             <Field label="Slug" hint="Identifiant pour les URLs">
-              <Input value={destSlug} onChange={(e) => setDestSlug(e.target.value)} className="font-mono" />
+              <Input
+                value={destSlug}
+                onChange={(e) => setValue("slug", e.target.value)}
+                className="font-mono"
+              />
             </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Région">
-                <Input value={region} onChange={(e) => setRegion(e.target.value)} />
+                <Input {...register("region")} />
               </Field>
               <Field label="Pays">
-                <Input value={country} onChange={(e) => setCountry(e.target.value)} />
+                <Input {...register("country")} />
               </Field>
             </div>
           </div>
@@ -122,8 +135,8 @@ export default function EditDestinationPage() {
                 Annuler
               </Button>
             </Link>
-            <Button size="sm" onClick={submit} disabled={saving}>
-              {saving ? "…" : "Enregistrer"}
+            <Button size="sm" onClick={submit} disabled={isSubmitting}>
+              {isSubmitting ? "…" : "Enregistrer"}
             </Button>
           </div>
         </div>

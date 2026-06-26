@@ -86,6 +86,8 @@ export const COOP_PERMISSIONS = [
   { key: "trips", label: "Trajets" },
   { key: "bookings", label: "Réservations" },
   { key: "vehicles", label: "Véhicules" },
+  { key: "models", label: "Modèles" },
+  { key: "drivers", label: "Chauffeurs" },
   { key: "routes", label: "Itinéraires" },
   { key: "payments", label: "Paiements" },
   { key: "team", label: "Équipe" },

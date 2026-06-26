@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight, Ticket, CreditCard } from "lucide-react";
 import {
   DashboardShell,
@@ -33,6 +35,14 @@ const METHODS = [
   { value: "bank_transfer", label: "Virement" },
 ];
 
+const schema = z.object({
+  bookingId: z.string(),
+  method: z.string(),
+  amount: z.string().refine((s) => !!toMoney(s), "Montant invalide"),
+  proof: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function NewPaymentPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -43,34 +53,31 @@ export default function NewPaymentPage() {
   });
   const bookings = (data?.bookings ?? []).filter(notDeleted);
 
-  const [bookingId, setBookingId] = useState("none");
-  const [method, setMethod] = useState("cash");
-  const [amount, setAmount] = useState("");
-  const [proof, setProof] = useState("");
-  const [saving, setSaving] = useState(false);
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { bookingId: "none", method: "cash", amount: "", proof: "" },
+  });
+  const bookingId = watch("bookingId");
+  const method = watch("method");
 
-  const submit = async () => {
-    const amt = toMoney(amount);
-    if (!amt) {
-      toast.error("Montant invalide");
-      return;
-    }
-    setSaving(true);
+  const submit = handleSubmit(async (v) => {
+    const amt = toMoney(v.amount);
     try {
       const tx = db.tx.payments[id()]
         .update({
-          method,
+          method: v.method,
           provider: "manual",
           amount: amt,
           currency,
           status: "paid",
           paidAt: Date.now(),
-          proofUrl: proof || undefined,
+          proofUrl: v.proof || undefined,
           createdAt: Date.now(),
         })
         .link(
-          bookingId !== "none"
-            ? { cooperative: coopId, booking: bookingId }
+          v.bookingId !== "none"
+            ? { cooperative: coopId, booking: v.bookingId }
             : { cooperative: coopId },
         );
       await db.transact(tx);
@@ -78,9 +85,8 @@ export default function NewPaymentPage() {
       router.push(`/${slug}/payments`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -109,7 +115,7 @@ export default function NewPaymentPage() {
         <FormSection index="01" title="Paiement" description="Liez le paiement à une réservation et précisez la méthode et le montant.">
         <div className="grid gap-4">
           <Field label="Réservation (optionnel)">
-            <Select value={bookingId} onValueChange={setBookingId}>
+            <Select value={bookingId} onValueChange={(v) => setValue("bookingId", v)}>
               <SelectTrigger>
                 <span className="inline-flex items-center gap-2">
                   <Ticket size={15} className="text-ink-soft/60" />
@@ -128,7 +134,7 @@ export default function NewPaymentPage() {
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Méthode">
-              <Select value={method} onValueChange={setMethod}>
+              <Select value={method} onValueChange={(v) => setValue("method", v)}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2">
                     <CreditCard size={15} className="text-ink-soft/60" />
@@ -144,12 +150,12 @@ export default function NewPaymentPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Montant (MGA)">
-              <Input inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} />
+            <Field label="Montant (MGA)" error={errors.amount?.message}>
+              <Input inputMode="numeric" {...register("amount")} />
             </Field>
           </div>
           <Field label="URL justificatif (optionnel)">
-            <Input value={proof} onChange={(e) => setProof(e.target.value)} placeholder="https://…" />
+            <Input {...register("proof")} placeholder="https://…" />
           </Field>
         </div>
         </FormSection>
@@ -160,8 +166,8 @@ export default function NewPaymentPage() {
               Annuler
             </Button>
           </Link>
-          <Button size="sm" onClick={submit} disabled={saving}>
-            {saving ? "…" : "Enregistrer"}
+          <Button size="sm" onClick={submit} disabled={isSubmitting}>
+            {isSubmitting ? "…" : "Enregistrer"}
           </Button>
         </div>
       </div>

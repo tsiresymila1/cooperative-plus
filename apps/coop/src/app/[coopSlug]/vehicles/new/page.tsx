@@ -1,7 +1,9 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight, Bus } from "lucide-react";
 import {
   DashboardShell,
@@ -31,6 +33,15 @@ const STATUSES = ["active", "maintenance", "inactive"];
 const seatsOf = (m: any) =>
   Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
 
+const schema = z.object({
+  name: z.string().trim().min(1, "Nom requis"),
+  reg: z.string().trim().min(1, "Immatriculation requise"),
+  modelId: z.string().min(1, "Sélectionnez un modèle"),
+  status: z.string(),
+  notes: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function NewVehiclePage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -38,40 +49,38 @@ export default function NewVehiclePage() {
   const { data } = db.useQuery({ vehicleModels: { $: { where: { "cooperative.id": coopId } } } });
   const models = (data?.vehicleModels ?? []).filter(notDeleted);
 
-  const [name, setName] = useState("");
-  const [reg, setReg] = useState("");
-  const [modelId, setModelId] = useState("");
-  const [status, setStatus] = useState("active");
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
-
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { name: "", reg: "", modelId: "", status: "active", notes: "" },
+  });
+  const modelId = watch("modelId");
+  const status = watch("status");
   const model = models.find((m: any) => m.id === modelId);
 
-  const submit = async () => {
-    if (!name || !reg) { toast.error("Nom et immatriculation requis"); return; }
-    if (!model) { toast.error("Sélectionnez un modèle"); return; }
-    setSaving(true);
+  const submit = handleSubmit(async (v) => {
+    const m = models.find((x: any) => x.id === v.modelId);
+    if (!m) return;
     try {
       await db.transact(
         db.tx.vehicles[id()]
           .update({
-            name,
-            registrationNo: reg,
-            type: model.type ?? "minibus_18",
-            seatCount: seatsOf(model),
-            status,
-            notes,
+            name: v.name.trim(),
+            registrationNo: v.reg.trim(),
+            type: m.type ?? "minibus_18",
+            seatCount: seatsOf(m),
+            status: v.status,
+            notes: v.notes ?? "",
             createdAt: Date.now(),
           })
-          .link({ cooperative: coopId, model: model.id }),
+          .link({ cooperative: coopId, model: m.id }),
       );
       toast.success("Véhicule créé");
       router.push(`/${slug}/vehicles`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -100,15 +109,15 @@ export default function NewVehiclePage() {
         <FormSection index="01" title="Identité" description="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Nom">
-                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Sprinter bleu" />
+              <Field label="Nom" error={errors.name?.message}>
+                <Input {...register("name")} placeholder="Ex: Sprinter bleu" />
               </Field>
-              <Field label="Immatriculation">
-                <Input value={reg} onChange={(e) => setReg(e.target.value)} placeholder="1234 TAA" />
+              <Field label="Immatriculation" error={errors.reg?.message}>
+                <Input {...register("reg")} placeholder="1234 TAA" />
               </Field>
             </div>
-            <Field label="Modèle" hint={model ? `${seatsOf(model)} places` : "Le modèle détermine le nombre de places et le plan de sièges."}>
-              <Select value={modelId} onValueChange={setModelId}>
+            <Field label="Modèle" error={errors.modelId?.message} hint={model ? `${seatsOf(model)} places` : "Le modèle détermine le nombre de places et le plan de sièges."}>
+              <Select value={modelId} onValueChange={(v) => setValue("modelId", v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2"><Bus size={15} className="text-ink-soft/60" /><SelectValue placeholder="Choisir un modèle…" /></span>
                 </SelectTrigger>
@@ -121,7 +130,7 @@ export default function NewVehiclePage() {
               <p className="text-xs text-warning">Aucun modèle. Créez-en d&apos;abord dans <Link href={`/${slug}/models`} className="underline">Modèles</Link>.</p>
             )}
             <Field label="Statut">
-              <Select value={status} onValueChange={setStatus}>
+              <Select value={status} onValueChange={(v) => setValue("status", v)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {STATUSES.map((s) => <SelectItem key={s} value={s}>{vehicleStatus[s]?.label ?? s}</SelectItem>)}
@@ -134,7 +143,7 @@ export default function NewVehiclePage() {
 
         <FormSection index="02" title="Notes" description="Informations internes.">
           <Field label="Notes">
-            <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <Textarea rows={2} {...register("notes")} />
           </Field>
         </FormSection>
 
@@ -142,7 +151,7 @@ export default function NewVehiclePage() {
           <Link href={`/${slug}/vehicles`}>
             <Button variant="outline" size="sm">Annuler</Button>
           </Link>
-          <Button size="sm" onClick={submit} disabled={saving}>{saving ? "…" : "Créer"}</Button>
+          <Button size="sm" onClick={submit} disabled={isSubmitting}>{isSubmitting ? "…" : "Créer"}</Button>
         </div>
       </div>
     </DashboardShell>

@@ -1,5 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Plus, IdCard, ChevronRight, Phone } from "lucide-react";
 import {
   DashboardShell,
@@ -20,7 +23,15 @@ import {
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
-const empty = { name: "", licenseNo: "", phone: "", address: "", avatarUrl: "" };
+const schema = z.object({
+  name: z.string().trim().min(1, "Le nom est requis"),
+  licenseNo: z.string().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  avatarUrl: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+const EMPTY: Values = { name: "", licenseNo: "", phone: "", address: "", avatarUrl: "" };
 
 export default function DriversPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
@@ -31,14 +42,18 @@ export default function DriversPage() {
 
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState(empty);
-  const [saving, setSaving] = useState(false);
-  const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  function openCreate() { setEditId(null); setForm(empty); setOpen(true); }
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: EMPTY,
+  });
+  const avatarUrl = watch("avatarUrl");
+
+  function openCreate() { setEditId(null); reset(EMPTY); setOpen(true); }
   function openEdit(d: any) {
     setEditId(d.id);
-    setForm({ name: d.name ?? "", licenseNo: d.licenseNo ?? "", phone: d.phone ?? "", address: d.address ?? "", avatarUrl: d.avatarUrl ?? "" });
+    reset({ name: d.name ?? "", licenseNo: d.licenseNo ?? "", phone: d.phone ?? "", address: d.address ?? "", avatarUrl: d.avatarUrl ?? "" });
     setOpen(true);
   }
 
@@ -47,22 +62,20 @@ export default function DriversPage() {
       const res = await db.storage.uploadFile(`coops/${coopId}/drivers/${Date.now()}-${file.name}`, file);
       const q = await db.queryOnce({ $files: { $: { where: { id: (res as any).data.id } } } });
       const url = q.data?.$files?.[0]?.url;
-      if (url) set("avatarUrl", url);
+      if (url) setValue("avatarUrl", url);
     } catch (e: any) {
       toast.error(e?.message ?? "Échec de l'upload.");
     }
   }
 
-  async function save() {
-    if (!form.name.trim()) { toast.error("Le nom est requis."); return; }
-    setSaving(true);
+  const save = handleSubmit(async (v) => {
     try {
       const payload = {
-        name: form.name.trim(),
-        licenseNo: form.licenseNo.trim() || undefined,
-        phone: form.phone.trim() || undefined,
-        address: form.address.trim() || undefined,
-        avatarUrl: form.avatarUrl || undefined,
+        name: v.name.trim(),
+        licenseNo: v.licenseNo?.trim() || undefined,
+        phone: v.phone?.trim() || undefined,
+        address: v.address?.trim() || undefined,
+        avatarUrl: v.avatarUrl || undefined,
         status: "active",
       };
       if (editId) {
@@ -74,11 +87,9 @@ export default function DriversPage() {
       }
       setOpen(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Échec.");
-    } finally {
-      setSaving(false);
+      toast.error("Erreur: " + (e?.message ?? "inconnue"));
     }
-  }
+  });
 
   async function del(d: any) {
     if (await confirm({ title: "Supprimer le chauffeur ?", message: d.name, confirmLabel: "Supprimer", tone: "danger" })) {
@@ -141,21 +152,21 @@ export default function DriversPage() {
         title={editId ? "Modifier le chauffeur" : "Nouveau chauffeur"}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={saving}>Annuler</Button>
-            <Button size="sm" onClick={save} disabled={saving}>{saving ? "…" : "Enregistrer"}</Button>
+            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+            <Button size="sm" onClick={save} disabled={isSubmitting}>{isSubmitting ? "…" : "Enregistrer"}</Button>
           </div>
         }
       >
         <div className="grid gap-4">
           <Field label="Photo">
-            <ImageUpload value={form.avatarUrl} onFile={onAvatar} hint="Avatar du chauffeur (optionnel)." />
+            <ImageUpload value={avatarUrl} onFile={onAvatar} hint="Avatar du chauffeur (optionnel)." />
           </Field>
-          <Field label="Nom complet"><Input value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Rakoto Jean" /></Field>
+          <Field label="Nom complet" error={errors.name?.message}><Input {...register("name")} placeholder="Rakoto Jean" /></Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="N° de permis"><Input value={form.licenseNo} onChange={(e) => set("licenseNo", e.target.value)} placeholder="123456 A" /></Field>
-            <Field label="Téléphone"><Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="034 00 000 00" /></Field>
+            <Field label="N° de permis"><Input {...register("licenseNo")} placeholder="123456 A" /></Field>
+            <Field label="Téléphone"><Input {...register("phone")} placeholder="034 00 000 00" /></Field>
           </div>
-          <Field label="Adresse"><Input value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Lot II… Antananarivo" /></Field>
+          <Field label="Adresse"><Input {...register("address")} placeholder="Lot II… Antananarivo" /></Field>
         </div>
       </Drawer>
     </DashboardShell>

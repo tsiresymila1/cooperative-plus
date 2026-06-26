@@ -1,11 +1,13 @@
 import { cn } from "../lib/cn";
 
-export function Field({ label, hint, children, className }: { label?: string; hint?: string; children: React.ReactNode; className?: string }) {
+export function Field({ label, hint, error, children, className }: { label?: string; hint?: string; error?: string; children: React.ReactNode; className?: string }) {
   return (
     <label className={cn("block", className)}>
       {label && <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>}
       {children}
-      {hint && <span className="mt-1 block text-xs text-ink-soft/70">{hint}</span>}
+      {error
+        ? <span className="mt-1 block text-xs font-medium text-danger">{error}</span>
+        : hint && <span className="mt-1 block text-xs text-ink-soft/70">{hint}</span>}
     </label>
   );
 }

@@ -1,5 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Plus, Tag as TagIcon, ChevronRight } from "lucide-react";
 import {
   DashboardShell,
@@ -21,7 +24,12 @@ import {
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
-const emptyForm = { name: "", color: "#0f2d5c" };
+const schema = z.object({
+  name: z.string().trim().min(1, "Le nom est requis"),
+  color: z.string(),
+});
+type Values = z.infer<typeof schema>;
+const EMPTY: Values = { name: "", color: "#0f2d5c" };
 
 export default function CoopTagsPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
@@ -41,34 +49,36 @@ export default function CoopTagsPage() {
 
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptyForm);
-  const [saving, setSaving] = useState(false);
 
-  function openCreate() { setEditId(null); setForm(emptyForm); setOpen(true); }
-  function openEdit(t: any) { setEditId(t.id); setForm({ name: t.name, color: t.color || "#0f2d5c" }); setOpen(true); }
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: EMPTY,
+  });
+  const color = watch("color");
+  const name = watch("name");
 
-  async function save() {
-    if (!form.name.trim()) { toast.error("Le nom est requis."); return; }
-    setSaving(true);
+  function openCreate() { setEditId(null); reset(EMPTY); setOpen(true); }
+  function openEdit(t: any) { setEditId(t.id); reset({ name: t.name, color: t.color || "#0f2d5c" }); setOpen(true); }
+
+  const save = handleSubmit(async (v) => {
     try {
       if (editId) {
-        await db.transact(db.tx.tags[editId].update({ name: form.name.trim(), color: form.color }));
+        await db.transact(db.tx.tags[editId].update({ name: v.name.trim(), color: v.color }));
         toast.success("Tag mis à jour.");
       } else {
         await db.transact(
           db.tx.tags[id()]
-            .update({ name: form.name.trim(), color: form.color, isGlobal: false, createdAt: Date.now() })
+            .update({ name: v.name.trim(), color: v.color, isGlobal: false, createdAt: Date.now() })
             .link({ cooperative: coopId }),
         );
         toast.success("Tag créé.");
       }
       setOpen(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Échec.");
-    } finally {
-      setSaving(false);
+      toast.error("Erreur: " + (e?.message ?? "inconnue"));
     }
-  }
+  });
 
   async function del(t: any) {
     if (await confirm({ title: "Supprimer le tag ?", message: `${t.name} sera retiré des trajets taggés.`, confirmLabel: "Supprimer", tone: "danger" })) {
@@ -136,21 +146,21 @@ export default function CoopTagsPage() {
         title={editId ? "Modifier le tag" : "Nouveau tag"}
         footer={
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={saving}>Annuler</Button>
-            <Button size="sm" onClick={save} disabled={saving}>{saving ? "…" : "Enregistrer"}</Button>
+            <Button variant="outline" size="sm" onClick={() => setOpen(false)} disabled={isSubmitting}>Annuler</Button>
+            <Button size="sm" onClick={save} disabled={isSubmitting}>{isSubmitting ? "…" : "Enregistrer"}</Button>
           </div>
         }
       >
         <div className="grid gap-4">
-          <Field label="Nom">
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Premium" />
+          <Field label="Nom" error={errors.name?.message}>
+            <Input {...register("name")} placeholder="Premium" />
           </Field>
           <Field label="Couleur">
             <div className="flex items-center gap-3">
-              <input type="color" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
+              <input type="color" value={color} onChange={(e) => setValue("color", e.target.value, { shouldValidate: true })}
                 className="h-9 w-12 cursor-pointer rounded border border-ink/15 bg-transparent p-0.5" />
-              <Input value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} className="h-9 w-32 font-mono" />
-              <TagBadge name={form.name || "Aperçu"} color={form.color} />
+              <Input value={color} onChange={(e) => setValue("color", e.target.value, { shouldValidate: true })} className="h-9 w-32 font-mono" />
+              <TagBadge name={name || "Aperçu"} color={color} />
             </div>
           </Field>
         </div>

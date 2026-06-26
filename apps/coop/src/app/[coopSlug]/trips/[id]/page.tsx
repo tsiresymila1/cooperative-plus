@@ -2,6 +2,9 @@
 import { PageSkeleton } from "@cp/ui";
 import { BoardingScanner } from "@/components/boarding-scanner";
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -68,6 +71,11 @@ import {
 } from "@cp/ui/shadcn";
 
 const STATUSES = ["scheduled", "boarding", "departed", "arrived", "cancelled"];
+const reserveSchema = z.object({
+  name: z.string().trim().min(1, "Nom requis"),
+  phone: z.string().trim().min(1, "Téléphone requis").refine(isValidPhone, "Numéro de téléphone invalide"),
+});
+type ReserveValues = z.infer<typeof reserveSchema>;
 const methodLabel = (m: string) =>
   (({ cash: "Espèces", mobile_money: "Mobile Money", card: "Carte" }) as Record<string, string>)[m] ??
   m.charAt(0).toUpperCase() + m.slice(1);
@@ -226,8 +234,11 @@ export default function TripViewPage() {
 
   // ----- anonymous reservation state -----
   const [selected, setSelected] = useState<string[]>([]);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ReserveValues>({
+    resolver: zodResolver(reserveSchema),
+    mode: "onChange",
+    defaultValues: { name: "", phone: "" },
+  });
   const [method, setMethod] = useState(paymentMethods[0] ?? "cash");
   const [booking, setBooking] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
@@ -408,20 +419,14 @@ export default function TripViewPage() {
     );
   };
 
-  const reserve = async () => {
+  const reserve = handleSubmit(async (v) => {
     if (!trip || !slot) return;
     if (selected.length === 0) {
       toast.error("Sélectionnez au moins un siège");
       return;
     }
-    if (!name.trim() || !phone.trim()) {
-      toast.error("Nom et téléphone du passager requis");
-      return;
-    }
-    if (!isValidPhone(phone)) {
-      toast.error("Numéro de téléphone invalide");
-      return;
-    }
+    const name = v.name.trim();
+    const phone = v.phone.trim();
     if (
       !(await confirm({
         title: "Confirmer la réservation ?",
@@ -455,8 +460,8 @@ export default function TripViewPage() {
           .update({
             reference: genReference(),
             source: "cooperative",
-            contactName: name.trim(),
-            contactPhone: phone.trim(),
+            contactName: name,
+            contactPhone: phone,
             seatCount: selected.length,
             totalAmount,
             currency,
@@ -472,8 +477,8 @@ export default function TripViewPage() {
             .update({
               seatKey: slotSeatKey(slot.id, seatLabel),
               seatLabel,
-              passengerName: name.trim(),
-              passengerPhone: phone.trim(),
+              passengerName: name,
+              passengerPhone: phone,
               price,
               qrToken: `${bookingId}_${seatLabel}_${Math.random().toString(36).slice(2, 10)}`,
               createdAt: Date.now(),
@@ -504,15 +509,14 @@ export default function TripViewPage() {
       await db.transact(txs);
       toast.success(`Réservation créée (${selected.length} place(s))`);
       setSelected([]);
-      setName("");
-      setPhone("");
+      reset({ name: "", phone: "" });
       setMethod(paymentMethods[0] ?? "cash");
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "siège déjà pris"));
     } finally {
       setBooking(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -718,16 +722,16 @@ export default function TripViewPage() {
                       <span className="font-mono font-semibold text-ink">{selected.join(", ")}</span>
                     )}
                   </div>
-                  <Field label="Nom du passager">
+                  <Field label="Nom du passager" error={errors.name?.message}>
                     <div className="relative">
                       <User size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
-                      <Input value={name} onChange={(e) => setName(e.target.value)} className="pl-9" placeholder="Nom complet" />
+                      <Input {...register("name")} className="pl-9" placeholder="Nom complet" />
                     </div>
                   </Field>
-                  <Field label="Téléphone">
+                  <Field label="Téléphone" error={errors.phone?.message}>
                     <div className="relative">
                       <Phone size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
-                      <Input value={phone} onChange={(e) => setPhone(e.target.value)} className="pl-9" placeholder="034 00 000 00" />
+                      <Input {...register("phone")} className="pl-9" placeholder="034 00 000 00" />
                     </div>
                   </Field>
                   <Field label="Mode de paiement">
@@ -753,8 +757,8 @@ export default function TripViewPage() {
                     </span>
                     <span className="font-display text-xl font-bold text-ink">{fmtMoney(total)}</span>
                   </div>
-                  <Button onClick={reserve} disabled={booking || selected.length === 0}>
-                    <Ticket size={16} /> {booking ? "…" : "Créer la réservation"}
+                  <Button onClick={reserve} disabled={booking || isSubmitting || selected.length === 0}>
+                    <Ticket size={16} /> {booking || isSubmitting ? "…" : "Créer la réservation"}
                   </Button>
                 </div>
               )}

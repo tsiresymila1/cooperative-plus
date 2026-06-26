@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ChevronRight, Eye, EyeOff, Trash2 } from "lucide-react";
 import {
   DashboardShell,
@@ -19,6 +22,17 @@ import {
   toFloat,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
+
+const profileSchema = z.object({
+  displayName: z.string().trim().min(1, "Nom requis"),
+  phone: z.string().optional(),
+  email: z.union([z.literal(""), z.string().email("Email invalide")]),
+  address: z.string().optional(),
+  brandColor: z.string(),
+  cutoffMinutes: z.string().refine((s) => /^\d+$/.test(s.trim()), "Valeur invalide"),
+  refundPct: z.string().refine((s) => /^\d+(\.\d+)?$/.test(s.trim()), "Valeur invalide"),
+});
+type ProfileValues = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
@@ -73,46 +87,51 @@ export default function SettingsPage() {
 }
 
 function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
-  const [displayName, setDisplayName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [cutoffMinutes, setCutoffMinutes] = useState("0");
-  const [refundPct, setRefundPct] = useState("0");
-  const [brandColor, setBrandColor] = useState("#f5821f");
-  const [saving, setSaving] = useState(false);
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProfileValues>({
+    resolver: zodResolver(profileSchema),
+    mode: "onChange",
+    defaultValues: {
+      displayName: "",
+      phone: "",
+      email: "",
+      address: "",
+      brandColor: "#f5821f",
+      cutoffMinutes: "0",
+      refundPct: "0",
+    },
+  });
+  const brandColor = watch("brandColor");
 
   useEffect(() => {
-    setDisplayName(coop.displayName ?? "");
-    setPhone(coop.phone ?? "");
-    setEmail(coop.email ?? "");
-    setAddress(coop.address ?? "");
-    setCutoffMinutes(String(coop.cutoffMinutes ?? (coop.cutoffHours ?? 0) * 60));
-    setRefundPct(String(coop.refundPct ?? 0));
-    setBrandColor(coop.brandColor ?? "#f5821f");
-  }, [coop]);
+    reset({
+      displayName: coop.displayName ?? "",
+      phone: coop.phone ?? "",
+      email: coop.email ?? "",
+      address: coop.address ?? "",
+      brandColor: coop.brandColor ?? "#f5821f",
+      cutoffMinutes: String(coop.cutoffMinutes ?? (coop.cutoffHours ?? 0) * 60),
+      refundPct: String(coop.refundPct ?? 0),
+    });
+  }, [coop, reset]);
 
-  const save = async () => {
-    setSaving(true);
+  const save = handleSubmit(async (v) => {
     try {
       await db.transact(
         db.tx.cooperatives[coopId].update({
-          displayName,
-          phone: phone || undefined,
-          email: email || undefined,
-          address: address || undefined,
-          brandColor,
-          cutoffMinutes: toInt(cutoffMinutes),
-          refundPct: toFloat(refundPct),
+          displayName: v.displayName,
+          phone: v.phone || undefined,
+          email: v.email || undefined,
+          address: v.address || undefined,
+          brandColor: v.brandColor,
+          cutoffMinutes: toInt(v.cutoffMinutes),
+          refundPct: toFloat(v.refundPct),
         }),
       );
       toast.success("Profil mis à jour");
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-    } finally {
-      setSaving(false);
     }
-  };
+  });
 
   const onLogo = async (file: File) => {
     try {
@@ -131,27 +150,27 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
       <FormSection index="01" title="Identité" description="Nom, logo et coordonnées affichés aux clients.">
         <div className="grid gap-4">
           <ImageUpload value={coop.logoUrl} onFile={onLogo} />
-          <Field label="Nom affiché">
-            <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+          <Field label="Nom affiché" error={errors.displayName?.message}>
+            <Input {...register("displayName")} />
           </Field>
           <Field label="Couleur de la marque" hint="L'espace coopérative suivra cette couleur.">
             <div className="flex items-center gap-3">
-              <input type="color" value={brandColor} onChange={(e) => setBrandColor(e.target.value)}
+              <input type="color" value={brandColor} onChange={(e) => setValue("brandColor", e.target.value, { shouldValidate: true })}
                 className="h-10 w-14 cursor-pointer rounded-[--radius] border border-ink/12 bg-paper p-1" />
-              <Input value={brandColor} onChange={(e) => setBrandColor(e.target.value)} className="w-32 font-mono" />
+              <Input value={brandColor} onChange={(e) => setValue("brandColor", e.target.value, { shouldValidate: true })} className="w-32 font-mono" />
               <span className="inline-flex h-8 items-center rounded-full px-4 text-xs font-semibold text-white" style={{ background: brandColor }}>Aperçu</span>
             </div>
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Téléphone">
-              <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <Field label="Téléphone" error={errors.phone?.message}>
+              <Input {...register("phone")} />
             </Field>
-            <Field label="Email">
-              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <Field label="Email" error={errors.email?.message}>
+              <Input type="email" {...register("email")} />
             </Field>
           </div>
-          <Field label="Adresse">
-            <Input value={address} onChange={(e) => setAddress(e.target.value)} />
+          <Field label="Adresse" error={errors.address?.message}>
+            <Input {...register("address")} />
           </Field>
         </div>
       </FormSection>
@@ -159,16 +178,16 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
       <FormSection index="02" title="Réservation" description="Délai limite avant départ et politique de remboursement.">
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Minutes limite avant départ" hint="Cutoff pour la réservation (en minutes)">
-              <Input inputMode="numeric" value={cutoffMinutes} onChange={(e) => setCutoffMinutes(e.target.value)} />
+            <Field label="Minutes limite avant départ" hint="Cutoff pour la réservation (en minutes)" error={errors.cutoffMinutes?.message}>
+              <Input inputMode="numeric" {...register("cutoffMinutes")} />
             </Field>
-            <Field label="% de remboursement" hint="Politique d'annulation">
-              <Input inputMode="numeric" value={refundPct} onChange={(e) => setRefundPct(e.target.value)} />
+            <Field label="% de remboursement" hint="Politique d'annulation" error={errors.refundPct?.message}>
+              <Input inputMode="numeric" {...register("refundPct")} />
             </Field>
           </div>
           <div className="flex justify-end">
-            <Button size="sm" onClick={save} disabled={saving}>
-              {saving ? "…" : "Enregistrer"}
+            <Button size="sm" onClick={save} disabled={isSubmitting}>
+              {isSubmitting ? "…" : "Enregistrer"}
             </Button>
           </div>
         </div>

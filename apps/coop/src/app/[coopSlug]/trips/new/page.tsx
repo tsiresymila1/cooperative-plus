@@ -2,6 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { ArrowLeft, ChevronRight, Route as RouteIcon, Bus, Wallet, Plus, X, IdCard } from "lucide-react";
 import {
   DashboardShell,
@@ -42,6 +45,15 @@ const nextHour = () => {
 const seatsOf = (m: any) =>
   Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
 
+const schema = z.object({
+  routeId: z.string().min(1, "Sélectionnez un itinéraire"),
+  date: z.string().min(1, "Date de départ requise"),
+  time: z.string().min(1, "Heure requise"),
+  price: z.string().optional(),
+  tagId: z.string().optional(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function NewTripPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -61,34 +73,41 @@ export default function NewTripPage() {
   const tags = (data?.tags ?? []).filter(notDeleted).filter((t: any) => t.isGlobal || t.cooperative?.id === coopId);
 
   type SlotInput = { model: string; driver: string; vehicle: string };
-  const [routeId, setRouteId] = useState("");
   const [slots, setSlots] = useState<SlotInput[]>([{ model: "", driver: "", vehicle: "" }]);
-  const [tagId, setTagId] = useState("");
-  const [date, setDate] = useState(todayISO());
-  const [time, setTime] = useState(nextHour);
-  const [price, setPrice] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [slotError, setSlotError] = useState("");
+
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { routeId: "", date: todayISO(), time: nextHour(), price: "", tagId: "" },
+  });
+  const routeId = watch("routeId");
+  const date = watch("date");
+  const time = watch("time");
+  const tagId = watch("tagId") ?? "";
 
   const route = routes.find((r: any) => r.id === routeId);
   const chosen = slots.map((s) => models.find((m: any) => m.id === s.model)).filter(Boolean) as any[];
   const totalSeats = chosen.reduce((s, m) => s + seatsOf(m), 0);
 
-  const setSlot = (i: number, patch: Partial<SlotInput>) =>
+  const setSlot = (i: number, patch: Partial<SlotInput>) => {
+    setSlotError("");
     setSlots((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  };
   const addSlot = () => setSlots((s) => [...s, { model: "", driver: "", vehicle: "" }]);
   const removeSlot = (i: number) => setSlots((s) => s.filter((_, j) => j !== i));
 
-  const submit = async () => {
-    if (!route) { toast.error("Sélectionnez un itinéraire."); return; }
-    if (chosen.length === 0) { toast.error("Ajoutez au moins un véhicule (modèle)."); return; }
+  const submit = handleSubmit(async (v) => {
+    if (!route) return;
+    if (chosen.length === 0) { setSlotError("Ajoutez au moins un véhicule (modèle)."); return; }
+    setSlotError("");
 
-    const priceVal = price ? toMoney(price) : route.basePrice;
-    const departureAt = combineDateTime(date, time);
+    const priceVal = v.price ? toMoney(v.price) : route.basePrice;
+    const departureAt = combineDateTime(v.date, v.time);
     const now = Date.now();
     const tripId = id();
     const first = chosen[0];
 
-    setSaving(true);
     try {
       const txs: any[] = [
         db.tx.tripInstances[tripId]
@@ -138,9 +157,8 @@ export default function NewTripPage() {
       router.push(`/${slug}/trips`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -154,8 +172,8 @@ export default function NewTripPage() {
       <div className="mx-auto max-w-4xl">
         <FormSection index="01" title="Itinéraire & véhicules" description="Déclarez le(s) véhicule(s) par modèle. Chauffeur et immatriculation sont optionnels — assignables maintenant ou plus tard.">
           <div className="grid gap-4">
-            <Field label="Itinéraire">
-              <Select value={routeId} onValueChange={setRouteId}>
+            <Field label="Itinéraire" error={errors.routeId?.message}>
+              <Select value={routeId} onValueChange={(v) => setValue("routeId", v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2"><RouteIcon size={15} className="text-ink-soft/60" /><SelectValue placeholder="Sélectionner…" /></span>
                 </SelectTrigger>
@@ -165,7 +183,7 @@ export default function NewTripPage() {
               </Select>
             </Field>
 
-            <Field label="Véhicules du trajet" hint="Un ou plusieurs véhicules. Les places connues viennent du modèle.">
+            <Field label="Véhicules du trajet" error={slotError} hint="Un ou plusieurs véhicules. Les places connues viennent du modèle.">
               <div className="grid gap-3">
                 {slots.map((s, i) => {
                   const slotVehicles = vehicles.filter((v: any) => !s.model || (v.model as any)?.id === s.model);
@@ -220,19 +238,19 @@ export default function NewTripPage() {
         <FormSection index="02" title="Départ & tarif" description="Date, heure de départ et prix du billet pour cette instance.">
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Date de départ">
-                <DatePicker value={date ? new Date(date + "T00:00:00") : undefined} onChange={(d) => setDate(d ? dKey(d) : "")} />
+              <Field label="Date de départ" error={errors.date?.message}>
+                <DatePicker value={date ? new Date(date + "T00:00:00") : undefined} onChange={(d) => setValue("date", d ? dKey(d) : "", { shouldValidate: true })} />
               </Field>
-              <Field label="Heure"><TimePicker value={time} onChange={setTime} /></Field>
+              <Field label="Heure" error={errors.time?.message}><TimePicker value={time} onChange={(t) => setValue("time", t, { shouldValidate: true })} /></Field>
             </div>
             <Field label="Prix (MGA)" hint={route ? `Prix de base: ${fmtMoney(route.basePrice)}` : "Laissez vide pour le prix de base de l'itinéraire"}>
               <div className="relative">
                 <Wallet size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
-                <Input inputMode="numeric" placeholder={route ? String(route.basePrice) : "0"} value={price} onChange={(e) => setPrice(e.target.value)} className="pl-9" />
+                <Input inputMode="numeric" placeholder={route ? String(route.basePrice) : "0"} {...register("price")} className="pl-9" />
               </div>
             </Field>
             <Field label="Tag (optionnel)" hint="Affiché en badge en haut à gauche du trajet.">
-              <Select value={tagId || "none"} onValueChange={(v) => setTagId(v === "none" ? "" : v)}>
+              <Select value={tagId || "none"} onValueChange={(v) => setValue("tagId", v === "none" ? "" : v)}>
                 <SelectTrigger><SelectValue placeholder="Aucun" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">— Aucun —</SelectItem>
@@ -245,7 +263,7 @@ export default function NewTripPage() {
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/trips`}><Button variant="outline" size="sm">Annuler</Button></Link>
-          <Button size="sm" onClick={submit} disabled={saving}>{saving ? "…" : "Créer le trajet"}</Button>
+          <Button size="sm" onClick={submit} disabled={isSubmitting}>{isSubmitting ? "…" : "Créer le trajet"}</Button>
         </div>
       </div>
     </DashboardShell>

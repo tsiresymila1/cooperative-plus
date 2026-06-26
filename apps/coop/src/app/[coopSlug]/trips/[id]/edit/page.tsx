@@ -1,6 +1,9 @@
 "use client";
 import { PageSkeleton } from "@cp/ui";
 import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight, Wallet, Activity, Lock } from "lucide-react";
@@ -35,6 +38,19 @@ const dKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStar
 
 const STATUSES = ["scheduled", "boarding", "departed", "arrived", "cancelled"];
 
+const schema = z.object({
+  status: z.string(),
+  date: z.string().trim().min(1, "Date de départ requise"),
+  time: z.string().trim().min(1, "Heure requise"),
+  price: z
+    .string()
+    .trim()
+    .min(1, "Prix requis")
+    .refine((v) => !Number.isNaN(Number(v)) && Number(v) >= 0, "Prix invalide"),
+  tagId: z.string(),
+});
+type Values = z.infer<typeof schema>;
+
 export default function EditTripPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
@@ -52,50 +68,53 @@ export default function EditTripPage() {
   );
   const hasActiveBookings = activeBookings.length > 0;
 
-  const [status, setStatus] = useState("scheduled");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("06:00");
-  const [price, setPrice] = useState("");
-  const [tagId, setTagId] = useState("");
-  const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+
+  const { handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<Values>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { status: "scheduled", date: "", time: "06:00", price: "", tagId: "" },
+  });
+  const status = watch("status");
+  const date = watch("date");
+  const time = watch("time");
+  const price = watch("price");
+  const tagId = watch("tagId");
 
   useEffect(() => {
     if (trip && !hydrated) {
-      setStatus(trip.status ?? "scheduled");
-      setDate(trip.departDate ?? "");
       const d = new Date(trip.departureAt);
-      setTime(
-        `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`,
-      );
-      setPrice(String(trip.price ?? ""));
-      setTagId((trip as any).tag?.id ?? "");
+      reset({
+        status: trip.status ?? "scheduled",
+        date: trip.departDate ?? "",
+        time: `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`,
+        price: String(trip.price ?? ""),
+        tagId: (trip as any).tag?.id ?? "",
+      });
       setHydrated(true);
     }
-  }, [trip, hydrated]);
+  }, [trip, hydrated, reset]);
 
-  const submit = async () => {
+  const submit = handleSubmit(async (v) => {
     if (!trip) return;
-    setSaving(true);
     try {
       let chunk = db.tx.tripInstances[tripId].update({
-        status,
-        departDate: date,
-        departureAt: combineDateTime(date, time),
-        price: toMoney(price),
+        status: v.status,
+        departDate: v.date,
+        departureAt: combineDateTime(v.date, v.time),
+        price: toMoney(v.price),
       });
       // `tag` is a one-link: linking replaces; unlink clears it.
       const prevTag = (trip as any).tag?.id ?? "";
-      if (tagId) chunk = chunk.link({ tag: tagId });
+      if (v.tagId) chunk = chunk.link({ tag: v.tagId });
       else if (prevTag) chunk = chunk.unlink({ tag: prevTag });
       await db.transact(chunk);
       toast.success("Trajet mis à jour");
       router.push(`/${slug}/trips`);
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));
-      setSaving(false);
     }
-  };
+  });
 
   return (
     <DashboardShell
@@ -150,7 +169,7 @@ export default function EditTripPage() {
           <FormSection index="01" title="Statut & départ" description={`${trip.originName} → ${trip.destName} · ${trip.vehicleName}`}>
           <div className="grid gap-4">
             <Field label="Statut">
-              <Select value={status} onValueChange={setStatus}>
+              <Select value={status} onValueChange={(v) => setValue("status", v, { shouldValidate: true })}>
                 <SelectTrigger>
                   <span className="inline-flex items-center gap-2">
                     <Activity size={15} className="text-ink-soft/60" />
@@ -167,26 +186,26 @@ export default function EditTripPage() {
               </Select>
             </Field>
             <div className="grid grid-cols-2 gap-4">
-              <Field label="Date de départ">
-                <DatePicker value={date ? new Date(date + "T00:00:00") : undefined} onChange={(d) => setDate(d ? dKey(d) : "")} />
+              <Field label="Date de départ" error={errors.date?.message}>
+                <DatePicker value={date ? new Date(date + "T00:00:00") : undefined} onChange={(d) => setValue("date", d ? dKey(d) : "", { shouldValidate: true })} />
               </Field>
-              <Field label="Heure">
-                <TimePicker value={time} onChange={setTime} />
+              <Field label="Heure" error={errors.time?.message}>
+                <TimePicker value={time} onChange={(v) => setValue("time", v, { shouldValidate: true })} />
               </Field>
             </div>
-            <Field label="Prix (MGA)" hint={`Actuel: ${fmtMoney(trip.price)}`}>
+            <Field label="Prix (MGA)" error={errors.price?.message} hint={`Actuel: ${fmtMoney(trip.price)}`}>
               <div className="relative">
                 <Wallet size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
                 <Input
                   inputMode="numeric"
                   value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  onChange={(e) => setValue("price", e.target.value, { shouldValidate: true })}
                   className="pl-9"
                 />
               </div>
             </Field>
             <Field label="Tag (optionnel)" hint="Affiché en badge en haut à gauche du trajet.">
-              <Select value={tagId || "none"} onValueChange={(v) => setTagId(v === "none" ? "" : v)}>
+              <Select value={tagId || "none"} onValueChange={(v) => setValue("tagId", v === "none" ? "" : v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Aucun" />
                 </SelectTrigger>
@@ -206,8 +225,8 @@ export default function EditTripPage() {
                 Annuler
               </Button>
             </Link>
-            <Button size="sm" onClick={submit} disabled={saving}>
-              {saving ? "…" : "Enregistrer"}
+            <Button size="sm" onClick={submit} disabled={isSubmitting}>
+              {isSubmitting ? "…" : "Enregistrer"}
             </Button>
           </div>
         </div>
