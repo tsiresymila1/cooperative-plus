@@ -7,17 +7,26 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
-      "env": { "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45" }
+      "env": {
+        "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45",
+        "EXPO_PUBLIC_API_URL": "https://cooperativeplus.vercel.app"
+      }
     },
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45" }
+      "env": {
+        "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45",
+        "EXPO_PUBLIC_API_URL": "https://cooperativeplus.vercel.app"
+      }
     },
     "production": {
       "autoIncrement": true,
       "android": { "buildType": "app-bundle" },
-      "env": { "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45" }
+      "env": {
+        "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45",
+        "EXPO_PUBLIC_API_URL": "https://cooperativeplus.vercel.app"
+      }
     }
   },
   "submit": {

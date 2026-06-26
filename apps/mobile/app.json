@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "icon": "./assets/logo-round.png",
+    "icon": "./assets/ic_launcher.png",
     "backgroundColor": "#ffffff",
     "ios": {
       "supportsTablet": true,
