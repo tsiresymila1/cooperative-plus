@@ -13,6 +13,7 @@ export async function initiatePapi(input: {
   coopId?: string | null;
   holdIds?: string[];
   seatMeta?: SeatMeta[];
+  tripVehicleId?: string | null;
 }): Promise<string> {
   const res = await fetch(`${API}/api/payment/initiate`, {
     method: "POST",

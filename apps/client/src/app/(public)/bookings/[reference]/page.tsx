@@ -36,10 +36,17 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
   };
 
   const { data, isLoading } = db.useQuery({
-    bookings: { $: { where: { reference } }, tickets: {}, payments: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} } },
+    bookings: { $: { where: { reference } }, tickets: { tripVehicle: {} }, payments: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} } },
   });
   const bk = data?.bookings?.[0];
   const trip = bk?.tripInstance;
+
+  // Vehicle/driver for this ticket: from the linked tripVehicle (multi-vehicle),
+  // else fall back to the trip's own vehicle/driver (legacy mono-vehicle).
+  const tv: any = (bk?.tickets ?? []).map((t: any) => t.tripVehicle).find(Boolean);
+  const vehLabel = tv?.label ?? "Voiture 1";
+  const vehReg = tv?.registrationNo ?? (trip as any)?.vehicle?.registrationNo ?? null;
+  const vehDriver = tv?.driverName ?? (trip as any)?.driverName ?? null;
 
   // Seat-map preview for the ticket: layout from the vehicle (or snapshot),
   // with the passenger's own seats highlighted.
@@ -143,6 +150,8 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
               </div>
               <div className="flex-1 space-y-1.5 text-sm">
                 <Row label="Sièges" value={(bk?.tickets ?? []).map((t) => t.seatLabel).sort().join(", ") || "—"} />
+                <Row label="Véhicule" value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel} />
+                {vehDriver && <Row label="Chauffeur" value={vehDriver} />}
                 <Row label="Passagers" value={String(bk?.seatCount ?? "—")} />
                 <Row label="Total" value={bk ? fmtMoney(bk.totalAmount) : "—"} />
                 <Row label="Statut" value={<span className={`rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${statusTone}`}>{STATUS_FR[status] ?? status ?? "—"}</span>} />

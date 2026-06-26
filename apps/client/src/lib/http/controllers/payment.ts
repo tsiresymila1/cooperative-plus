@@ -15,13 +15,14 @@ const initiateSchema = z.object({
   coopId: z.string().nullable().optional(),
   holdIds: z.array(z.string()).optional(),
   seatMeta: z.array(seatMetaSchema).optional(),
+  tripVehicleId: z.string().nullable().optional(),
 });
 
 export const initiateHandler = factory.createHandlers(
   jsonBody(initiateSchema),
   async (c) => {
-    const { bookingReference, instanceId, coopId, holdIds, seatMeta } = c.req.valid("json");
-    const result = await initiatePayment({ bookingReference, instanceId, coopId: coopId ?? null, holdIds, seatMeta });
+    const { bookingReference, instanceId, coopId, holdIds, seatMeta, tripVehicleId } = c.req.valid("json");
+    const result = await initiatePayment({ bookingReference, instanceId, coopId: coopId ?? null, holdIds, seatMeta, tripVehicleId: tripVehicleId ?? null });
     return c.json(result);
   },
 );

@@ -27,7 +27,7 @@ export default function Confirmation() {
   const { isLoading, data } = db.useQuery({
     bookings: {
       $: { where: { id: bookingId } },
-      tickets: {},
+      tickets: { tripVehicle: {} },
       tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tickets: {}, tag: {} },
     },
   });
@@ -35,6 +35,12 @@ export default function Confirmation() {
   const booking = data?.bookings?.[0];
   const trip = booking?.tripInstance;
   const tickets = booking?.tickets ?? [];
+
+  // Vehicle/driver: from the ticket's tripVehicle (multi-vehicle), else the trip.
+  const tv: any = tickets.map((t: any) => t.tripVehicle).find(Boolean);
+  const vehLabel = tv?.label ?? "Voiture 1";
+  const vehReg = tv?.registrationNo ?? (trip as any)?.vehicle?.registrationNo ?? null;
+  const vehDriver = tv?.driverName ?? (trip as any)?.driverName ?? null;
 
   const [seatsOpen, setSeatsOpen] = useState(false);
   // Seat map cells = vehicle active map (fallback to snapshot), like the booking page.
@@ -77,6 +83,9 @@ export default function Confirmation() {
       currency: booking!.currency,
       tagName: (trip as any)?.tag?.name ?? null,
       tagColor: (trip as any)?.tag?.color ?? null,
+      vehicleLabel: vehLabel,
+      vehicleReg: vehReg,
+      driverName: vehDriver,
       tickets: tickets.map((t) => ({
         seatLabel: t.seatLabel,
         passengerName: t.passengerName,
@@ -182,6 +191,8 @@ export default function Confirmation() {
                 </View>
                 <View className="flex-1 gap-2">
                   <TicketRow label="Sièges" value={tickets.map((t) => t.seatLabel).join(", ") || "—"} />
+                  <TicketRow label="Véhicule" value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel} />
+                  {vehDriver ? <TicketRow label="Chauffeur" value={vehDriver} /> : null}
                   <TicketRow label="Passagers" value={String(tickets.length)} />
                   <TicketRow label="Total" value={fmtMoney(booking.totalAmount, booking.currency)} />
                   <View className="flex-row items-center justify-between">

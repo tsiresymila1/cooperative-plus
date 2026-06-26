@@ -16,6 +16,12 @@ import { db, id, type Chunk } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { useSelection } from "@/lib/selection";
 import { fmtCountdown, makeQrToken, makeReference } from "@/lib/domain";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
+
+const isValidPhone = (s: string) => {
+  const p = parsePhoneNumberFromString((s ?? "").trim(), "MG");
+  return !!p && p.isValid();
+};
 
 type MethodMeta = { label: string; desc: string; Icon: typeof Smartphone; provider: string };
 
@@ -147,6 +153,11 @@ export default function Checkout() {
 
   async function confirm() {
     if (!selection || !canSubmit) return;
+    if (!isValidPhone(phone)) {
+      setConfirmOpen(false);
+      setNotice({ title: "Numéro invalide", message: "Vérifiez le numéro de téléphone du passager." });
+      return;
+    }
     setConfirmOpen(false);
     setSubmitting(true);
 
@@ -211,6 +222,7 @@ export default function Checkout() {
           coopId: selection.cooperativeId ?? null,
           holdIds,
           seatMeta,
+          tripVehicleId: selection.tripVehicleId ?? null,
         });
 
         // Holds are intentionally kept (webhook consumes them) — don't release on unmount.
@@ -280,6 +292,7 @@ export default function Checkout() {
           })
           .link({ booking: bookingId, tripInstance: selection.tripInstanceId });
         if (selection.cooperativeId) t = t.link({ cooperative: selection.cooperativeId });
+        if (selection.tripVehicleId) t = t.link({ tripVehicle: selection.tripVehicleId });
         chunks.push(t);
       }
 

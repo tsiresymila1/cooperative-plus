@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Banknote, CreditCard, Smartphone, Lock } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { Button, Card } from "@cp/ui";
+import { Button, Card, slotSeatKey, isValidPhone } from "@cp/ui";
 import { Field, Input } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db, id } from "@cp/ui";
@@ -95,6 +95,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
 
   const pay = async () => {
     if (!trip) return;
+    if (!isValidPhone(contact.phone)) { toast.error("Numéro de téléphone invalide"); return; }
     setLoading(true);
     const reference = ref();
     const bookingId = id();
@@ -122,10 +123,10 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         ...(!isOnline ? [
           ...seats.map((label) =>
             db.tx.tickets[id()].update({
-              seatKey: `${instanceId}_${label}`, seatLabel: label,
+              seatKey: slotSeatKey(draft.slotId ?? instanceId, label), seatLabel: label,
               passengerName: passengers[label] || contact.name, price: trip.price,
               qrToken: id(), createdAt: Date.now(),
-            }).link({ booking: bookingId, cooperative: draft.coopId ?? undefined, tripInstance: instanceId })),
+            }).link({ booking: bookingId, cooperative: draft.coopId ?? undefined, tripInstance: instanceId, ...(draft.slotIsVirtual || !draft.slotId ? {} : { tripVehicle: draft.slotId }) })),
           ...holdIds.map((hid) => db.tx.seatHolds[hid].delete()),
         ] : [
           ...holdIds.map((hid) => db.tx.seatHolds[hid].update({ expiresAt: holdExpiresAt })),
@@ -135,7 +136,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
         const res = await fetch("/api/payment/initiate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bookingReference: reference, seatMeta, holdIds, instanceId, coopId }),
+          body: JSON.stringify({ bookingReference: reference, seatMeta, holdIds, instanceId, coopId, tripVehicleId: draft.slotIsVirtual ? null : draft.slotId }),
         });
         const data = await res.json();
         if (!res.ok) {

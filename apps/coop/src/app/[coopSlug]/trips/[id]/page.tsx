@@ -26,6 +26,9 @@ import {
   Search,
   Printer,
   QrCode,
+  IdCard,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import {
   DashboardShell,
@@ -49,6 +52,10 @@ import {
   tripStatus,
   bookingStatus,
   genReference,
+  notDeleted,
+  tripSlots,
+  slotSeatKey,
+  isValidPhone,
 } from "@cp/ui";
 import {
   Select,
@@ -56,6 +63,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  Combobox,
   Input,
 } from "@cp/ui/shadcn";
 
@@ -85,8 +93,12 @@ export default function TripViewPage() {
       route: {},
       vehicle: { seatMaps: {} },
       tag: {},
+      driver: {},
+      vehicles: { tickets: { booking: {} }, holds: {}, model: {}, vehicle: {}, driver: {} },
     },
-    vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {} },
+    vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {}, model: {} },
+    drivers: { $: { where: { "cooperative.id": coopId } } },
+    vehicleModels: { $: { where: { "cooperative.id": coopId } } },
   });
 
   const trip = data?.tripInstances?.[0];
@@ -98,34 +110,119 @@ export default function TripViewPage() {
   // older duplicated trips whose vehicle link was lost).
   const vehicle = trip?.vehicle
     ?? (trip?.vehicleName ? (data?.vehicles ?? []).find((v: any) => v.name === trip.vehicleName) : undefined);
+  const drivers = (data?.drivers ?? []).filter(notDeleted);
 
-  // Prefer the vehicle's current active seat map so the layout matches the
-  // vehicle editor exactly; fall back to the booking-time snapshot.
+  const assignDriver = async (driverId: string) => {
+    if (!trip) return;
+    const d = drivers.find((x: any) => x.id === driverId);
+    let chunk = db.tx.tripInstances[tripId].update({ driverName: d?.name ?? null, driverPhone: d?.phone ?? null });
+    chunk = driverId ? chunk.link({ driver: driverId }) : (trip.driver?.id ? chunk.unlink({ driver: trip.driver.id }) : chunk);
+    try {
+      await db.transact(chunk);
+      toast.success(driverId ? "Chauffeur assigné." : "Chauffeur retiré.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec.");
+    }
+  };
+
+  // Per-slot assignment (driver + physical vehicle). Falls back to trip-level
+  // for legacy virtual slots (mono-vehicle trips with no tripVehicle row).
+  const assignSlotDriver = async (driverId: string) => {
+    if (!slot) return;
+    if (slot.isVirtual) return assignDriver(driverId);
+    const d = drivers.find((x: any) => x.id === driverId);
+    let chunk = db.tx.tripVehicles[slot.id].update({ driverName: d?.name ?? null, driverPhone: d?.phone ?? null });
+    chunk = driverId ? chunk.link({ driver: driverId }) : (slot.driver?.id ? chunk.unlink({ driver: slot.driver.id }) : chunk);
+    try { await db.transact(chunk); toast.success(driverId ? "Chauffeur assigné." : "Chauffeur retiré."); }
+    catch (e: any) { toast.error(e?.message ?? "Échec."); }
+  };
+  const assignSlotVehicle = async (vId: string) => {
+    if (!slot) return;
+    const v = (data?.vehicles ?? []).find((x: any) => x.id === vId);
+    if (slot.isVirtual) {
+      let chunk = db.tx.tripInstances[tripId].update({ vehicleName: v?.name ?? trip?.vehicleName });
+      chunk = vId ? chunk.link({ vehicle: vId }) : (trip?.vehicle?.id ? chunk.unlink({ vehicle: trip.vehicle.id }) : chunk);
+      try { await db.transact(chunk); toast.success(vId ? "Véhicule assigné." : "Véhicule retiré."); } catch (e: any) { toast.error(e?.message ?? "Échec."); }
+      return;
+    }
+    let chunk = db.tx.tripVehicles[slot.id].update({ vehicleName: v?.name ?? null, registrationNo: v?.registrationNo ?? null });
+    chunk = vId ? chunk.link({ vehicle: vId }) : (slot.vehicle?.id ? chunk.unlink({ vehicle: slot.vehicle.id }) : chunk);
+    try { await db.transact(chunk); toast.success(vId ? "Véhicule assigné." : "Véhicule retiré."); }
+    catch (e: any) { toast.error(e?.message ?? "Échec."); }
+  };
+
+  // Add / remove a vehicle slot (only on trips that already use real slots).
+  const tripModels = (data?.vehicleModels ?? []).filter(notDeleted);
+  const seatsOfModel = (m: any) => Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
+
+  const addSlot = async () => {
+    const m = tripModels.find((x: any) => x.id === addModelId);
+    if (!m) { toast.error("Choisissez un modèle."); return; }
+    const seats = seatsOfModel(m);
+    try {
+      await db.transact([
+        db.tx.tripVehicles[id()].update({ label: `Voiture ${slots.length + 1}`, seatMapSnapshot: m.layout ?? [], seatsTotal: seats, seatsBooked: 0, vehicleName: m.name, createdAt: Date.now() }).link({ tripInstance: tripId, model: m.id }),
+        db.tx.tripInstances[tripId].update({ seatsTotal: (trip?.seatsTotal ?? 0) + seats }),
+      ]);
+      toast.success("Véhicule ajouté."); setAddOpen(false); setAddModelId("");
+    } catch (e: any) { toast.error(e?.message ?? "Échec."); }
+  };
+  const removeSlot = async (s: any) => {
+    if (slots.length <= 1) { toast.error("Au moins un véhicule requis."); return; }
+    const liveT = (s.tickets ?? []).filter((t: any) => !DEAD.includes(t.booking?.status)).length;
+    const liveH = (s.holds ?? []).filter((h: any) => +new Date(h.expiresAt) > Date.now()).length;
+    if (liveT || liveH) { toast.error("Ce véhicule a des réservations ou holds en cours."); return; }
+    if (!(await confirm({ title: "Retirer ce véhicule ?", message: s.label, confirmLabel: "Retirer", tone: "danger" }))) return;
+    try {
+      await db.transact([
+        db.tx.tripVehicles[s.id].update({ deletedAt: Date.now() }),
+        db.tx.tripInstances[tripId].update({ seatsTotal: Math.max(0, (trip?.seatsTotal ?? 0) - (s.seatsTotal ?? 0)) }),
+      ]);
+      if (slotId === s.id) setSlotId(slots.find((x: any) => x.id !== s.id)?.id ?? "");
+      toast.success("Véhicule retiré.");
+    } catch (e: any) { toast.error(e?.message ?? "Échec."); }
+  };
+
+  // ── Vehicle slots (Phase 2). New trips have real tripVehicles; legacy trips
+  // fall back to one virtual slot whose id === tripId (so seatKey is unchanged).
+  const slots = useMemo(() => tripSlots(trip), [trip]);
+  const [slotId, setSlotId] = useState<string>("");
+  useEffect(() => { if (slots.length && !slots.some((s) => s.id === slotId)) setSlotId(slots[0].id); }, [slots, slotId]);
+  const slot = slots.find((s) => s.id === slotId) ?? slots[0];
+  const hasRealSlots = slots.length > 0 && !slots[0]?.isVirtual;
+
+  // Physical vehicles assignable to the active slot = those of the slot's model
+  // (legacy virtual slots have no model → allow any vehicle).
+  const slotModelId = (slot?.model as any)?.id;
+  const slotVehicles = (data?.vehicles ?? [])
+    .filter(notDeleted)
+    .filter((v: any) => !slotModelId || (v.model as any)?.id === slotModelId);
+
   const vehicleId = vehicle?.id as string | undefined;
   const activeMap = (vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ?? (vehicle?.seatMaps ?? [])[0];
-  const layout: Cell[] = Array.isArray(activeMap?.layout)
-    ? (activeMap.layout as Cell[])
-    : Array.isArray(trip?.seatMapSnapshot) ? (trip!.seatMapSnapshot as Cell[]) : [];
-  // Occupancy from LIVE bookings' tickets only — excludes cancelled/expired/
-  // refunded bookings and orphan tickets left behind by older cancellations.
+  const layout: Cell[] = Array.isArray(slot?.seatMapSnapshot) && slot.seatMapSnapshot.length
+    ? (slot.seatMapSnapshot as Cell[])
+    : Array.isArray(activeMap?.layout) ? (activeMap.layout as Cell[])
+      : Array.isArray(trip?.seatMapSnapshot) ? (trip!.seatMapSnapshot as Cell[]) : [];
+
+  const DEAD = ["cancelled", "expired", "refunded"];
+  // Occupancy for the ACTIVE slot only.
   const takenSeats = useMemo(
-    () => bookings.flatMap((b: any) => (b.tickets ?? []).map((t: any) => t.seatLabel)),
-    [bookings],
+    () => (slot?.tickets ?? []).filter((t: any) => !DEAD.includes(t.booking?.status)).map((t: any) => t.seatLabel),
+    [slot],
   );
   const heldSeats = useMemo(
-    () => holds.filter((h: any) => new Date(h.expiresAt).getTime() > Date.now()).map((h: any) => h.seatLabel),
-    [holds],
+    () => (slot?.holds ?? []).filter((h: any) => new Date(h.expiresAt).getTime() > Date.now()).map((h: any) => h.seatLabel),
+    [slot],
   );
 
-  // Self-heal: purge orphan tickets whose booking is cancelled/expired/refunded.
-  // Frees their unique `seatKey` so the seat can be re-booked — including by
-  // customers/mobile, who lack permission to delete other people's tickets.
+  // Self-heal: purge orphan tickets (dead booking) across all slots so their
+  // unique seatKey frees up — customers/mobile can't delete others' tickets.
   useEffect(() => {
-    const dead = ["cancelled", "expired", "refunded"];
-    const orphans = ((trip?.tickets ?? []) as any[]).filter((t) => t.booking && dead.includes(t.booking.status));
+    const orphans = slots.flatMap((s) => (s.tickets ?? []) as any[]).filter((t) => t.booking && DEAD.includes(t.booking.status));
     if (orphans.length) db.transact(orphans.map((t) => db.tx.tickets[t.id].delete())).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [trip?.id, (trip?.tickets ?? []).length]);
+  }, [trip?.id, slots.reduce((n, s) => n + (s.tickets?.length ?? 0), 0)]);
 
   // ----- anonymous reservation state -----
   const [selected, setSelected] = useState<string[]>([]);
@@ -136,6 +233,8 @@ export default function TripViewPage() {
   const [statusSaving, setStatusSaving] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const [scanOpen, setScanOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [addModelId, setAddModelId] = useState("");
   const [mSearch, setMSearch] = useState("");
 
   const visibleBookings = useMemo(() => {
@@ -148,6 +247,17 @@ export default function TripViewPage() {
       return `${b.reference} ${b.contactName} ${b.contactPhone}`.toLowerCase().includes(q) || inTickets;
     });
   }, [bookings, mSearch]);
+
+  // Group reservations by vehicle slot. A booking is within ONE vehicle, so its
+  // slot = the slot prefix of any of its tickets' seatKey (`${slotId}_${label}`).
+  const bookingGroups = useMemo(() => {
+    const slotOf = (b: any) => ((b.tickets ?? [])[0]?.seatKey ?? "").split("_")[0];
+    const groups = slots.map((s) => ({ slot: s, items: visibleBookings.filter((b: any) => slotOf(b) === s.id) }));
+    const known = new Set(slots.map((s) => s.id));
+    const orphans = visibleBookings.filter((b: any) => !known.has(slotOf(b)));
+    if (orphans.length && groups[0]) groups[0].items = [...groups[0].items, ...orphans]; // legacy tickets w/o slot match
+    return groups.filter((g) => g.items.length);
+  }, [slots, visibleBookings]);
 
   const setBookingStatus = async (bId: string, status: string, extra: Record<string, any> = {}) => {
     try {
@@ -248,14 +358,68 @@ export default function TripViewPage() {
     toast.success(current ? "Pointage annulé" : "Passager enregistré");
   };
 
+  const renderBooking = (b: any) => {
+    const bs = bookingStatus[b.status] ?? { label: b.status, tone: "neutral" as const };
+    const bTickets = b.tickets ?? [];
+    const done = b.status === "cancelled" || b.status === "refunded";
+    return (
+      <div key={b.id} className="rounded-[--radius] border border-ink/8">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/8 px-4 py-3">
+          <div>
+            <p className="font-mono text-sm font-semibold text-ink">{b.reference}</p>
+            <p className="text-sm text-ink-soft">{b.contactName} · {b.contactPhone}</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-sm">
+            <span className="text-ink-soft">{b.seatCount} place(s)</span>
+            <span className="font-semibold text-ink">{fmtMoney(b.totalAmount)}</span>
+            <Badge tone={bs.tone}>{bs.label}</Badge>
+            <div className="flex items-center gap-1">
+              {b.status === "pending" && (
+                <Button size="sm" variant="ghost" onClick={() => confirmBooking(b)}><Check size={14} /> Confirmer</Button>
+              )}
+              {!done && b.status !== "paid" && (
+                <Button size="sm" variant="ghost" onClick={() => markPaid(b)}><Wallet size={14} /> Payé</Button>
+              )}
+              {!done && (
+                <Button size="sm" variant="ghost" className="text-danger hover:bg-danger/10" onClick={() => cancelBookingRow(b)}><XCircle size={14} /> Annuler</Button>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="grid gap-1.5 px-4 py-3">
+          {bTickets.map((t: any) => (
+            <div key={t.id} className="flex items-center justify-between rounded-[--radius] px-2 py-1.5 text-sm hover:bg-ink/[.02]">
+              <span className="inline-flex items-center gap-2">
+                <span className="grid h-7 w-7 place-items-center rounded-md bg-laterite/10 font-mono text-xs font-semibold text-laterite">{t.seatLabel}</span>
+                {t.passengerName}
+                {t.passengerPhone && <span className="text-ink-soft/60">· {t.passengerPhone}</span>}
+              </span>
+              {t.checkedInAt ? (
+                <button className="inline-flex items-center gap-1.5" onClick={() => checkIn(t.id, t.checkedInAt)} title="Annuler le pointage">
+                  <Badge tone="success"><CheckCircle2 size={13} /> {fmtTime(t.checkedInAt)}</Badge>
+                </button>
+              ) : (
+                <Button size="sm" variant="ghost" onClick={() => checkIn(t.id)}><Check size={14} /> Pointer</Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   const reserve = async () => {
-    if (!trip) return;
+    if (!trip || !slot) return;
     if (selected.length === 0) {
       toast.error("Sélectionnez au moins un siège");
       return;
     }
     if (!name.trim() || !phone.trim()) {
       toast.error("Nom et téléphone du passager requis");
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      toast.error("Numéro de téléphone invalide");
       return;
     }
     if (
@@ -276,13 +440,12 @@ export default function TripViewPage() {
     try {
       const txs: any[] = [];
 
-      // Free seatKey (unique) held by orphan tickets — those of a cancelled/
-      // expired/refunded booking, or with no booking — for the chosen seats.
-      const deadStatus = ["cancelled", "expired", "refunded"];
+      // Free seatKey (unique) held by orphan tickets on THIS slot — those of a
+      // cancelled/expired/refunded booking, or with no booking — for chosen seats.
       const selectedSet = new Set(selected);
-      for (const tk of (trip.tickets ?? []) as any[]) {
+      for (const tk of (slot.tickets ?? []) as any[]) {
         const st = tk.booking?.status;
-        if (selectedSet.has(tk.seatLabel) && (!tk.booking || deadStatus.includes(st))) {
+        if (selectedSet.has(tk.seatLabel) && (!tk.booking || DEAD.includes(st))) {
           txs.push(db.tx.tickets[tk.id].delete());
         }
       }
@@ -307,7 +470,7 @@ export default function TripViewPage() {
         txs.push(
           db.tx.tickets[id()]
             .update({
-              seatKey: `${tripId}_${seatLabel}`,
+              seatKey: slotSeatKey(slot.id, seatLabel),
               seatLabel,
               passengerName: name.trim(),
               passengerPhone: phone.trim(),
@@ -315,7 +478,7 @@ export default function TripViewPage() {
               qrToken: `${bookingId}_${seatLabel}_${Math.random().toString(36).slice(2, 10)}`,
               createdAt: Date.now(),
             })
-            .link({ booking: bookingId, cooperative: coopId, tripInstance: tripId }),
+            .link({ booking: bookingId, cooperative: coopId, tripInstance: tripId, ...(slot.isVirtual ? {} : { tripVehicle: slot.id }) }),
         );
       }
 
@@ -333,11 +496,10 @@ export default function TripViewPage() {
           .link({ cooperative: coopId, booking: bookingId }),
       );
 
-      txs.push(
-        db.tx.tripInstances[tripId].update({
-          seatsBooked: (trip.seatsBooked ?? 0) + selected.length,
-        }),
-      );
+      txs.push(db.tx.tripInstances[tripId].update({ seatsBooked: (trip.seatsBooked ?? 0) + selected.length }));
+      if (!slot.isVirtual) {
+        txs.push(db.tx.tripVehicles[slot.id].update({ seatsBooked: (slot.seatsBooked ?? 0) + selected.length }));
+      }
 
       await db.transact(txs);
       toast.success(`Réservation créée (${selected.length} place(s))`);
@@ -380,7 +542,7 @@ export default function TripViewPage() {
             </Button>
           )}
           {trip && (
-            <Button size="sm" variant="outline" onClick={() => router.push(`/${slug}/trips/${tripId}/manifest`)}>
+            <Button size="sm" variant="outline" onClick={() => router.push(`/${slug}/trips/${tripId}/manifest${slot && !slot.isVirtual ? `?vehicle=${slot.id}` : ""}`)}>
               <Printer size={16} /> Manifeste
             </Button>
           )}
@@ -453,6 +615,7 @@ export default function TripViewPage() {
                 </Select>
               </div>
             </div>
+
           </Card>
 
           <div className="grid gap-6 lg:grid-cols-2">
@@ -463,12 +626,31 @@ export default function TripViewPage() {
                   <Armchair size={18} className="text-laterite" />
                   <h3 className="font-display text-lg font-bold">Places occupées</h3>
                 </div>
-                {vehicleId && (
-                  <Button variant="ghost" size="sm" onClick={() => router.push(`/${slug}/vehicles/${vehicleId}/edit`)}>
-                    <Bus size={14} /> Modifier le véhicule
-                  </Button>
-                )}
+                {slot?.seatsTotal ? <Badge tone="neutral">{new Set(takenSeats).size}/{slot.seatsTotal}</Badge> : null}
               </div>
+              {(slots.length > 1 || hasRealSlots) && (
+                <div className="mb-4 flex flex-wrap items-center gap-1.5">
+                  {slots.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => { setSlotId(s.id); setSelected([]); }}
+                      className={s.id === slotId
+                        ? "inline-flex items-center gap-1.5 rounded-md bg-laterite px-3 py-1.5 text-xs font-bold text-white"
+                        : "inline-flex items-center gap-1.5 rounded-md border border-ink/12 px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-ink/5"}
+                    >
+                      <Bus size={13} /> {s.label}
+                    </button>
+                  ))}
+                  {hasRealSlots && (
+                    <>
+                      <Button variant="outline" size="sm" onClick={() => setAddOpen(true)}><Plus size={13} /> Véhicule</Button>
+                      {slots.length > 1 && slot && (
+                        <Button variant="ghost" size="sm" className="text-danger hover:bg-danger/10" onClick={() => removeSlot(slot)}><Trash2 size={13} /> Retirer</Button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
               {layout.length === 0 ? (
                 <p className="text-sm text-ink-soft">
                   Aucun plan de sièges.{" "}
@@ -487,6 +669,33 @@ export default function TripViewPage() {
                     selected={selected}
                     onToggle={toggleSeat}
                   />
+                </div>
+              )}
+
+              {/* Per-slot assignment: driver + physical vehicle (registration). */}
+              {layout.length > 0 && (
+                <div className="mt-5 grid gap-3 border-t border-ink/8 pt-4 sm:grid-cols-2">
+                  <div>
+                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-soft/55">Chauffeur · {slot?.label}</p>
+                    <Combobox
+                      value={slot?.driver?.id ?? ""}
+                      onValueChange={(v) => assignSlotDriver(v)}
+                      options={[{ value: "", label: "— Aucun —" }, ...drivers.map((d: any) => ({ value: d.id, label: d.name, hint: d.phone }))]}
+                      placeholder="Assigner" searchPlaceholder="Rechercher chauffeur…"
+                      icon={<IdCard size={14} className="text-ink-soft/60" />}
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-soft/55">Véhicule (immatriculation)</p>
+                    <Combobox
+                      value={slot?.vehicle?.id ?? ""}
+                      onValueChange={(v) => assignSlotVehicle(v)}
+                      options={[{ value: "", label: "— Aucun —" }, ...slotVehicles.map((v: any) => ({ value: v.id, label: v.name, hint: v.registrationNo }))]}
+                      placeholder="Assigner" searchPlaceholder="Rechercher véhicule…"
+                      empty="Aucun véhicule pour ce modèle."
+                      icon={<Bus size={14} className="text-ink-soft/60" />}
+                    />
+                  </div>
                 </div>
               )}
             </Card>
@@ -575,81 +784,22 @@ export default function TripViewPage() {
               <p className="text-sm text-ink-soft">Aucune réservation pour ce trajet.</p>
             ) : visibleBookings.length === 0 ? (
               <p className="text-sm text-ink-soft">Aucune réservation ne correspond.</p>
-            ) : (
-              <div className="grid gap-4">
-                {visibleBookings.map((b: any) => {
-                  const bs = bookingStatus[b.status] ?? { label: b.status, tone: "neutral" as const };
-                  const bTickets = b.tickets ?? [];
-                  const done = b.status === "cancelled" || b.status === "refunded";
-                  return (
-                    <div key={b.id} className="rounded-[--radius] border border-ink/8">
-                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-ink/8 px-4 py-3">
-                        <div>
-                          <p className="font-mono text-sm font-semibold text-ink">{b.reference}</p>
-                          <p className="text-sm text-ink-soft">
-                            {b.contactName} · {b.contactPhone}
-                          </p>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-3 text-sm">
-                          <span className="text-ink-soft">{b.seatCount} place(s)</span>
-                          <span className="font-semibold text-ink">{fmtMoney(b.totalAmount)}</span>
-                          <Badge tone={bs.tone}>{bs.label}</Badge>
-                          <div className="flex items-center gap-1">
-                            {b.status === "pending" && (
-                              <Button size="sm" variant="ghost" onClick={() => confirmBooking(b)}>
-                                <Check size={14} /> Confirmer
-                              </Button>
-                            )}
-                            {!done && b.status !== "paid" && (
-                              <Button size="sm" variant="ghost" onClick={() => markPaid(b)}>
-                                <Wallet size={14} /> Payé
-                              </Button>
-                            )}
-                            {!done && (
-                              <Button size="sm" variant="ghost" className="text-danger hover:bg-danger/10" onClick={() => cancelBookingRow(b)}>
-                                <XCircle size={14} /> Annuler
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="grid gap-1.5 px-4 py-3">
-                        {bTickets.map((t: any) => (
-                          <div
-                            key={t.id}
-                            className="flex items-center justify-between rounded-[--radius] px-2 py-1.5 text-sm hover:bg-ink/[.02]"
-                          >
-                            <span className="inline-flex items-center gap-2">
-                              <span className="grid h-7 w-7 place-items-center rounded-md bg-laterite/10 font-mono text-xs font-semibold text-laterite">
-                                {t.seatLabel}
-                              </span>
-                              {t.passengerName}
-                              {t.passengerPhone && (
-                                <span className="text-ink-soft/60">· {t.passengerPhone}</span>
-                              )}
-                            </span>
-                            {t.checkedInAt ? (
-                              <button
-                                className="inline-flex items-center gap-1.5"
-                                onClick={() => checkIn(t.id, t.checkedInAt)}
-                                title="Annuler le pointage"
-                              >
-                                <Badge tone="success">
-                                  <CheckCircle2 size={13} /> {fmtTime(t.checkedInAt)}
-                                </Badge>
-                              </button>
-                            ) : (
-                              <Button size="sm" variant="ghost" onClick={() => checkIn(t.id)}>
-                                <Check size={14} /> Pointer
-                              </Button>
-                            )}
-                          </div>
-                        ))}
-                      </div>
+            ) : slots.length > 1 ? (
+              <div className="grid gap-6">
+                {bookingGroups.map((g) => (
+                  <div key={g.slot.id} className="grid gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-laterite/10 px-2.5 py-1 text-xs font-bold text-laterite">
+                        <Bus size={13} /> {g.slot.label}
+                      </span>
+                      <span className="text-xs text-ink-soft">{g.items.length} réservation(s)</span>
                     </div>
-                  );
-                })}
+                    <div className="grid gap-4">{g.items.map(renderBooking)}</div>
+                  </div>
+                ))}
               </div>
+            ) : (
+              <div className="grid gap-4">{visibleBookings.map(renderBooking)}</div>
             )}
           </Card>
         </div>
@@ -663,6 +813,28 @@ export default function TripViewPage() {
         size="xl"
       >
         {scanOpen && <BoardingScanner coopId={coopId} tripId={tripId} />}
+      </Dialog>
+
+      <Dialog
+        open={addOpen}
+        onClose={() => setAddOpen(false)}
+        title="Ajouter un véhicule"
+        size="sm"
+        footer={
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setAddOpen(false)}>Annuler</Button>
+            <Button size="sm" onClick={addSlot} disabled={!addModelId}>Ajouter</Button>
+          </div>
+        }
+      >
+        <Field label="Modèle">
+          <Select value={addModelId} onValueChange={setAddModelId}>
+            <SelectTrigger><SelectValue placeholder="Choisir un modèle…" /></SelectTrigger>
+            <SelectContent>
+              {tripModels.map((m: any) => <SelectItem key={m.id} value={m.id}>{m.name} · {seatsOfModel(m)} places</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </Field>
       </Dialog>
     </DashboardShell>
   );

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
@@ -45,32 +45,46 @@ export default function TripDetail() {
       holds: { $: { where: { expiresAt: { $gt: new Date(nowKey) } } } },
       vehicle: { seatMaps: {} },
       tag: {},
+      vehicles: { tickets: { booking: {} }, holds: {}, model: {} },
     },
   });
 
   const trip = data?.tripInstances?.[0];
 
-  // Taken seat labels = booked tickets + live (unexpired) holds.
+  // Vehicle slots (Phase 2). Legacy mono-vehicle trips → one virtual slot whose
+  // id === tripId (so seatKey stays unchanged, no migration needed).
+  const slots = useMemo(() => {
+    if (!trip) return [] as any[];
+    const real = ((trip as any).vehicles ?? []).filter((v: any) => !v.deletedAt);
+    if (real.length) return [...real].sort((a: any, b: any) => String(a.label ?? "").localeCompare(String(b.label ?? ""))).map((v: any) => ({ ...v, isVirtual: false }));
+    return [{ id: trip.id, label: trip.vehicleName ?? "Véhicule", seatMapSnapshot: trip.seatMapSnapshot, seatsTotal: trip.seatsTotal, vehicleName: trip.vehicleName, driverName: (trip as any).driverName, tickets: trip.tickets, holds: trip.holds, isVirtual: true }];
+  }, [trip]);
+  const [slotId, setSlotId] = useState("");
+  useEffect(() => { if (slots.length && !slots.some((s: any) => s.id === slotId)) { setSlotId(slots[0].id); setSelected({}); } }, [slots, slotId]);
+  const slot = slots.find((s: any) => s.id === slotId) ?? slots[0];
+
+  const nowMs = Date.now();
+  // Taken seat labels for the ACTIVE slot = live tickets + unexpired holds.
   const takenLabels = useMemo(() => {
     const dead = ["cancelled", "expired", "refunded"];
     const set = new Set<string>();
-    // Skip tickets whose booking is cancelled/expired (orphan seats).
-    for (const tk of trip?.tickets ?? []) if (!dead.includes((tk as any).booking?.status)) set.add(tk.seatLabel);
-    for (const h of trip?.holds ?? []) set.add(h.seatLabel);
+    for (const tk of slot?.tickets ?? []) if (!dead.includes((tk as any).booking?.status)) set.add(tk.seatLabel);
+    for (const h of slot?.holds ?? []) if (+new Date(h.expiresAt) > nowMs) set.add(h.seatLabel);
     return set;
-  }, [trip]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slot]);
 
-  // Same source as the web booking page: the vehicle's active seat map, with
-  // the trip snapshot as a fallback. Keeps mobile + web layouts identical.
+  // Seats of the active slot (vehicle active map fallback for virtual slots).
   const cells: SeatCell[] = useMemo(() => {
-    if (!trip) return [];
-    const maps = (trip as any).vehicle?.seatMaps ?? [];
+    if (!slot) return [];
+    const maps = (trip as any)?.vehicle?.seatMaps ?? [];
     const active = maps.find((m: any) => m.isActive) ?? maps[0];
-    const layout = Array.isArray(active?.layout)
-      ? active.layout
-      : trip.seatMapSnapshot;
-    return parseSeatLayout(layout, trip.seatsTotal);
-  }, [trip]);
+    const layout = (Array.isArray(slot.seatMapSnapshot) && slot.seatMapSnapshot.length)
+      ? slot.seatMapSnapshot
+      : (Array.isArray(active?.layout) ? active.layout : trip?.seatMapSnapshot);
+    return parseSeatLayout(layout, slot.seatsTotal ?? trip?.seatsTotal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slot]);
 
   const selectedLabels = Object.keys(selected);
 
@@ -113,7 +127,7 @@ export default function TripDetail() {
       // (seat just taken by someone else).
       for (const label of selectedLabels) {
         const holdId = id();
-        const seatKey = seatKeyFor(trip.id, label);
+        const seatKey = seatKeyFor(slot.id, label);
         const chunks: Chunk[] = [];
         const staleId = staleByLabel.get(label);
         if (staleId) chunks.push(db.tx.seatHolds[staleId]!.delete());
@@ -123,7 +137,7 @@ export default function TripDetail() {
             seatLabel: label,
             expiresAt,
             createdAt: Date.now(),
-          }).link({ tripInstance: trip.id, user: user.id }),
+          }).link({ tripInstance: trip.id, user: user.id, ...(slot.isVirtual ? {} : { tripVehicle: slot.id }) }),
         );
         if (trip.cooperative?.id) {
           chunks.push(
@@ -136,6 +150,7 @@ export default function TripDetail() {
 
       setSelection({
         tripInstanceId: trip.id,
+        tripVehicleId: slot.isVirtual ? null : slot.id,
         coopName: trip.coopName,
         routeName: trip.routeName,
         originName: trip.originName,
@@ -272,6 +287,16 @@ export default function TripDetail() {
                     : "Touchez les sièges libres"}
                 </Text>
               </View>
+              {slots.length > 1 && (
+                <View className="mb-3 flex-row flex-wrap gap-1.5">
+                  {slots.map((s: any) => (
+                    <Pressable key={s.id} onPress={() => { setSlotId(s.id); setSelected({}); }}
+                      className={s.id === slot?.id ? "rounded-[4px] bg-ink px-3 py-1.5" : "rounded-[4px] border border-ink/15 px-3 py-1.5"}>
+                      <Text className={s.id === slot?.id ? "font-sans text-xs font-bold text-paper" : "font-sans text-xs font-medium text-ink-soft"}>{s.label}</Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
               <View className="items-center">
                 <SeatMap
                   cells={cells}

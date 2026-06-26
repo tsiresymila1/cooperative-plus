@@ -12,7 +12,7 @@ const SECTION_PERM: Record<string, string | null> = {
   dashboard: null, profile: null,
   bookings: "bookings", customers: "bookings",
   trips: "trips",
-  vehicles: "vehicles",
+  vehicles: "vehicles", models: "vehicles", drivers: "vehicles",
   routes: "routes", destinations: "routes", tags: "trips",
   payments: "payments", reports: "payments",
   team: "team",

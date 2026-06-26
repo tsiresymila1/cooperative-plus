@@ -15,10 +15,11 @@ type InitiateInput = {
   coopId?: string | null;
   holdIds?: string[];
   seatMeta?: SeatMeta[];
+  tripVehicleId?: string | null;
 };
 
 export async function initiatePayment(input: InitiateInput): Promise<{ url: string }> {
-  const { bookingReference, instanceId, coopId, holdIds = [], seatMeta = [] } = input;
+  const { bookingReference, instanceId, coopId, holdIds = [], seatMeta = [], tripVehicleId = null } = input;
 
   const { bookings } = await adminDb.query({
     bookings: {
@@ -84,6 +85,7 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
           coopId: resolvedCoopId,
           holdIds,
           seatMeta,
+          tripVehicleId,
         },
         createdAt: Date.now(),
       })
@@ -170,13 +172,16 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
     const holdIds: string[] = meta?.holdIds ?? [];
     const instanceId: string = meta?.instanceId ?? "";
     const coopId: string | null = meta?.coopId ?? null;
+    const tripVehicleId: string | null = meta?.tripVehicleId ?? null;
+    // Seat slot id: the tripVehicle (multi-vehicle trips) or the trip (legacy).
+    const slotId = tripVehicleId || instanceId;
 
     for (const seat of seatMeta) {
       const ticketId = newId();
       chunks.push(
         adminDb.tx.tickets[ticketId]
           .update({
-            seatKey: `${instanceId}_${seat.label}`,
+            seatKey: `${slotId}_${seat.label}`,
             seatLabel: seat.label,
             passengerName: seat.passengerName,
             price: seat.price,
@@ -187,6 +192,7 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
             booking: booking.id,
             tripInstance: instanceId,
             ...(coopId ? { cooperative: coopId } : {}),
+            ...(tripVehicleId ? { tripVehicle: tripVehicleId } : {}),
           }),
       );
     }

@@ -5,6 +5,8 @@ const admin = "(true in auth.ref('$user.isPlatformAdmin'))";
 // for entities that LINK to a cooperative (vehicles, routes, …)
 const member = "auth.id in data.ref('cooperative.members.user.id')";
 const memberOrAdmin = `(${admin} || ${member})`;
+// tripVehicles reach the cooperative via their tripInstance (no direct cooperative link)
+const tripVehicleMember = `(${admin} || auth.id in data.ref('tripInstance.cooperative.members.user.id'))`;
 // for the cooperatives entity itself (its members are a direct reverse link)
 const selfMember = "auth.id in data.ref('members.user.id')";
 const authed = "auth.id != null";
@@ -39,6 +41,9 @@ const rules = {
   coopRequests: { allow: { view: admin, create: "true", update: admin, delete: admin } },
   routes: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   vehicles: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
+  vehicleModels: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
+  drivers: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
+  tripVehicles: { allow: { view: "true", create: tripVehicleMember, update: tripVehicleMember, delete: tripVehicleMember } },
   seatMaps: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   tripTemplates: { allow: { view: memberOrAdmin, create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   tripInstances: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },

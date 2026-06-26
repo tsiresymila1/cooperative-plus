@@ -19,6 +19,9 @@ type Args = {
   currency: string;
   tagName?: string | null;
   tagColor?: string | null;
+  vehicleLabel?: string | null;
+  vehicleReg?: string | null;
+  driverName?: string | null;
   tickets: TicketLike[];
 };
 
@@ -116,6 +119,8 @@ async function html(a: Args): Promise<string> {
         <div class="qr">${qr}</div>
         <div class="rows">
           ${row("Sièges", seats)}
+          ${row("Véhicule", a.vehicleReg ? `${a.vehicleLabel ?? "Voiture 1"} · ${a.vehicleReg}` : (a.vehicleLabel ?? "Voiture 1"))}
+          ${a.driverName ? row("Chauffeur", a.driverName) : ""}
           ${row("Passagers", String(a.tickets.length))}
           ${row("Total", fmtMoney(a.totalAmount, a.currency))}
           ${row("Statut", label)}

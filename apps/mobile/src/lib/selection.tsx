@@ -4,6 +4,7 @@ export type HeldSeat = { holdId: string; seatLabel: string; seatKey: string };
 
 export type Selection = {
   tripInstanceId: string;
+  tripVehicleId?: string | null; // chosen vehicle slot (null = legacy mono-vehicle trip)
   coopName: string;
   routeName: string;
   originName: string;

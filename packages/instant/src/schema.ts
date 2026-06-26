@@ -89,6 +89,45 @@ const schema = i.schema({
       deletedAt: i.date().optional(),
     }),
 
+    // Vehicle models a coop operates (Hiace 15, Mercedes 18…). Seats known even
+    // when the physical vehicle isn't assigned yet. Free trial: max ~3.
+    vehicleModels: i.entity({
+      name: i.string().indexed(),
+      brand: i.string().optional(),
+      type: i.string().optional(),
+      seatCount: i.number(),
+      layout: i.json().optional(),
+      createdAt: i.date().indexed(),
+      deletedAt: i.date().optional(),
+    }),
+
+    // A vehicle "slot" inside a trip. A trip has 1..N of these. Seats live HERE
+    // (per vehicle), not on the trip. Physical vehicle + driver assigned later.
+    tripVehicles: i.entity({
+      label: i.string(),                 // "Voiture 1"
+      seatMapSnapshot: i.json(),         // copied from the model at creation
+      seatsTotal: i.number(),
+      seatsBooked: i.number().optional(),
+      vehicleName: i.string().optional(),       // snapshot of assigned physical vehicle
+      registrationNo: i.string().optional(),
+      driverName: i.string().optional(),
+      driverPhone: i.string().optional(),
+      createdAt: i.date().indexed(),
+      deletedAt: i.date().optional(),
+    }),
+
+    // Drivers — assignable to trips (often only known ~1h before departure).
+    drivers: i.entity({
+      name: i.string().indexed(),
+      licenseNo: i.string().optional(),
+      phone: i.string().optional(),
+      address: i.string().optional(),
+      avatarUrl: i.string().optional(),
+      status: i.string().indexed(),
+      createdAt: i.date().indexed(),
+      deletedAt: i.date().optional(),
+    }),
+
     seatMaps: i.entity({
       version: i.number(),
       rows: i.number(),
@@ -301,6 +340,16 @@ const schema = i.schema({
     instanceCoop: { forward: { on: "tripInstances", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "tripInstances" } },
     instanceRoute: { forward: { on: "tripInstances", has: "one", label: "route" }, reverse: { on: "routes", has: "many", label: "tripInstances" } },
     instanceVehicle: { forward: { on: "tripInstances", has: "one", label: "vehicle" }, reverse: { on: "vehicles", has: "many", label: "tripInstances" } },
+    instanceDriver: { forward: { on: "tripInstances", has: "one", label: "driver" }, reverse: { on: "drivers", has: "many", label: "tripInstances" } },
+    tripVehicleInstance: { forward: { on: "tripVehicles", has: "one", label: "tripInstance" }, reverse: { on: "tripInstances", has: "many", label: "vehicles" } },
+    tripVehicleModel: { forward: { on: "tripVehicles", has: "one", label: "model" }, reverse: { on: "vehicleModels", has: "many", label: "tripVehicles" } },
+    tripVehicleVehicle: { forward: { on: "tripVehicles", has: "one", label: "vehicle" }, reverse: { on: "vehicles", has: "many", label: "tripVehicles" } },
+    tripVehicleDriver: { forward: { on: "tripVehicles", has: "one", label: "driver" }, reverse: { on: "drivers", has: "many", label: "tripVehicles" } },
+    ticketTripVehicle: { forward: { on: "tickets", has: "one", label: "tripVehicle" }, reverse: { on: "tripVehicles", has: "many", label: "tickets" } },
+    holdTripVehicle: { forward: { on: "seatHolds", has: "one", label: "tripVehicle" }, reverse: { on: "tripVehicles", has: "many", label: "holds" } },
+    modelCoop: { forward: { on: "vehicleModels", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "vehicleModels" } },
+    vehicleModel: { forward: { on: "vehicles", has: "one", label: "model" }, reverse: { on: "vehicleModels", has: "many", label: "vehicles" } },
+    driverCoop: { forward: { on: "drivers", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "drivers" } },
     instanceTemplate: { forward: { on: "tripInstances", has: "one", label: "template" }, reverse: { on: "tripTemplates", has: "many", label: "instances" } },
 
     holdInstance: { forward: { on: "seatHolds", has: "one", label: "tripInstance" }, reverse: { on: "tripInstances", has: "many", label: "holds" } },

@@ -44,6 +44,7 @@
     "expo-status-bar": "~55.0.6",
     "expo-system-ui": "~55.0.18",
     "expo-web-browser": "~55.0.17",
+    "libphonenumber-js": "^1.13.7",
     "lucide-react-native": "^0.577.0",
     "nativewind": "^5.0.0-preview.4",
     "qrcode": "^1.5.4",

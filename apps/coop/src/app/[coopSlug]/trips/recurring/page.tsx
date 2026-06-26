@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,9 +11,11 @@ import {
   Repeat,
   Clock,
   Plus,
+  X,
   Trash2,
   CalendarX,
   CalendarDays,
+  IdCard,
 } from "lucide-react";
 import {
   DashboardShell,
@@ -40,6 +42,7 @@ import {
   SelectValue,
   SelectContent,
   SelectItem,
+  Combobox,
   Input,
   DatePicker,
   TimePicker,
@@ -47,6 +50,12 @@ import {
 
 const dKey = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+const addDays = (s: string, n: number) => {
+  const d = new Date(`${s}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return dKey(d);
+};
 
 // 0 = Dim … 6 = Sam (matches Date.getDay())
 const weekdayOf = (dateStr: string) => new Date(`${dateStr}T00:00:00`).getDay();
@@ -78,29 +87,43 @@ export default function RecurringTripPage() {
   const confirm = useConfirm();
   const currency = coop.currency ?? "MGA";
   const today = todayISO();
+  const tomorrow = addDays(today, 1);
 
   const { data } = db.useQuery({
     routes: { $: { where: { "cooperative.id": coopId } }, origin: {}, destination: {} },
-    vehicles: { $: { where: { "cooperative.id": coopId } }, seatMaps: {} },
+    vehicleModels: { $: { where: { "cooperative.id": coopId } } },
+    drivers: { $: { where: { "cooperative.id": coopId } } },
+    vehicles: { $: { where: { "cooperative.id": coopId } }, model: {} },
     tags: { $: {}, cooperative: {} },
   });
   const routes = (data?.routes ?? []).filter(notDeleted);
+  const models = (data?.vehicleModels ?? []).filter(notDeleted);
+  const drivers = (data?.drivers ?? []).filter(notDeleted);
   const vehicles = (data?.vehicles ?? []).filter(notDeleted);
   const tags = (data?.tags ?? []).filter(notDeleted).filter((t: any) => t.isGlobal || t.cooperative?.id === coopId);
+  const seatsOf = (m: any) => Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
 
-  // 01 Trajet & véhicule
+  // 01 Trajet & véhicules
+  type SlotInput = { model: string; driver: string; vehicle: string };
   const [routeId, setRouteId] = useState("");
-  const [vehicleId, setVehicleId] = useState("");
+  const [slots, setSlots] = useState<SlotInput[]>([{ model: "", driver: "", vehicle: "" }]);
   const [tagId, setTagId] = useState("");
   const [price, setPrice] = useState("");
 
   // 02 Récurrence
   const [freq, setFreq] = useState<Freq>("weekly");
   const [activeWeekdays, setActiveWeekdays] = useState<number[]>([1, 2, 3, 4, 5]);
-  const [startDate, setStartDate] = useState(today);
+  const [startDate, setStartDate] = useState(tomorrow);
   const [endDate, setEndDate] = useState("");
-  const [exactPick, setExactPick] = useState("");
+  const [exactPick, setExactPick] = useState(tomorrow);
   const [exactDates, setExactDates] = useState<string[]>([]);
+
+  // End date auto-follows the start + frequency (daily → same day, weekly → +7).
+  // Re-derived when freq/start change; the user can still override afterwards.
+  useEffect(() => {
+    if (freq === "dates") return;
+    setEndDate(addDays(startDate, freq === "weekly" ? 7 : 0));
+  }, [freq, startDate]);
 
   // 03 Heures de départ
   const [timeDraft, setTimeDraft] = useState("06:00");
@@ -114,7 +137,11 @@ export default function RecurringTripPage() {
   const [saving, setSaving] = useState(false);
 
   const route = routes.find((r: any) => r.id === routeId);
-  const vehicle = vehicles.find((v: any) => v.id === vehicleId);
+  const chosen = slots.map((s) => models.find((m: any) => m.id === s.model)).filter(Boolean) as any[];
+  const totalSeats = chosen.reduce((s, m) => s + seatsOf(m), 0);
+  const setSlot = (i: number, patch: Partial<SlotInput>) => setSlots((s) => s.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const addSlot = () => setSlots((s) => [...s, { model: "", driver: "", vehicle: "" }]);
+  const removeSlot = (i: number) => setSlots((s) => s.filter((_, j) => j !== i));
 
   const toggle = (arr: number[], v: number, set: (n: number[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -172,10 +199,8 @@ export default function RecurringTripPage() {
   const total = previewRows.length;
 
   const submit = async () => {
-    if (!route || !vehicle) {
-      toast.error("Sélectionnez un itinéraire et un véhicule");
-      return;
-    }
+    if (!route) { toast.error("Sélectionnez un itinéraire"); return; }
+    if (chosen.length === 0) { toast.error("Ajoutez au moins un véhicule (modèle)"); return; }
     if (times.length === 0) {
       toast.error("Ajoutez au moins une heure de départ");
       return;
@@ -192,21 +217,13 @@ export default function RecurringTripPage() {
     if (
       !(await confirm({
         title: `Créer ${total} trajets ?`,
-        message: `${route.origin?.name ?? ""} → ${route.destination?.name ?? ""} · ${vehicle.name}`,
+        message: `${route.origin?.name ?? ""} → ${route.destination?.name ?? ""} · ${chosen.length} véhicule(s) · ${totalSeats} places`,
         confirmLabel: `Créer ${total} trajets`,
       }))
     )
       return;
 
-    const activeMap =
-      (vehicle.seatMaps ?? []).find((m: any) => m.isActive) ?? (vehicle.seatMaps ?? [])[0];
-    const layout = activeMap?.layout ?? [];
-    const seatsTotal =
-      activeMap && Array.isArray(layout)
-        ? layout.filter((c: any) => c.type === "seat").length
-        : vehicle.seatCount ?? 0;
-    const seatMapSnapshot = activeMap && Array.isArray(layout) ? layout : [];
-
+    const first = chosen[0];
     const priceVal = price ? toMoney(price) : route.basePrice;
     const now = Date.now();
 
@@ -227,29 +244,56 @@ export default function RecurringTripPage() {
           isActive: true,
           createdAt: now,
         })
-        .link({ cooperative: coopId, route: routeId, vehicle: vehicleId });
+        .link({ cooperative: coopId, route: routeId });
 
-      // tripInstances
-      const instanceTxs = previewRows.map((row) =>
-        db.tx.tripInstances[id()]
-          .update({
-            originName: route.origin?.name ?? "",
-            destName: route.destination?.name ?? "",
-            departDate: row.date,
-            departureAt: combineDateTime(row.date, row.time),
-            routeName: route.name,
-            coopName: coop.displayName,
-            vehicleName: vehicle.name,
-            status: "scheduled",
-            price: priceVal,
-            currency,
-            seatMapSnapshot,
-            seatsTotal,
-            seatsBooked: 0,
-            createdAt: now,
-          })
-          .link({ cooperative: coopId, route: routeId, vehicle: vehicleId, ...(tagId ? { tag: tagId } : {}) }),
-      );
+      // tripInstances (+ one tripVehicle slot per chosen model)
+      const instanceTxs = previewRows.flatMap((row) => {
+        const tId = id();
+        const txs: any[] = [
+          db.tx.tripInstances[tId]
+            .update({
+              originName: route.origin?.name ?? "",
+              destName: route.destination?.name ?? "",
+              departDate: row.date,
+              departureAt: combineDateTime(row.date, row.time),
+              routeName: route.name,
+              coopName: coop.displayName,
+              vehicleName: chosen.length > 1 ? `${chosen.length} véhicules` : first.name,
+              status: "scheduled",
+              price: priceVal,
+              currency,
+              seatMapSnapshot: first.layout ?? [],
+              seatsTotal: totalSeats,
+              seatsBooked: 0,
+              createdAt: now,
+            })
+            .link({ cooperative: coopId, route: routeId, ...(tagId ? { tag: tagId } : {}) }),
+        ];
+        let vi = 0;
+        slots.forEach((sl) => {
+          const m = models.find((x: any) => x.id === sl.model);
+          if (!m) return;
+          vi += 1;
+          const drv = drivers.find((d: any) => d.id === sl.driver);
+          const veh = vehicles.find((v: any) => v.id === sl.vehicle);
+          txs.push(
+            db.tx.tripVehicles[id()]
+              .update({
+                label: `Voiture ${vi}`,
+                seatMapSnapshot: m.layout ?? [],
+                seatsTotal: seatsOf(m),
+                seatsBooked: 0,
+                vehicleName: veh?.name ?? m.name,
+                registrationNo: veh?.registrationNo ?? null,
+                driverName: drv?.name ?? null,
+                driverPhone: drv?.phone ?? null,
+                createdAt: now,
+              })
+              .link({ tripInstance: tId, model: m.id, ...(drv ? { driver: drv.id } : {}), ...(veh ? { vehicle: veh.id } : {}) }),
+          );
+        });
+        return txs;
+      });
 
       // Batch ≤ 50 steps each (template counts as a step in the first chunk)
       const allTxs = [templateTx, ...instanceTxs];
@@ -313,22 +357,50 @@ export default function RecurringTripPage() {
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Véhicule">
-              <Select value={vehicleId} onValueChange={setVehicleId}>
-                <SelectTrigger>
-                  <span className="inline-flex items-center gap-2">
-                    <Bus size={15} className="text-ink-soft/60" />
-                    <SelectValue placeholder="Sélectionner…" />
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {vehicles.map((v: any) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.name} ({v.registrationNo})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Field label="Véhicules" hint="Modèle(s) appliqués à chaque trajet généré. Chauffeur et immatriculation optionnels.">
+              <div className="grid gap-3">
+                {slots.map((s, i) => {
+                  const slotVehicles = vehicles.filter((v: any) => !s.model || (v.model as any)?.id === s.model);
+                  return (
+                    <div key={i} className="rounded-[--radius] border border-ink/8 p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft/55">Voiture {i + 1}</span>
+                        {slots.length > 1 && <Button variant="ghost" size="sm" className="text-danger hover:bg-danger/10" onClick={() => removeSlot(i)}><X size={14} /></Button>}
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-3">
+                        <Select value={s.model} onValueChange={(v) => setSlot(i, { model: v, vehicle: "" })}>
+                          <SelectTrigger>
+                            <span className="inline-flex items-center gap-2"><Bus size={15} className="text-ink-soft/60" /><SelectValue placeholder="Modèle…" /></span>
+                          </SelectTrigger>
+                          <SelectContent>
+                            {models.map((m: any) => <SelectItem key={m.id} value={m.id}>{m.name} · {seatsOf(m)} places</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Combobox
+                          value={s.driver}
+                          onValueChange={(v) => setSlot(i, { driver: v })}
+                          options={[{ value: "", label: "— Chauffeur (option) —" }, ...drivers.map((d: any) => ({ value: d.id, label: d.name, hint: d.phone }))]}
+                          placeholder="Chauffeur" searchPlaceholder="Rechercher chauffeur…"
+                          icon={<IdCard size={15} className="text-ink-soft/60" />}
+                        />
+                        <Combobox
+                          value={s.vehicle}
+                          onValueChange={(v) => setSlot(i, { vehicle: v })}
+                          disabled={!s.model}
+                          options={[{ value: "", label: "— Véhicule (option) —" }, ...slotVehicles.map((v: any) => ({ value: v.id, label: v.name, hint: v.registrationNo }))]}
+                          placeholder="Immatriculation" searchPlaceholder="Rechercher véhicule…"
+                          icon={<Bus size={15} className="text-ink-soft/60" />}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+                <div className="flex items-center justify-between">
+                  <Button variant="outline" size="sm" onClick={addSlot}><Plus size={14} /> Ajouter un véhicule</Button>
+                  {totalSeats > 0 && <Badge tone="neutral">{totalSeats} places</Badge>}
+                </div>
+                {models.length === 0 && <p className="text-xs text-warning">Aucun modèle. Créez-en dans <Link href={`/${slug}/models`} className="underline">Modèles</Link>.</p>}
+              </div>
             </Field>
             <Field label="Tag (optionnel)" hint="Appliqué à tous les trajets générés.">
               <Select value={tagId || "none"} onValueChange={(v) => setTagId(v === "none" ? "" : v)}>

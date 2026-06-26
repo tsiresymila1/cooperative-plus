@@ -1,4 +1,4 @@
-import { Bus, CalendarClock, LayoutDashboard, MapPin, QrCode, Route, Settings, Tag, Ticket, Users, UserRound, BarChart3, Wallet } from "lucide-react";
+import { Bus, CalendarClock, CarFront, IdCard, LayoutDashboard, MapPin, QrCode, Route, Settings, Tag, Ticket, Users, UserRound, BarChart3, Wallet } from "lucide-react";
 import type { NavItem } from "./dashboard-shell";
 
 type Access = { role?: string; permissions?: string[]; isPlatformAdmin?: boolean };
@@ -10,6 +10,8 @@ const NAV_PERM: Record<string, string | null> = {
   scan: "bookings",
   trips: "trips",
   vehicles: "vehicles",
+  models: "vehicles",
+  drivers: "vehicles",
   routes: "routes",
   destinations: "routes",
   tags: "trips",
@@ -28,6 +30,8 @@ export function coopNav(slug: string, active: string, access?: Access): NavItem[
     { key: "scan", href: `${b}/scan`, label: "Embarquement", icon: <QrCode size={18} /> },
     { key: "trips", href: `${b}/trips`, label: "Trajets", icon: <CalendarClock size={18} /> },
     { key: "vehicles", href: `${b}/vehicles`, label: "Véhicules", icon: <Bus size={18} /> },
+    { key: "models", href: `${b}/models`, label: "Modèles", icon: <CarFront size={18} /> },
+    { key: "drivers", href: `${b}/drivers`, label: "Chauffeurs", icon: <IdCard size={18} /> },
     { key: "routes", href: `${b}/routes`, label: "Itinéraires", icon: <Route size={18} /> },
     { key: "destinations", href: `${b}/destinations`, label: "Destinations", icon: <MapPin size={18} /> },
     { key: "tags", href: `${b}/tags`, label: "Tags trajets", icon: <Tag size={18} /> },

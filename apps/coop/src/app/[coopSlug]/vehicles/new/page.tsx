@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight, Grid3x3 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Bus } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
@@ -13,13 +13,10 @@ import {
   FormSection,
   Field,
   Textarea,
+  Badge,
   toast,
   vehicleStatus,
-  vehicleTypeLabel,
-  toInt,
-  SeatEditor,
-  buildLayout,
-  type Cell,
+  notDeleted,
 } from "@cp/ui";
 import {
   Select,
@@ -30,51 +27,44 @@ import {
   Input,
 } from "@cp/ui/shadcn";
 
-const TYPES = ["minibus_15", "minibus_18", "bus_30", "bus_50", "taxi_brousse"];
 const STATUSES = ["active", "maintenance", "inactive"];
+const seatsOf = (m: any) =>
+  Array.isArray(m?.layout) ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0);
 
 export default function NewVehiclePage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
 
+  const { data } = db.useQuery({ vehicleModels: { $: { where: { "cooperative.id": coopId } } } });
+  const models = (data?.vehicleModels ?? []).filter(notDeleted);
+
   const [name, setName] = useState("");
   const [reg, setReg] = useState("");
-  const [type, setType] = useState("minibus_18");
+  const [modelId, setModelId] = useState("");
   const [status, setStatus] = useState("active");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // seat map
-  const [layout, setLayout] = useState<Cell[]>(() => buildLayout(5, 4));
-  const [rows, setRows] = useState("5");
-  const [cols, setCols] = useState("4");
-  const seats = layout.filter((c) => c.type === "seat").length;
-  const regen = () => setLayout(buildLayout(toInt(rows, 5), toInt(cols, 4)));
+  const model = models.find((m: any) => m.id === modelId);
 
   const submit = async () => {
-    if (!name || !reg) {
-      toast.error("Nom et immatriculation requis");
-      return;
-    }
+    if (!name || !reg) { toast.error("Nom et immatriculation requis"); return; }
+    if (!model) { toast.error("Sélectionnez un modèle"); return; }
     setSaving(true);
     try {
-      const vehicleId = id();
-      await db.transact([
-        db.tx.vehicles[vehicleId]
+      await db.transact(
+        db.tx.vehicles[id()]
           .update({
             name,
             registrationNo: reg,
-            type,
-            seatCount: seats,
+            type: model.type ?? "minibus_18",
+            seatCount: seatsOf(model),
             status,
             notes,
             createdAt: Date.now(),
           })
-          .link({ cooperative: coopId }),
-        db.tx.seatMaps[id()]
-          .update({ version: 1, rows: toInt(rows, 5), cols: toInt(cols, 4), layout, isActive: true, createdAt: Date.now() })
-          .link({ vehicle: vehicleId, cooperative: coopId }),
-      ]);
+          .link({ cooperative: coopId, model: model.id }),
+      );
       toast.success("Véhicule créé");
       router.push(`/${slug}/vehicles`);
     } catch (e: any) {
@@ -107,67 +97,42 @@ export default function NewVehiclePage() {
       }
     >
       <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Identité" description="Nom, immatriculation et type du véhicule.">
-        <div className="grid gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Nom">
-              <Input value={name} onChange={(e) => setName(e.target.value)} />
-            </Field>
-            <Field label="Immatriculation">
-              <Input value={reg} onChange={(e) => setReg(e.target.value)} />
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field label="Type">
-              <Select value={type} onValueChange={setType}>
+        <FormSection index="01" title="Identité" description="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
+          <div className="grid gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Nom">
+                <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Sprinter bleu" />
+              </Field>
+              <Field label="Immatriculation">
+                <Input value={reg} onChange={(e) => setReg(e.target.value)} placeholder="1234 TAA" />
+              </Field>
+            </div>
+            <Field label="Modèle" hint={model ? `${seatsOf(model)} places` : "Le modèle détermine le nombre de places et le plan de sièges."}>
+              <Select value={modelId} onValueChange={setModelId}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <span className="inline-flex items-center gap-2"><Bus size={15} className="text-ink-soft/60" /><SelectValue placeholder="Choisir un modèle…" /></span>
                 </SelectTrigger>
                 <SelectContent>
-                  {TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>
-                      {vehicleTypeLabel[t]}
-                    </SelectItem>
-                  ))}
+                  {models.map((m: any) => <SelectItem key={m.id} value={m.id}>{m.name} · {seatsOf(m)} places</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
+            {models.length === 0 && (
+              <p className="text-xs text-warning">Aucun modèle. Créez-en d&apos;abord dans <Link href={`/${slug}/models`} className="underline">Modèles</Link>.</p>
+            )}
             <Field label="Statut">
               <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {STATUSES.map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {vehicleStatus[s]?.label ?? s}
-                    </SelectItem>
-                  ))}
+                  {STATUSES.map((s) => <SelectItem key={s} value={s}>{vehicleStatus[s]?.label ?? s}</SelectItem>)}
                 </SelectContent>
               </Select>
             </Field>
-          </div>
-        </div>
-        </FormSection>
-
-        <FormSection index="02" title="Plan de sièges" description="Définissez la grille puis cliquez les cases pour changer leur type.">
-          <div className="grid gap-4">
-            <div className="flex items-end gap-3">
-              <Field label="Rangées">
-                <Input inputMode="numeric" value={rows} onChange={(e) => setRows(e.target.value)} className="w-24" />
-              </Field>
-              <Field label="Colonnes">
-                <Input inputMode="numeric" value={cols} onChange={(e) => setCols(e.target.value)} className="w-24" />
-              </Field>
-              <Button size="sm" variant="outline" type="button" onClick={regen}>
-                <Grid3x3 size={15} /> Régénérer
-              </Button>
-            </div>
-            {layout.length > 0 && <SeatEditor layout={layout} onChange={setLayout} />}
+            {model && <div><Badge tone="neutral">{seatsOf(model)} places · {model.name}</Badge></div>}
           </div>
         </FormSection>
 
-        <FormSection index="03" title="Notes" description="Informations internes.">
+        <FormSection index="02" title="Notes" description="Informations internes.">
           <Field label="Notes">
             <Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
           </Field>
@@ -175,13 +140,9 @@ export default function NewVehiclePage() {
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/vehicles`}>
-            <Button variant="outline" size="sm">
-              Annuler
-            </Button>
+            <Button variant="outline" size="sm">Annuler</Button>
           </Link>
-          <Button size="sm" onClick={submit} disabled={saving}>
-            {saving ? "…" : "Créer"}
-          </Button>
+          <Button size="sm" onClick={submit} disabled={saving}>{saving ? "…" : "Créer"}</Button>
         </div>
       </div>
     </DashboardShell>
