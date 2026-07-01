@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button, Logo } from "@cp/ui";
+import { Button } from "@cp/ui";
 import { Field, Input } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db } from "@cp/ui";
@@ -43,7 +43,6 @@ export default function SignUp() {
 
   return (
     <div>
-      <div className="mb-8 lg:hidden"><Logo /></div>
       <h1 className="font-display text-3xl font-bold">{step === "info" ? "Créer un compte" : "Vérifiez votre email"}</h1>
       <p className="mt-1 text-ink-soft">{step === "info" ? "2 minutes pour réserver votre premier trajet." : `Code envoyé à ${email}.`}</p>
 

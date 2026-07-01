@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button, Logo } from "@cp/ui";
+import { Button } from "@cp/ui";
 import { Field, Input } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db } from "@cp/ui";
@@ -49,7 +49,6 @@ function SignIn() {
 
   return (
     <div>
-      <div className="mb-8 lg:hidden"><Logo width={220} height={50} /></div>
       <h1 className="font-display text-3xl font-bold">{step === "email" ? "Bon retour" : "Entrez le code"}</h1>
       <p className="mt-1 text-ink-soft">
         {step === "email" ? "Connectez-vous avec votre email — pas de mot de passe." : `Code à 6 chiffres envoyé à ${email}.`}
