@@ -1,8 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Ticket, X } from "lucide-react";
-import { Badge, Button, Card, CoopLogo, TagBadge, useConfirm, toast } from "@cp/ui";
+import { ChevronLeft, ChevronRight, Search, Ticket, X } from "lucide-react";
+import { Badge, Button, Card, CoopLogo, Input, TagBadge, useConfirm, toast } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
 
@@ -60,15 +60,70 @@ export default function Bookings() {
         }
       : null,
   );
-  const bookings = data?.bookings ?? [];
+  const all = data?.bookings ?? [];
+  const [tab, setTab] = useState<"active" | "expired">("active");
+  const [q, setQ] = useState("");
   const [page, setPage] = useState(0);
+
+  const today = new Date().toISOString().slice(0, 10);
+  const isExpired = (b: any) => {
+    if (["cancelled", "expired", "refunded", "no_show"].includes(b.status)) return true;
+    const ti = b.tripInstance;
+    if (!ti) return false;
+    const dd = ti.departDate ?? (ti.departureAt ? new Date(ti.departureAt).toISOString().slice(0, 10) : null);
+    return dd ? dd < today : false;
+  };
+
+  const bookings = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return all
+      .filter((b: any) => (tab === "expired" ? isExpired(b) : !isExpired(b)))
+      .filter((b: any) => {
+        if (!term) return true;
+        const ti = b.tripInstance;
+        return [b.reference, ti?.coopName, ti?.originName, ti?.destName]
+          .some((v: any) => String(v ?? "").toLowerCase().includes(term));
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all, tab, q, today]);
+
+  const counts = useMemo(() => {
+    let active = 0, expired = 0;
+    for (const b of all) (isExpired(b) ? expired++ : active++);
+    return { active, expired };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [all, today]);
+
   const pageCount = Math.max(1, Math.ceil(bookings.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount - 1);
   const shown = bookings.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
+  const TABS = [
+    { key: "active" as const, label: "Actives", n: counts.active },
+    { key: "expired" as const, label: "Expirées", n: counts.expired },
+  ];
+
   return (
     <div className=" space-y-3">
       <h1 className="font-display text-2xl font-bold">Mes réservations</h1>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="inline-flex rounded-[--radius] bg-ink/5 p-1">
+          {TABS.map((t) => (
+            <button key={t.key} onClick={() => { setTab(t.key); setPage(0); }}
+              className={t.key === tab
+                ? "rounded-[calc(var(--radius)-2px)] bg-paper px-4 py-1.5 text-sm font-semibold text-ink shadow-sm"
+                : "rounded-[calc(var(--radius)-2px)] px-4 py-1.5 text-sm font-medium text-ink-soft hover:text-ink"}>
+              {t.label} <span className="ml-1 text-xs text-ink-soft/60">{t.n}</span>
+            </button>
+          ))}
+        </div>
+        <div className="relative sm:w-64">
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/50" />
+          <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="Rechercher…" className="pl-9" />
+        </div>
+      </div>
+
       {isLoading ? (
         [0, 1].map((i) => (
           <div key={i} className="h-24 animate-pulse rounded-2xl bg-ink/5" />
@@ -76,10 +131,14 @@ export default function Bookings() {
       ) : bookings.length === 0 ? (
         <Card className="flex flex-col items-center gap-3 p-12 text-center">
           <Ticket className="text-ink-soft/40" />
-          <p className="font-display text-lg font-bold">Aucune réservation</p>
-          <Link href="/search">
-            <Button size="sm">Réserver un trajet</Button>
-          </Link>
+          <p className="font-display text-lg font-bold">
+            {all.length === 0 ? "Aucune réservation" : q ? "Aucun résultat" : tab === "expired" ? "Aucune réservation expirée" : "Aucune réservation active"}
+          </p>
+          {all.length === 0 && (
+            <Link href="/search">
+              <Button size="sm">Réserver un trajet</Button>
+            </Link>
+          )}
         </Card>
       ) : (
         <div className="gap-2 flex flex-col">
