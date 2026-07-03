@@ -11,7 +11,10 @@
     "backgroundColor": "#ffffff",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "ts.mila.cooperativeplus"
+      "bundleIdentifier": "ts.mila.cooperativeplus",
+      "infoPlist": {
+        "AppStoreID": "REPLACE_WITH_APP_STORE_ID"
+      }
     },
     "android": {
       "package": "ts.mila.cooperativeplus",
