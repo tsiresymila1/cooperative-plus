@@ -19,6 +19,7 @@ import { PortalHost } from "@rn-primitives/portal";
 import { AuthProvider } from "@/lib/auth";
 import { SelectionProvider } from "@/lib/selection";
 import { setupNotifications } from "@/lib/notifications";
+import { checkForAppUpdate } from "@/lib/in-app-updates";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,8 @@ export default function RootLayout() {
     });
     // Notification channel + permission (local departure reminders).
     setupNotifications().catch(() => {});
+    // Prompt an app-store update if one is available (store builds only).
+    checkForAppUpdate();
   }, []);
 
   // First-launch onboarding gate.
