@@ -1,10 +1,11 @@
 import { adminDb, id as newId } from "@cp/instant/admin";
-import { decrypt, isEncrypted } from "@cp/crypto";
 import { nextPeriodEnd } from "@cp/instant/subscription";
 import { HttpError } from "../errors";
 
 const PAPI_URL = "https://app.papi.mg/dashboard/api/payment-links";
-const PAPI_FALLBACK_KEY = process.env.PAPI_API_KEY;
+// Subscription = coop pays the PLATFORM, so always the platform PAPI account —
+// never the coop's own key (that one collects the coop's rider payments).
+const PLATFORM_PAPI_KEY = process.env.PAPI_API_KEY;
 const TEST_MODE = process.env.PAPI_TEST_MODE === "true";
 
 /**
@@ -19,8 +20,10 @@ export async function initiateSubscriptionPayment(input: {
 }): Promise<{ url: string }> {
   const { coopId, planId, baseUrl } = input;
 
+  if (!PLATFORM_PAPI_KEY) throw new HttpError(422, "Paiement plateforme non configuré (PAPI_API_KEY)");
+
   const { cooperatives } = await adminDb.query({
-    cooperatives: { $: { where: { id: coopId } }, secrets: {}, subscriptions: {} },
+    cooperatives: { $: { where: { id: coopId } }, subscriptions: {} },
   });
   const coop = cooperatives?.[0];
   if (!coop) throw new HttpError(404, "Coopérative introuvable");
@@ -30,9 +33,7 @@ export async function initiateSubscriptionPayment(input: {
   if (!plan) throw new HttpError(404, "Plan introuvable");
   if (!plan.priceAmount || plan.priceAmount <= 0) throw new HttpError(422, "Ce plan est gratuit");
 
-  const rawKey = (coop.secrets as any)?.papiApiKey ?? PAPI_FALLBACK_KEY;
-  const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
-  if (!papiApiKey) throw new HttpError(422, "Paiement en ligne non configuré");
+  const papiApiKey = PLATFORM_PAPI_KEY;
 
   const reference = `SUB-${coopId}-${Date.now()}`;
   const sub = (coop.subscriptions ?? [])[0];
