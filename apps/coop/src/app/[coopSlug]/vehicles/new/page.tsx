@@ -19,6 +19,7 @@ import {
   toast,
   vehicleStatus,
   notDeleted,
+  useCoopPlan,
 } from "@cp/ui";
 import {
   Select,
@@ -48,6 +49,7 @@ export default function NewVehiclePage() {
 
   const { data } = db.useQuery({ vehicleModels: { $: { where: { "cooperative.id": coopId } } } });
   const models = (data?.vehicleModels ?? []).filter(notDeleted);
+  const { overLimit, max } = useCoopPlan(coopId);
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -61,6 +63,7 @@ export default function NewVehiclePage() {
   const submit = handleSubmit(async (v) => {
     const m = models.find((x: any) => x.id === v.modelId);
     if (!m) return;
+    if (overLimit("vehicles")) { toast.error(`Limite du plan atteinte (${max.vehicles} véhicules). Changez de plan dans Abonnement.`); return; }
     try {
       await db.transact(
         db.tx.vehicles[id()]

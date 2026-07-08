@@ -7,6 +7,7 @@
  * vehicles, routes and upcoming trip instances people can actually book.
  */
 import { adminDb } from "./admin";
+import { PLAN_DEFS } from "./subscription";
 
 const tx = adminDb.tx;
 const now = Date.now();
@@ -50,8 +51,7 @@ async function main() {
   // base entities
   const base = [
     ...DESTS.map(([name, region, pop], i) => tx.destinations[uid("0a", i + 1)].update({ name, slug: name.toLowerCase().replace(/\s+/g, "-"), region, country: "MG", isPopular: pop, isGlobal: true, createdAt: now })),
-    tx.plans[uid("0b", 1)].update({ code: "growth", name: "Growth", priceAmount: 120000, currency: "MGA", interval: "month", maxVehicles: 8, maxRoutes: 15, maxAssistants: 5, maxTripsMonth: 1500, transactionFeeBps: 200, isActive: true }),
-    tx.plans[uid("0b", 2)].update({ code: "pro", name: "Pro", priceAmount: 280000, currency: "MGA", interval: "month", maxVehicles: 25, maxRoutes: 999, maxAssistants: 15, maxTripsMonth: 10000, transactionFeeBps: 100, isActive: true }),
+    ...PLAN_DEFS.map((p) => tx.plans[p.id]!.update({ code: p.code, name: p.name, priceAmount: p.priceAmount, currency: "MGA", interval: p.interval, maxVehicles: p.maxVehicles, maxRoutes: p.maxRoutes, maxAssistants: p.maxAssistants, maxTripsMonth: p.maxTripsMonth, transactionFeeBps: p.transactionFeeBps, isActive: true })),
     ...COOPS.map((c) => tx.cooperatives[c.id].update({ slug: c.slug, legalName: `${c.name} Coopérative`, displayName: c.name, currency: "MGA", timezone: "Indian/Antananarivo", subscriptionStatus: c.status, cutoffHours: 2, refundPct: 50, paymentMethods: ["cash", "mobile_money", "card"], createdAt: now })),
     // enable all global destinations for each cooperative
     ...COOPS.map((c) => tx.cooperatives[c.id].link({ enabledDestinations: DESTS.map((_, i) => uid("0a", i + 1)) })),

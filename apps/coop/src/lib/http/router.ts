@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { authRoute } from "./routes/auth";
 import { teamRoute } from "./routes/team";
 import { secretsRoute } from "./routes/secrets";
+import { subscriptionRoute } from "./routes/subscription";
 import { HttpError } from "./errors";
 
 /**
@@ -20,7 +21,8 @@ const app = new Hono()
   })
   .route("/auth", authRoute)
   .route("/team", teamRoute)
-  .route("/secrets", secretsRoute);
+  .route("/secrets", secretsRoute)
+  .route("/subscription", subscriptionRoute);
 
 export { app };
 export type AppType = typeof app;

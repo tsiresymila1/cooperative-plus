@@ -5,7 +5,8 @@ import { useCreateCoopAccount, usePurgeCooperative, useDeleteCooperative } from 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowLeft, ChevronRight, Eraser, Power, Trash2, UserPlus } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronRight, CreditCard, Eraser, Power, Trash2, UserPlus } from "lucide-react";
+import { nextPeriodEnd } from "@cp/instant/subscription";
 import {
   adminNav,
   db,
@@ -76,13 +77,13 @@ export default function EditCooperativePage({ params }: { params: Promise<{ id: 
         )}
         <InfoSections coop={coop} plans={plans} sub={sub} />
         <AccountsSection coopId={id} members={coop.members ?? []} />
-        <DangerZone coop={coop} />
+        <DangerZone coop={coop} sub={sub} />
       </div>
     </Shell>
   );
 }
 
-function DangerZone({ coop }: { coop: any }) {
+function DangerZone({ coop, sub }: { coop: any; sub: any }) {
   const confirm = useConfirm();
   const router = useRouter();
   const purgeCoop = usePurgeCooperative();
@@ -121,8 +122,35 @@ function DangerZone({ coop }: { coop: any }) {
     if (!ok) return;
     setBusy(true);
     try {
-      await db.transact(tx.cooperatives[coop.id].update({ subscriptionStatus: suspended ? "active" : "suspended" }));
+      const next = suspended ? "active" : "suspended";
+      const txs: any[] = [tx.cooperatives[coop.id].update({ subscriptionStatus: next })];
+      if (sub?.id) txs.push(tx.subscriptions[sub.id].update({ status: next }));
+      await db.transact(txs);
       toast.success(suspended ? "Coopérative réactivée." : "Coopérative suspendue.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Échec.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Mark the subscription paid: activate + extend the period by one interval.
+  async function markPaid() {
+    const ok = await confirm({
+      title: "Marquer l'abonnement comme payé ?",
+      message: "Le statut passe à « actif » et la période est prolongée d'un mois.",
+      confirmLabel: "Marquer payé",
+    });
+    if (!ok) return;
+    setBusy(true);
+    try {
+      const now = Date.now();
+      const end = nextPeriodEnd(sub?.currentPeriodEnd ?? null, now, sub?.plan?.interval ?? "month");
+      const txs: any[] = [tx.cooperatives[coop.id].update({ subscriptionStatus: "active" })];
+      if (sub?.id) txs.push(tx.subscriptions[sub.id].update({ status: "active", currentPeriodEnd: end }));
+      else txs.push(tx.subscriptions[newId()].update({ status: "active", currentPeriodEnd: end, createdAt: now }).link({ cooperative: coop.id }));
+      await db.transact(txs);
+      toast.success("Paiement enregistré, période prolongée d'un mois.");
     } catch (e: any) {
       toast.error(e?.message ?? "Échec.");
     } finally {
@@ -153,6 +181,15 @@ function DangerZone({ coop }: { coop: any }) {
   return (
     <FormSection index="03" title="Zone de danger" description="Suspendre l'accès ou supprimer définitivement la coopérative.">
       <div className="divide-y divide-ink/8 rounded-md border border-danger/25">
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-ink">Marquer l'abonnement payé</p>
+            <p className="mt-0.5 text-xs text-ink-soft">Encaissement manuel (virement / espèces) — active l'abonnement et prolonge la période d'un mois.</p>
+          </div>
+          <Button variant="outline" size="sm" onClick={markPaid} disabled={busy} className="shrink-0">
+            <CreditCard size={15} /> Marquer payé
+          </Button>
+        </div>
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-semibold text-ink">{suspended ? "Réactiver la coopérative" : "Suspendre la coopérative"}</p>

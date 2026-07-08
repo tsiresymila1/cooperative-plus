@@ -8,11 +8,13 @@
     "./schema": "./src/schema.ts",
     "./perms": "./src/perms.ts",
     "./admin": "./src/admin.ts",
-    "./password": "./src/password.ts"
+    "./password": "./src/password.ts",
+    "./subscription": "./src/subscription.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "seed": "tsx src/seed.ts",
+    "seed-plans": "tsx src/seed-plans.ts",
     "make-admin": "tsx src/make-admin.ts",
     "make-owner": "tsx src/make-owner.ts",
     "grant": "tsx src/grant.ts",

@@ -23,3 +23,5 @@ export * from "./lib/db";
 export * from "./lib/coop";
 export * from "./lib/slots";
 export * from "./lib/phone";
+export * from "./lib/subscription-client";
+export * from "./lib/use-payment-popup";
