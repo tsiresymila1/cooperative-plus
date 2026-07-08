@@ -18,6 +18,7 @@ import {
   toast,
   routeStatus,
   notDeleted,
+  useCoopPlan,
   toMoney,
   toInt,
 } from "@cp/ui";
@@ -47,6 +48,7 @@ export default function NewRoutePage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
+  const { overLimit, max } = useCoopPlan(coopId);
 
   const { data } = db.useQuery({
     destinations: { $: { where: { "cooperative.id": coopId } } },
@@ -86,6 +88,7 @@ export default function NewRoutePage() {
     const origin = destinations.find((d: any) => d.id === v.originId);
     const dest = destinations.find((d: any) => d.id === v.destId);
     const finalName = v.name || `${origin?.name ?? ""} → ${dest?.name ?? ""}`;
+    if (overLimit("routes")) { toast.error(`Limite du plan atteinte (${max.routes} itinéraires). Changez de plan dans Abonnement.`); return; }
 
     try {
       const payload: any = { name: finalName, basePrice: toMoney(v.price ?? ""), currency, status: v.status };

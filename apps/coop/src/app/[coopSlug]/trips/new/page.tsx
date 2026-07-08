@@ -19,6 +19,7 @@ import {
   toast,
   fmtMoney,
   notDeleted,
+  useCoopPlan,
   toMoney,
   combineDateTime,
   todayISO,
@@ -66,6 +67,7 @@ export default function NewTripPage() {
     vehicles: { $: { where: { "cooperative.id": coopId } }, model: {} },
     tags: { $: {}, cooperative: {} },
   });
+  const { overLimit, max } = useCoopPlan(coopId);
   const routes = (data?.routes ?? []).filter(notDeleted);
   const models = (data?.vehicleModels ?? []).filter(notDeleted);
   const drivers = (data?.drivers ?? []).filter(notDeleted);
@@ -101,6 +103,7 @@ export default function NewTripPage() {
     if (!route) return;
     if (chosen.length === 0) { setSlotError("Ajoutez au moins un véhicule (modèle)."); return; }
     setSlotError("");
+    if (overLimit("trips")) { toast.error(`Limite du plan atteinte (${max.trips} trajets ce mois). Changez de plan dans Abonnement.`); return; }
 
     const priceVal = v.price ? toMoney(v.price) : route.basePrice;
     const departureAt = combineDateTime(v.date, v.time);

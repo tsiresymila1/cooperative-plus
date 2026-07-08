@@ -15,6 +15,7 @@ import {
   Field,
   toast,
   COOP_PERMISSIONS,
+  useCoopPlan,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 import { useCreateAssistant } from "@/lib/queries/account";
@@ -31,6 +32,7 @@ export default function NewTeamMemberPage() {
   const router = useRouter();
   const createAssistant = useCreateAssistant();
   const saving = createAssistant.isPending;
+  const { overLimit, max } = useCoopPlan(coopId);
 
   const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<Values>({
     resolver: zodResolver(schema),
@@ -51,6 +53,7 @@ export default function NewTeamMemberPage() {
   };
 
   const submit = handleSubmit(async (v) => {
+    if (overLimit("assistants")) { toast.error(`Limite du plan atteinte (${max.assistants} assistants). Changez de plan dans Abonnement.`); return; }
     createAssistant.mutate(
       { coopId, email: v.email.trim().toLowerCase(), name: v.name ?? "", password: v.password, permissions: perms },
       {

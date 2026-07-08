@@ -1,5 +1,6 @@
 import { adminDb, id } from "@cp/instant/admin";
 import { hashPassword } from "@cp/instant/password";
+import { TRIAL_PLAN, TRIAL_DAYS, DAY_MS } from "@cp/instant/subscription";
 import { HttpError } from "../errors";
 
 export type CreateCoopInput = {
@@ -30,13 +31,17 @@ export async function createCooperative(input: CreateCoopInput): Promise<{ ok: t
       email: input.email?.trim().toLowerCase() || undefined,
       address: input.address?.trim() || undefined,
       currency: "MGA", timezone: "Indian/Antananarivo",
-      subscriptionStatus: "active", cutoffHours: 2, refundPct: 50, createdAt: now,
+      subscriptionStatus: "trialing", cutoffHours: 2, refundPct: 50, createdAt: now,
     }),
   ];
 
-  if (input.planId) {
-    chunks.push(adminDb.tx.subscriptions[id()].update({ status: "active", createdAt: now }).link({ cooperative: coopId, plan: input.planId }));
-  }
+  // Every coop starts on a 14-day trial of the chosen plan (default: Essai).
+  const trialEndsAt = now + TRIAL_DAYS * DAY_MS;
+  chunks.push(
+    adminDb.tx.subscriptions[id()]
+      .update({ status: "trialing", trialEndsAt, currentPeriodEnd: trialEndsAt, createdAt: now })
+      .link({ cooperative: coopId, plan: input.planId || TRIAL_PLAN.id }),
+  );
 
   if (ownerEmail) {
     await adminDb.auth.createToken(ownerEmail);

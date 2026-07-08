@@ -3,5 +3,6 @@
   "framework": "nextjs",
   "installCommand": "cd ../.. && pnpm install --no-frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm --filter @cp/coop build",
-  "ignoreCommand": "npx turbo-ignore"
+  "ignoreCommand": "npx turbo-ignore",
+  "crons": [{ "path": "/api/cron/subscriptions", "schedule": "0 3 * * *" }]
 }

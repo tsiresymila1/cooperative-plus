@@ -16,6 +16,7 @@ const SECTION_PERM: Record<string, string | null> = {
   routes: "routes", destinations: "routes", tags: "trips",
   payments: "payments", reports: "payments",
   team: "team",
+  abonnement: "settings",
   settings: "settings",
 };
 
