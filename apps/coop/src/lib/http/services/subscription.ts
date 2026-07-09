@@ -1,4 +1,5 @@
 import { adminDb, id as newId } from "@cp/instant/admin";
+import { decrypt, isEncrypted } from "@cp/crypto";
 import { nextPeriodEnd } from "@cp/instant/subscription";
 import { HttpError } from "../errors";
 
@@ -33,7 +34,8 @@ export async function initiateSubscriptionPayment(input: {
   if (!plan) throw new HttpError(404, "Plan introuvable");
   if (!plan.priceAmount || plan.priceAmount <= 0) throw new HttpError(422, "Ce plan est gratuit");
 
-  const papiApiKey = PLATFORM_PAPI_KEY;
+  // Platform key is stored encrypted in the env var — decrypt before use.
+  const papiApiKey = isEncrypted(PLATFORM_PAPI_KEY) ? decrypt(PLATFORM_PAPI_KEY) : PLATFORM_PAPI_KEY;
 
   const reference = `SUB-${coopId}-${Date.now()}`;
   const sub = (coop.subscriptions ?? [])[0];
@@ -55,6 +57,7 @@ export async function initiateSubscriptionPayment(input: {
     }),
   });
   const papiData = await papiRes.json();
+  console.log("PAPI DATA", papiData);
   if (!papiRes.ok || !papiData?.data?.paymentLink)
     throw new HttpError(502, papiData?.message ?? "Erreur PAPI");
 
