@@ -16,6 +16,7 @@ import {
   toast,
   COOP_PERMISSIONS,
   useCoopPlan,
+  logActivity,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 import { useCreateAssistant } from "@/lib/queries/account";
@@ -28,7 +29,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function NewTeamMemberPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const createAssistant = useCreateAssistant();
   const saving = createAssistant.isPending;
@@ -57,7 +58,7 @@ export default function NewTeamMemberPage() {
     createAssistant.mutate(
       { coopId, email: v.email.trim().toLowerCase(), name: v.name ?? "", password: v.password, permissions: perms },
       {
-        onSuccess: () => { toast.success("Compte assistant créé"); router.push(`/${slug}/team`); },
+        onSuccess: () => { logActivity({ coopId, actorId: userId, action: "create", entityType: "assistant", label: v.email.trim() }); toast.success("Compte assistant créé"); router.push(`/${slug}/team`); },
         onError: (e) => toast.error("Erreur: " + (e instanceof Error ? e.message : "inconnue")),
       },
     );

@@ -20,6 +20,7 @@ import {
   useConfirm,
   toast,
   notDeleted,
+  logActivity,
   type Column,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
@@ -32,7 +33,7 @@ type Values = z.infer<typeof schema>;
 const EMPTY: Values = { name: "", color: "#0f2d5c" };
 
 export default function CoopTagsPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, userId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const confirm = useConfirm();
 
   const { data, isLoading } = db.useQuery({ tags: { $: {}, cooperative: {} } });
@@ -65,13 +66,16 @@ export default function CoopTagsPage() {
     try {
       if (editId) {
         await db.transact(db.tx.tags[editId].update({ name: v.name.trim(), color: v.color }));
+        logActivity({ coopId, actorId: userId, action: "update", entityType: "tag", entityId: editId, label: v.name.trim() });
         toast.success("Tag mis à jour.");
       } else {
+        const tagId = id();
         await db.transact(
-          db.tx.tags[id()]
+          db.tx.tags[tagId]
             .update({ name: v.name.trim(), color: v.color, isGlobal: false, createdAt: Date.now() })
             .link({ cooperative: coopId }),
         );
+        logActivity({ coopId, actorId: userId, action: "create", entityType: "tag", entityId: tagId, label: v.name.trim() });
         toast.success("Tag créé.");
       }
       setOpen(false);
@@ -83,6 +87,7 @@ export default function CoopTagsPage() {
   async function del(t: any) {
     if (await confirm({ title: "Supprimer le tag ?", message: `${t.name} sera retiré des trajets taggés.`, confirmLabel: "Supprimer", tone: "danger" })) {
       await db.transact(db.tx.tags[t.id].update({ deletedAt: Date.now() }));
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "tag", entityId: t.id, label: t.name });
       toast.success("Tag supprimé.");
     }
   }

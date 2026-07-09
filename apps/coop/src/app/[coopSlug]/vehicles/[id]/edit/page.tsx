@@ -20,6 +20,7 @@ import {
   toast,
   vehicleStatus,
   notDeleted,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -44,7 +45,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function EditVehiclePage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const vehicleId = params.id;
@@ -95,6 +96,7 @@ export default function EditVehiclePage() {
       }).link({ model: m.id });
       if (prev && prev !== m.id) chunk = chunk.unlink({ model: prev });
       await db.transact(chunk);
+      logActivity({ coopId, actorId: userId, action: "update", entityType: "vehicle", entityId: vehicleId, label: v.name.trim() || v.reg.trim() });
       toast.success("Véhicule mis à jour");
       router.push(`/${slug}/vehicles`);
     } catch (e: any) {

@@ -16,10 +16,11 @@ import {
   fmtMoney,
   routeStatus,
   notDeleted,
+  logActivity,
 } from "@cp/ui";
 
 export default function RoutesPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -47,6 +48,7 @@ export default function RoutesPage() {
       })
     ) {
       await db.transact(db.tx.routes[r.id].update({ deletedAt: Date.now() }));
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "route", entityId: r.id, label: r.name });
       toast.success("Itinéraire supprimé");
     }
   };

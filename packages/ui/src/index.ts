@@ -25,3 +25,4 @@ export * from "./lib/slots";
 export * from "./lib/phone";
 export * from "./lib/subscription-client";
 export * from "./lib/use-payment-popup";
+export * from "./lib/activity";

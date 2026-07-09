@@ -22,6 +22,7 @@ import {
   toMoney,
   combineDateTime,
   notDeleted,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -52,7 +53,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function EditTripPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const tripId = params.id;
@@ -109,6 +110,7 @@ export default function EditTripPage() {
       if (v.tagId) chunk = chunk.link({ tag: v.tagId });
       else if (prevTag) chunk = chunk.unlink({ tag: prevTag });
       await db.transact(chunk);
+      logActivity({ coopId, actorId: userId, action: "update", entityType: "trip", entityId: tripId, label: `${trip.originName ?? ""} → ${trip.destName ?? ""}`.trim() || "Trajet" });
       toast.success("Trajet mis à jour");
       router.push(`/${slug}/trips`);
     } catch (e: any) {

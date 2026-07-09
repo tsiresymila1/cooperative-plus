@@ -16,7 +16,8 @@ const SECTION_PERM: Record<string, string | null> = {
   routes: "routes", destinations: "routes", tags: "trips",
   payments: "payments", reports: "payments",
   team: "team",
-  abonnement: "settings",
+  abonnement: "__owner", // sentinel: no assistant permission grants it → owner-only
+  activite: "__owner",
   settings: "settings",
 };
 
@@ -28,6 +29,7 @@ type CoopCtx = {
   permissions: string[];
   isPlatformAdmin: boolean;
   userId: string;
+  userName: string;
 };
 
 const Ctx = createContext<CoopCtx | null>(null);
@@ -141,6 +143,7 @@ export function CoopGuard({ slug, children }: { slug: string; children: React.Re
     permissions: (myMembership?.permissions as string[]) ?? [],
     isPlatformAdmin,
     userId: user.id,
+    userName: (myMembership?.user?.name as string) || (me?.name as string) || user.email || "Utilisateur",
   };
 
   return (

@@ -22,6 +22,7 @@ import {
   tripStatus,
   notDeleted,
   todayISO,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -44,7 +45,7 @@ const statusBg: Record<string, string> = {
 const dKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 export default function TripsPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
   const today = todayISO();
@@ -110,6 +111,7 @@ export default function TripsPage() {
       })
     ) {
       await db.transact(db.tx.tripInstances[r.id].update({ status: "cancelled" }));
+      logActivity({ coopId, actorId: userId, action: "update", entityType: "trip", entityId: r.id, label: `${r.originName ?? ""} → ${r.destName ?? ""}`.trim() || "Trajet" });
       toast.success("Trajet annulé");
     }
   };

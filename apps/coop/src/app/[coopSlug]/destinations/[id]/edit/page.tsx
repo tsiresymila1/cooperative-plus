@@ -16,6 +16,7 @@ import {
   FormSection,
   Field,
   toast,
+  logActivity,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
@@ -30,7 +31,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function EditDestinationPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, userId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const destinationId = params.id;
@@ -70,6 +71,7 @@ export default function EditDestinationPage() {
         slug: v.slug || slugify(v.name),
       };
       await db.transact(db.tx.destinations[destinationId].update(payload));
+      logActivity({ coopId, actorId: userId, action: "update", entityType: "destination", entityId: destinationId, label: payload.name });
       toast.success("Destination mise à jour");
       router.push(`/${slug}/destinations`);
     } catch (e: any) {

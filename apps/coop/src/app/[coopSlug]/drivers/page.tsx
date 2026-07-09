@@ -19,6 +19,7 @@ import {
   useConfirm,
   toast,
   notDeleted,
+  logActivity,
   type Column,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
@@ -34,7 +35,7 @@ type Values = z.infer<typeof schema>;
 const EMPTY: Values = { name: "", licenseNo: "", phone: "", address: "", avatarUrl: "" };
 
 export default function DriversPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, userId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const confirm = useConfirm();
 
   const { data, isLoading } = db.useQuery({ drivers: { $: { where: { "cooperative.id": coopId } } } });
@@ -78,11 +79,15 @@ export default function DriversPage() {
         avatarUrl: v.avatarUrl || undefined,
         status: "active",
       };
+      const label = v.name.trim() || undefined;
       if (editId) {
         await db.transact(db.tx.drivers[editId].update(payload));
+        logActivity({ coopId, actorId: userId, action: "update", entityType: "driver", entityId: editId, label });
         toast.success("Chauffeur mis à jour.");
       } else {
-        await db.transact(db.tx.drivers[id()].update({ ...payload, createdAt: Date.now() }).link({ cooperative: coopId }));
+        const driverId = id();
+        await db.transact(db.tx.drivers[driverId].update({ ...payload, createdAt: Date.now() }).link({ cooperative: coopId }));
+        logActivity({ coopId, actorId: userId, action: "create", entityType: "driver", entityId: driverId, label });
         toast.success("Chauffeur ajouté.");
       }
       setOpen(false);
@@ -94,6 +99,7 @@ export default function DriversPage() {
   async function del(d: any) {
     if (await confirm({ title: "Supprimer le chauffeur ?", message: d.name, confirmLabel: "Supprimer", tone: "danger" })) {
       await db.transact(db.tx.drivers[d.id].update({ deletedAt: Date.now() }));
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "driver", entityId: d.id, label: d.name || undefined });
       toast.success("Chauffeur supprimé.");
     }
   }

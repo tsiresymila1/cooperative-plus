@@ -16,6 +16,7 @@ import {
   FormSection,
   Field,
   toast,
+  logActivity,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
@@ -30,7 +31,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function NewDestinationPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, userId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
 
   const [slugTouched, setSlugTouched] = useState(false);
@@ -46,11 +47,13 @@ export default function NewDestinationPage() {
     try {
       const payload: any = { name: v.name.trim(), country: v.country, slug: v.slug || slugify(v.name) };
       if (v.region) payload.region = v.region;
+      const destinationId = id();
       await db.transact(
-        db.tx.destinations[id()]
+        db.tx.destinations[destinationId]
           .update({ ...payload, isPopular: false, isGlobal: false, createdAt: Date.now() })
           .link({ cooperative: coopId }),
       );
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "destination", entityId: destinationId, label: payload.name });
       toast.success("Destination créée");
       router.push(`/${slug}/destinations`);
     } catch (e: any) {
