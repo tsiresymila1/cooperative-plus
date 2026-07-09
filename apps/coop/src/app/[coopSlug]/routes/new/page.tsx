@@ -21,6 +21,7 @@ import {
   useCoopPlan,
   toMoney,
   toInt,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -45,7 +46,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function NewRoutePage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
   const { overLimit, max } = useCoopPlan(coopId);
@@ -95,11 +96,13 @@ export default function NewRoutePage() {
       if (v.dist) payload.distanceKm = toInt(v.dist);
       if (v.dur) payload.durationMin = toInt(v.dur);
 
+      const routeId = id();
       await db.transact(
-        db.tx.routes[id()]
+        db.tx.routes[routeId]
           .update({ ...payload, createdAt: Date.now() })
           .link({ cooperative: coopId, origin: v.originId, destination: v.destId }),
       );
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "route", entityId: routeId, label: finalName });
       toast.success("Itinéraire créé");
       router.push(`/${slug}/routes`);
     } catch (e: any) {

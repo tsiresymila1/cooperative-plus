@@ -20,6 +20,7 @@ import {
   notDeleted,
   toInt,
   toFloat,
+  logActivity,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
@@ -35,7 +36,7 @@ const profileSchema = z.object({
 type ProfileValues = z.infer<typeof profileSchema>;
 
 export default function SettingsPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
 
   // Subscription + plan, and quota usage counts.
   const { data } = db.useQuery({
@@ -76,7 +77,7 @@ export default function SettingsPage() {
       }
     >
       <div className="mx-auto max-w-4xl">
-        <ProfileSections coop={coop} coopId={coopId} />
+        <ProfileSections coop={coop} coopId={coopId} userId={userId} />
         <PaymentMethodsSection coop={coop} coopId={coopId} />
         <PapiSection coopId={coopId} secrets={secrets} />
         <SubscriptionSection sub={sub} plan={plan} />
@@ -86,7 +87,7 @@ export default function SettingsPage() {
   );
 }
 
-function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
+function ProfileSections({ coop, coopId, userId }: { coop: any; coopId: string; userId: string }) {
   const { register, handleSubmit, watch, setValue, reset, formState: { errors, isSubmitting } } = useForm<ProfileValues>({
     resolver: zodResolver(profileSchema),
     mode: "onChange",
@@ -127,6 +128,7 @@ function ProfileSections({ coop, coopId }: { coop: any; coopId: string }) {
           refundPct: toFloat(v.refundPct),
         }),
       );
+      logActivity({ coopId, actorId: userId, action: "update", entityType: "settings", label: v.displayName || coop.displayName || "paramètres" });
       toast.success("Profil mis à jour");
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "inconnue"));

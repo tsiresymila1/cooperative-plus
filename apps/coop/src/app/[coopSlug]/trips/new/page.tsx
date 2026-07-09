@@ -23,6 +23,7 @@ import {
   toMoney,
   combineDateTime,
   todayISO,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -56,7 +57,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function NewTripPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
 
@@ -156,6 +157,7 @@ export default function NewTripPage() {
         );
       });
       await db.transact(txs);
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "trip", entityId: tripId, label: `${route.name ?? "Trajet"} · ${date}` });
       toast.success("Trajet créé");
       router.push(`/${slug}/trips`);
     } catch (e: any) {

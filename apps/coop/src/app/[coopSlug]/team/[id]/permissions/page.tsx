@@ -13,10 +13,11 @@ import {
   FormSection,
   toast,
   COOP_PERMISSIONS,
+  logActivity,
 } from "@cp/ui";
 
 export default function MemberPermissionsPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const membershipId = params.id;
@@ -44,6 +45,7 @@ export default function MemberPermissionsPage() {
     setSaving(true);
     try {
       await db.transact(db.tx.memberships[membershipId].update({ permissions: perms }));
+      logActivity({ coopId, actorId: userId, action: "update", entityType: "assistant", entityId: membershipId, label: member?.user?.email ?? member?.user?.name });
       toast.success("Permissions mises à jour");
       router.push(`/${slug}/team`);
     } catch (e: any) {

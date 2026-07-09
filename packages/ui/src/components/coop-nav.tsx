@@ -1,4 +1,4 @@
-import { Bus, CalendarClock, CarFront, CreditCard, IdCard, LayoutDashboard, MapPin, QrCode, Route, Settings, Tag, Ticket, Users, UserRound, BarChart3, Wallet } from "lucide-react";
+import { Activity, Bus, CalendarClock, CarFront, CreditCard, IdCard, LayoutDashboard, MapPin, QrCode, Route, Settings, Tag, Ticket, Users, UserRound, BarChart3, Wallet } from "lucide-react";
 import type { NavItem } from "./dashboard-shell";
 
 type Access = { role?: string; permissions?: string[]; isPlatformAdmin?: boolean };
@@ -19,7 +19,8 @@ const NAV_PERM: Record<string, string | null> = {
   payments: "payments",
   reports: "payments",
   team: "team",
-  abonnement: "settings",
+  abonnement: "__owner", // sentinel: owner-only (no assistant permission grants it)
+  activite: "__owner",
   settings: "settings",
 };
 
@@ -41,6 +42,7 @@ export function coopNav(slug: string, active: string, access?: Access): NavItem[
     { key: "reports", href: `${b}/reports`, label: "Rapports", icon: <BarChart3 size={18} /> },
     { key: "team", href: `${b}/team`, label: "Équipe", icon: <Users size={18} /> },
     { key: "abonnement", href: `${b}/abonnement`, label: "Abonnement", icon: <CreditCard size={18} /> },
+    { key: "activite", href: `${b}/activite`, label: "Activité", icon: <Activity size={18} /> },
     { key: "settings", href: `${b}/settings`, label: "Paramètres", icon: <Settings size={18} /> },
   ];
   // Owners + platform admins see everything; assistants are filtered by permission.

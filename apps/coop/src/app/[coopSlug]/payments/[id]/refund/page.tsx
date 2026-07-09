@@ -19,11 +19,12 @@ import {
   toast,
   fmtMoney,
   toMoney,
+  logActivity,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
 export default function RefundPaymentPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const paymentId = params.id;
@@ -70,9 +71,10 @@ export default function RefundPaymentPage() {
     if (!payment) return;
     const amt = v.amount && v.amount.trim() ? toMoney(v.amount) : payment.amount;
     const full = amt >= payment.amount;
+    const refundId = id();
     try {
       await db.transact([
-        db.tx.refunds[id()]
+        db.tx.refunds[refundId]
           .update({
             amount: amt,
             reason: v.reason || undefined,
@@ -84,6 +86,7 @@ export default function RefundPaymentPage() {
           status: full ? "refunded" : "partially_refunded",
         }),
       ]);
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "refund", entityId: refundId, label: fmtMoney(amt) });
       toast.success("Remboursement émis");
       router.push(`/${slug}/payments`);
     } catch (e: any) {

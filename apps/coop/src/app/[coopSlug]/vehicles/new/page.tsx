@@ -20,6 +20,7 @@ import {
   vehicleStatus,
   notDeleted,
   useCoopPlan,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -44,7 +45,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function NewVehiclePage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
 
   const { data } = db.useQuery({ vehicleModels: { $: { where: { "cooperative.id": coopId } } } });
@@ -65,8 +66,9 @@ export default function NewVehiclePage() {
     if (!m) return;
     if (overLimit("vehicles")) { toast.error(`Limite du plan atteinte (${max.vehicles} véhicules). Changez de plan dans Abonnement.`); return; }
     try {
+      const vehicleId = id();
       await db.transact(
-        db.tx.vehicles[id()]
+        db.tx.vehicles[vehicleId]
           .update({
             name: v.name.trim(),
             registrationNo: v.reg.trim(),
@@ -78,6 +80,7 @@ export default function NewVehiclePage() {
           })
           .link({ cooperative: coopId, model: m.id }),
       );
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "vehicle", entityId: vehicleId, label: v.name.trim() || v.reg.trim() });
       toast.success("Véhicule créé");
       router.push(`/${slug}/vehicles`);
     } catch (e: any) {

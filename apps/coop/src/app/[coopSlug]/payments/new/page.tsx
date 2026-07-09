@@ -18,6 +18,7 @@ import {
   fmtMoney,
   notDeleted,
   toMoney,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -44,7 +45,7 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function NewPaymentPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const currency = coop.currency ?? "MGA";
 
@@ -63,8 +64,10 @@ export default function NewPaymentPage() {
 
   const submit = handleSubmit(async (v) => {
     const amt = toMoney(v.amount);
+    const paymentId = id();
+    const booking = v.bookingId !== "none" ? bookings.find((b: any) => b.id === v.bookingId) : undefined;
     try {
-      const tx = db.tx.payments[id()]
+      const tx = db.tx.payments[paymentId]
         .update({
           method: v.method,
           provider: "manual",
@@ -81,6 +84,7 @@ export default function NewPaymentPage() {
             : { cooperative: coopId },
         );
       await db.transact(tx);
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "payment", entityId: paymentId, label: booking?.reference ?? fmtMoney(amt) });
       toast.success("Paiement enregistré");
       router.push(`/${slug}/payments`);
     } catch (e: any) {

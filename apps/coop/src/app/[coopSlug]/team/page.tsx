@@ -13,10 +13,11 @@ import {
   toast,
   type Column,
   memberRole,
+  logActivity,
 } from "@cp/ui";
 
 export default function TeamPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -36,6 +37,7 @@ export default function TeamPage() {
       })
     ) {
       await db.transact(db.tx.memberships[r.id].delete());
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "assistant", entityId: r.id, label: r.user?.email ?? r.user?.name });
       toast.success("Membre retiré");
     }
   };
@@ -86,6 +88,7 @@ export default function TeamPage() {
                     status: r.status === "active" ? "disabled" : "active",
                   }),
                 );
+                logActivity({ coopId, actorId: userId, action: "update", entityType: "assistant", entityId: r.id, label: r.user?.email ?? r.user?.name });
                 toast.success(r.status === "active" ? "Membre désactivé" : "Membre activé");
               }}
             >

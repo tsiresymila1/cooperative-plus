@@ -21,6 +21,7 @@ import {
   toast,
   notDeleted,
   toInt,
+  logActivity,
   type Cell,
   type Column,
 } from "@cp/ui";
@@ -37,7 +38,7 @@ type Values = z.infer<typeof schema>;
 const EMPTY: Values = { name: "", brand: "", type: "minibus" };
 
 export default function ModelsPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, userId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const confirm = useConfirm();
 
   const { data, isLoading } = db.useQuery({ vehicleModels: { $: { where: { "cooperative.id": coopId } } } });
@@ -76,11 +77,15 @@ export default function ModelsPage() {
     if (seats < 1) { toast.error("Le plan doit comporter au moins un siège."); return; }
     try {
       const payload = { name: v.name.trim(), brand: v.brand?.trim() || undefined, type: v.type, seatCount: seats, layout };
+      const label = v.name.trim() || undefined;
       if (editId) {
         await db.transact(db.tx.vehicleModels[editId].update(payload));
+        logActivity({ coopId, actorId: userId, action: "update", entityType: "model", entityId: editId, label });
         toast.success("Modèle mis à jour.");
       } else {
-        await db.transact(db.tx.vehicleModels[id()].update({ ...payload, createdAt: Date.now() }).link({ cooperative: coopId }));
+        const modelId = id();
+        await db.transact(db.tx.vehicleModels[modelId].update({ ...payload, createdAt: Date.now() }).link({ cooperative: coopId }));
+        logActivity({ coopId, actorId: userId, action: "create", entityType: "model", entityId: modelId, label });
         toast.success("Modèle créé.");
       }
       setOpen(false);
@@ -92,6 +97,7 @@ export default function ModelsPage() {
   async function del(m: any) {
     if (await confirm({ title: "Supprimer le modèle ?", message: m.name, confirmLabel: "Supprimer", tone: "danger" })) {
       await db.transact(db.tx.vehicleModels[m.id].update({ deletedAt: Date.now() }));
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "model", entityId: m.id, label: m.name || undefined });
       toast.success("Modèle supprimé.");
     }
   }

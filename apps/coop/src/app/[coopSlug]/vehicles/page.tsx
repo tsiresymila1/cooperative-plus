@@ -15,10 +15,11 @@ import {
   vehicleStatus,
   vehicleTypeLabel,
   notDeleted,
+  logActivity,
 } from "@cp/ui";
 
 export default function VehiclesPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -38,6 +39,7 @@ export default function VehiclesPage() {
       })
     ) {
       await db.transact(db.tx.vehicles[r.id].update({ deletedAt: Date.now() }));
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "vehicle", entityId: r.id, label: r.name || r.registrationNo });
       toast.success("Véhicule supprimé");
     }
   };

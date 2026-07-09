@@ -13,12 +13,13 @@ import {
   DataTable,
   useConfirm,
   toast,
+  logActivity,
   type Column,
   notDeleted,
 } from "@cp/ui";
 
 export default function DestinationsPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, userId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -58,6 +59,7 @@ export default function DestinationsPage() {
       })
     ) {
       await db.transact(db.tx.destinations[r.id].update({ deletedAt: Date.now() }));
+      logActivity({ coopId, actorId: userId, action: "delete", entityType: "destination", entityId: r.id, label: r.name });
       toast.success("Destination supprimée");
     }
   };
