@@ -33,7 +33,7 @@ export function useCoopPlan(coopId?: string) {
   const usage: Record<Resource, number> = {
     vehicles: (data?.vehicles ?? []).filter((v: any) => !v.deletedAt).length,
     routes: (data?.routes ?? []).filter((r: any) => !r.deletedAt).length,
-    assistants: (data?.memberships ?? []).filter((m: any) => m.status !== "removed").length,
+    assistants: (data?.memberships ?? []).filter((m: any) => m.status === "active").length,
     trips: (data?.tripInstances ?? []).length,
   };
 
