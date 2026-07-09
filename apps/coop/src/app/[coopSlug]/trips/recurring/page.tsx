@@ -38,6 +38,8 @@ import {
   toMoney,
   combineDateTime,
   todayISO,
+  useCoopPlan,
+  logActivity,
 } from "@cp/ui";
 import {
   Select,
@@ -91,7 +93,8 @@ const schema = z.object({
 type Values = z.infer<typeof schema>;
 
 export default function RecurringTripPage() {
-  const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
+  const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
+  const { usage, max } = useCoopPlan(coopId);
   const router = useRouter();
   const confirm = useConfirm();
   const currency = coop.currency ?? "MGA";
@@ -242,6 +245,11 @@ export default function RecurringTripPage() {
       toast.error(`Trop de trajets (${total}). Réduisez la période ou les heures (max ${MAX_TRIPS}).`);
       return;
     }
+    // Plan quota: all these trips are created now → all count against this month.
+    if (max.trips && max.trips > 0 && usage.trips + total > max.trips) {
+      toast.error(`Limite du plan atteinte : ${usage.trips}/${max.trips} trajets ce mois, vous en ajoutez ${total}. Changez de plan dans Abonnement.`);
+      return;
+    }
 
     if (
       !(await confirm({
@@ -329,6 +337,7 @@ export default function RecurringTripPage() {
         await db.transact(allTxs.slice(i, i + BATCH_SIZE));
       }
 
+      logActivity({ coopId, actorId: userId, action: "create", entityType: "trip", label: `${total} trajets récurrents · ${route.name ?? ""}`.trim() });
       toast.success(`${total} trajets créés`);
       router.push(`/${slug}/trips`);
     } catch (e: any) {
