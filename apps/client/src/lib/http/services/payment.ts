@@ -43,6 +43,7 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
   if (!papiApiKey)
     throw new HttpError(422, "Paiement en ligne non configuré pour cette coopérative");
 
+
   const papiRes = await fetch(PAPI_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Token: papiApiKey },

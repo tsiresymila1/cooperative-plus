@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Check, CreditCard, Clock } from "lucide-react";
+import Link from "next/link";
+import { Check, CreditCard, Clock, FileText } from "lucide-react";
 import {
   DashboardShell,
   coopNav,
@@ -13,6 +14,7 @@ import {
   toast,
   fmtMoney,
   fmtDate,
+  fmtDateTime,
   useCoopPlan,
   usePaymentPopup,
 } from "@cp/ui";
@@ -26,11 +28,22 @@ const STATUS: Record<string, { label: string; tone: "success" | "warning" | "dan
   cancelled: { label: "Résilié", tone: "danger" },
 };
 
+const PAY_STATUS: Record<string, { label: string; tone: "success" | "warning" | "danger" | "neutral" }> = {
+  paid: { label: "Payé", tone: "success" },
+  pending: { label: "En attente", tone: "warning" },
+  failed: { label: "Échoué", tone: "danger" },
+};
+
 export default function AbonnementPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin } = useCoop();
   const { sub, plan, status, usage, max } = useCoopPlan(coopId);
-  const { data } = db.useQuery({ plans: { $: { where: { isActive: true } } } });
+  const { data } = db.useQuery({
+    plans: { $: { where: { isActive: true } } },
+    payments: { $: { where: { "cooperative.id": coopId }, order: { createdAt: "desc" } }, subscription: { plan: {} } },
+  });
   const plans = [...(data?.plans ?? [])].sort((a: any, b: any) => a.priceAmount - b.priceAmount);
+  // Only subscription payments (not rider bookings).
+  const subPayments = (data?.payments ?? []).filter((p: any) => (p.meta as any)?.kind === "subscription");
 
   const st = STATUS[status ?? "trialing"] ?? STATUS.trialing;
   const periodEnd = (sub as any)?.currentPeriodEnd ?? (sub as any)?.trialEndsAt;
@@ -161,6 +174,36 @@ export default function AbonnementPage() {
               );
             })}
           </div>
+        </FormSection>
+
+        {/* Payment history */}
+        <FormSection index="03" title="Historique des paiements" description="Vos paiements d'abonnement et leurs factures.">
+          {subPayments.length === 0 ? (
+            <p className="text-sm text-ink-soft">Aucun paiement pour le moment.</p>
+          ) : (
+            <Card className="divide-y divide-ink/8">
+              {subPayments.map((p: any) => {
+                const s = PAY_STATUS[p.status] ?? { label: p.status, tone: "neutral" as const };
+                const planName = p.subscription?.plan?.name ?? "Abonnement";
+                return (
+                  <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 p-3.5">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-ink">{planName} · {fmtMoney(p.amount)}</p>
+                      <p className="mt-0.5 text-xs text-ink-soft">{fmtDateTime(p.paidAt ?? p.createdAt)}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge tone={s.tone as any}>{s.label}</Badge>
+                      {p.status === "paid" && (
+                        <Link href={`/${slug}/abonnement/facture/${p.id}`} className="inline-flex items-center gap-1.5 rounded-md border border-ink/12 px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-ink/5">
+                          <FileText size={13} /> Facture
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
         </FormSection>
       </div>
     </DashboardShell>
