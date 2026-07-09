@@ -37,9 +37,11 @@ export async function initiateSubscriptionPayment(input: {
   // Platform key is stored encrypted in the env var — decrypt before use.
   const papiApiKey = isEncrypted(PLATFORM_PAPI_KEY) ? decrypt(PLATFORM_PAPI_KEY) : PLATFORM_PAPI_KEY;
 
-  // Short ref — PAPI's paymentreference column is small (~booking-ref length).
-  // coopId isn't needed here: the webhook matches on providerRef + payment link.
-  const reference = `SUB-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+  // Short ref — PAPI's paymentreference column is small. Include the coop slug
+  // (capped) for readability on the PAPI dashboard; webhook still matches on
+  // providerRef, so uniqueness comes from the random suffix.
+  const slug = String(coop.slug ?? "coop").slice(0, 16);
+  const reference = `SUB-${slug}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const sub = (coop.subscriptions ?? [])[0];
 
   const papiRes = await fetch(PAPI_URL, {
