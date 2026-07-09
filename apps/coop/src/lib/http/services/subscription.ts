@@ -37,7 +37,9 @@ export async function initiateSubscriptionPayment(input: {
   // Platform key is stored encrypted in the env var — decrypt before use.
   const papiApiKey = isEncrypted(PLATFORM_PAPI_KEY) ? decrypt(PLATFORM_PAPI_KEY) : PLATFORM_PAPI_KEY;
 
-  const reference = `SUB-${coopId}-${Date.now()}`;
+  // Short ref — PAPI's paymentreference column is small (~booking-ref length).
+  // coopId isn't needed here: the webhook matches on providerRef + payment link.
+  const reference = `SUB-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
   const sub = (coop.subscriptions ?? [])[0];
 
   const papiRes = await fetch(PAPI_URL, {
@@ -57,7 +59,6 @@ export async function initiateSubscriptionPayment(input: {
     }),
   });
   const papiData = await papiRes.json();
-  console.log("PAPI DATA", papiData);
   if (!papiRes.ok || !papiData?.data?.paymentLink)
     throw new HttpError(502, papiData?.message ?? "Erreur PAPI");
 
