@@ -6,31 +6,31 @@
 /* ── Semantic tokens (shadcn / react-native-reusables) — light ── */
 :root {
   --background: #f8fafc;
-  --foreground: #0f2d5c;
+  --foreground: #14314C;
   --card: #ffffff;
-  --card-foreground: #0f2d5c;
+  --card-foreground: #14314C;
   --popover: #ffffff;
-  --popover-foreground: #0f2d5c;
-  --primary: #ff7a00;
+  --popover-foreground: #14314C;
+  --primary: #D9A441;
   --primary-foreground: #ffffff;
   --secondary: #f1f3ff;
-  --secondary-foreground: #0f2d5c;
+  --secondary-foreground: #14314C;
   --muted: #f1f5f9;
   --muted-foreground: #475569;
   --accent: #eaedff;
-  --accent-foreground: #0f2d5c;
+  --accent-foreground: #14314C;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #e2e8f0;
   --input: #e2e8f0;
-  --ring: #ff7a00;
+  --ring: #D9A441;
   --radius: 0.25rem;
   /* brand tokens (light) */
-  --ink: #0f2d5c; --ink-soft: #475569;
-  --sand: #f8fafc; --sand-deep: #eaedff; --paper: #ffffff; --strong: #0f2d5c;
-  --orange: #ff7a00; --orange-deep: #e06d00;
-  --laterite: #ff7a00; --laterite-deep: #e06d00;
-  --green: #34c759; --baobab: #34c759; --clay: #f59e0b; --sky: #0f2d5c; --navy: #0f2d5c;
+  --ink: #14314C; --ink-soft: #475569;
+  --sand: #f8fafc; --sand-deep: #eaedff; --paper: #ffffff; --strong: #14314C;
+  --orange: #D9A441; --orange-deep: #c2902f;
+  --laterite: #D9A441; --laterite-deep: #c2902f;
+  --green: #34c759; --baobab: #34c759; --clay: #f59e0b; --sky: #14314C; --navy: #14314C;
 }
 
 /* ── Dark — NativeWind v5 drives the dark scheme via the media query (the
@@ -44,7 +44,7 @@
     --card-foreground: #ededf0;
     --popover: #161719;
     --popover-foreground: #ededf0;
-    --primary: #ff8a33;
+    --primary: #e6bd6e;
     --primary-foreground: #0a0a0b;
     --secondary: #1b1c1f;
     --secondary-foreground: #ededf0;
@@ -56,12 +56,12 @@
     --destructive-foreground: #0a0a0b;
     --border: #2a2a2f;
     --input: #2a2a2f;
-    --ring: #ff8a33;
+    --ring: #e6bd6e;
     /* brand tokens (dark) */
     --ink: #ededf0; --ink-soft: #9a9aa3;
     --sand: #0a0a0b; --sand-deep: #121214; --paper: #161719; --strong: #232327;
-    --orange: #ff8a33; --orange-deep: #ff7a1a;
-    --laterite: #ff8a33; --laterite-deep: #ff7a1a;
+    --orange: #e6bd6e; --orange-deep: #ff7a1a;
+    --laterite: #e6bd6e; --laterite-deep: #ff7a1a;
     --green: #3ddc84; --baobab: #3ddc84; --clay: #ffb066; --sky: #57aacb; --navy: #ededf0;
   }
 }

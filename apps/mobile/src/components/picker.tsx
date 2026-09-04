@@ -29,7 +29,7 @@ export function DestinationField({
   placeholder,
   options,
   onSelect,
-  tint = "#16266b",
+  tint = "#14314C",
   error,
 }: {
   label: string;
@@ -78,7 +78,7 @@ export function DestinationField({
           {label}
         </Text>
         <View className="mt-1 flex-row items-center gap-2">
-          <MapPin size={18} color={error ? "#d96d0f" : tint} />
+          <MapPin size={18} color={error ? "#c2902f" : tint} />
           <Text
             className={cn(
               "flex-1 font-sans text-base",

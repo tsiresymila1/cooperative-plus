@@ -75,8 +75,8 @@ export default function SignIn() {
         <Animated.View entering={FadeIn.duration(400)} className="mb-8 items-center">
           <View className="h-16 w-16 items-center justify-center rounded-[4px] bg-navy">
             {step === "email"
-              ? <Mail size={28} color="#f5821f" />
-              : <ShieldCheck size={28} color="#f5821f" />}
+              ? <Mail size={28} color="#D9A441" />
+              : <ShieldCheck size={28} color="#D9A441" />}
           </View>
           <Text className="mt-4 font-display text-3xl text-ink">
             {step === "email" ? "Connexion" : "Vérification"}

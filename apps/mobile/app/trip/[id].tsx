@@ -418,7 +418,7 @@ function SeatMap({
                   style={
                     isSel
                       ? {
-                          shadowColor: "#f5821f",
+                          shadowColor: "#D9A441",
                           shadowOpacity: 0.5,
                           shadowRadius: 10,
                           shadowOffset: { width: 0, height: 6 },

@@ -58,7 +58,7 @@ export default function Results() {
         {/* Trajet en bas du header */}
         <View className="mt-5 flex-row items-center gap-2">
           <Text className="font-display text-2xl text-ink" numberOfLines={1}>{origin}</Text>
-          <ArrowRight size={18} color="#f5821f" />
+          <ArrowRight size={18} color="#D9A441" />
           <Text className="font-display text-2xl text-orange" numberOfLines={1}>{dest}</Text>
         </View>
         <Text className="mt-1.5 font-mono text-xs text-ink-soft/70">
@@ -132,7 +132,7 @@ export default function Results() {
                           </View>
                           <View className="flex-row items-center gap-1">
                             <Text className="font-mono text-lg text-ink">{fmtMoney(t.price, t.currency)}</Text>
-                            <ChevronRight size={18} color="#f5821f" />
+                            <ChevronRight size={18} color="#D9A441" />
                           </View>
                         </View>
                       </Card>

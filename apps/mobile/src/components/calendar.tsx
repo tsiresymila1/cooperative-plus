@@ -46,13 +46,13 @@ export function Calendar({
       {/* Month header */}
       <View className="flex-row items-center justify-between">
         <Pressable onPress={() => shiftMonth(-1)} className="h-9 w-9 items-center justify-center rounded-[4px] bg-sand">
-          <ChevronLeft size={18} color="#16266b" />
+          <ChevronLeft size={18} color="#14314C" />
         </Pressable>
         <Text className="font-display text-base text-ink">
           {MONTHS[view.getMonth()]} {view.getFullYear()}
         </Text>
         <Pressable onPress={() => shiftMonth(1)} className="h-9 w-9 items-center justify-center rounded-[4px] bg-sand">
-          <ChevronRight size={18} color="#16266b" />
+          <ChevronRight size={18} color="#14314C" />
         </Pressable>
       </View>
 

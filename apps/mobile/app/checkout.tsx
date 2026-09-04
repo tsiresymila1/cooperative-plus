@@ -413,7 +413,7 @@ export default function Checkout() {
                   )}
                 >
                   <View className={cn("h-11 w-11 items-center justify-center rounded-[4px]", active ? "bg-laterite" : "bg-sand")}>
-                    <m.Icon size={20} color={active ? "#ffffff" : "#16266b"} />
+                    <m.Icon size={20} color={active ? "#ffffff" : "#14314C"} />
                   </View>
                   <View className="flex-1">
                     <Text className="font-sans text-base font-medium text-ink">{m.label}</Text>
