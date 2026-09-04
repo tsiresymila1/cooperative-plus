@@ -1,4 +1,5 @@
 export * from "./components/ui";
+export * from "./components/logo";
 export * from "./components/form";
 export * from "./components/toast";
 export * from "./components/dialog";

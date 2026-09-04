@@ -10,41 +10,42 @@
 @source "../../../../packages/ui/src";
 
 @theme {
-  /* Cooperative Plus brand — navy + orange + green (from the logo) */
-  --color-navy: #16266b;
-  --color-navy-deep: #0f1c52;
-  --color-orange: #f5821f;
-  --color-orange-deep: #d96d0f;
-  --color-green: #62b22e;
+  /* Coopérative Plus — Tourix-style identity: deep navy + antique gold */
+  --color-navy: #14314C;
+  --color-navy-deep: #0f2740;
+  --color-orange: #D9A441;        /* legacy alias → now gold */
+  --color-orange-deep: #c2902f;
+  --color-green: #4f9e2e;
 
   /* Semantic aliases (kept so existing classes stay brand-correct) */
-  --color-ink: #16266b;           /* primary text */
-  --color-ink-soft: #4a5680;
-  --color-strong: #16266b;        /* always-dark panels (avatars, accents) */
-  --color-sand: #eef1f7;          /* cool light page bg */
-  --color-sand-deep: #dfe4ef;
+  --color-ink: #14314C;           /* primary text = navy */
+  --color-ink-soft: #5c6f80;
+  --color-strong: #14314C;        /* always-dark panels (navy) */
+  --color-sand: #eef1f4;          /* mist light page bg */
+  --color-sand-deep: #e2e7ec;
   --color-paper: #ffffff;
+  --color-line: #dfe4ea;
 
-  --color-laterite: #f5821f;      /* primary accent = orange */
-  --color-laterite-deep: #d96d0f;
-  --color-clay: #ffa94d;          /* light orange */
-  --color-baobab: #62b22e;        /* green */
+  --color-laterite: #D9A441;      /* primary accent = gold */
+  --color-laterite-deep: #c2902f;
+  --color-clay: #e6bd6e;          /* light gold */
+  --color-baobab: #4f9e2e;        /* green (success) */
   --color-sky: #2b6f8f;
 
-  --color-success: #62b22e;
-  --color-warning: #f5821f;
+  --color-success: #4f9e2e;
+  --color-warning: #D9A441;
   --color-danger: #e23b3b;
 
-  --font-display: var(--font-display-next), "Bricolage Grotesque", ui-sans-serif, sans-serif;
-  --font-sans: var(--font-sans-next), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-next), "Barlow Condensed", ui-sans-serif, sans-serif;
+  --font-sans: var(--font-sans-next), "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-mono-next), "Spline Sans Mono", ui-monospace, monospace;
 
-  --radius: 0.875rem;
-  --shadow-card: 0 1px 2px rgba(15,28,82,.04), 0 12px 32px -12px rgba(15,28,82,.18);
-  --shadow-lift: 0 2px 4px rgba(15,28,82,.06), 0 24px 48px -16px rgba(15,28,82,.28);
+  --radius: 0.25rem;              /* squarer, Tourix-style */
+  --shadow-card: 0 1px 2px rgba(20,49,76,.05), 0 12px 30px -14px rgba(20,49,76,.16);
+  --shadow-lift: 0 2px 4px rgba(20,49,76,.07), 0 22px 44px -18px rgba(20,49,76,.26);
 }
 
-:root { --grid-line: rgba(15,45,92,.045); }
+:root { --grid-line: rgba(20,49,76,.05); }
 
 /* ── Dark theme — navy très sombre, flat ── */
 .dark {
@@ -54,13 +55,13 @@
   --color-sand-deep: #121214;
   --color-paper: #161719;
   --color-strong: #232327;
-  --color-line: #2a2a2f;
-  --color-laterite: #ff8a33;
-  --color-laterite-deep: #ff7a1a;
-  --color-baobab: #3ddc84;
+  --color-line: #2a3540;
+  --color-laterite: #e6bd6e;
+  --color-laterite-deep: #D9A441;
+  --color-baobab: #5cc65a;
   --color-sky: #57aacb;
-  --color-success: #3ddc84;
-  --color-warning: #ff8a33;
+  --color-success: #5cc65a;
+  --color-warning: #e6bd6e;
   --color-danger: #ff6363;
   --grid-line: rgba(255,255,255,.025);
   color-scheme: dark;
