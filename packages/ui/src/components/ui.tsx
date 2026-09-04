@@ -1,5 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/cn";
+import { BrandLogo } from "./logo";
 
 /* Button — laterite-first, tactile. */
 const button = cva(
@@ -78,17 +79,17 @@ export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
 /* Uses the brand logo SVG. File at apps/<app>/public/logo.svg */
 export function BrandMark({ size = 40, className }: { size?: number; className?: string }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src="/logo-round.png" alt="Cooperative Plus" width={size} height={size}
-      className={cn("rounded-[22%] object-contain", className)} style={{ width: size, height: size }} />
+    <span className={cn("inline-grid place-items-center rounded-[22%] bg-strong", className)} style={{ width: size, height: size }}>
+      <BrandLogo markOnly tone="light" className="w-[62%]" />
+    </span>
   );
 }
 
-export function BrandMarkLong({ height = 30, width = 140, className }: { height?: number; width?: number | null; className?: string }) {
+export function BrandMarkLong({ height = 30, width = 140, className, dark }: { height?: number; width?: number | null; className?: string; dark?: boolean }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src="/logo-long.png" alt="Cooperative Plus" height={height}
-      className={cn("rounded-[22%] object-contain", className)} style={{ width: width ?? undefined, height }} />
+    <span className={cn("inline-block", className)} style={{ height, width: width ?? undefined }}>
+      <BrandLogo tone={dark ? "light" : "dark"} className="h-full w-auto" />
+    </span>
   );
 }
 
@@ -117,13 +118,8 @@ export function TagBadge({ name, color, className }: { name: string; color?: str
   );
 }
 
-export function Logo({ className, withName = false, dark, width, height }: { className?: string; withName?: boolean; dark?: boolean; width?: number, height?: number }) {
-  return (
-    <span className={cn("inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight", dark ? "text-paper" : "text-navy", className)}>
-      <BrandMarkLong width={width} height={height} />
-      {withName && <>Cooperative<span className="text-orange">+</span></>}
-    </span>
-  );
+export function Logo({ className, dark, width, height = 40 }: { className?: string; withName?: boolean; dark?: boolean; width?: number, height?: number }) {
+  return <BrandMarkLong dark={dark} height={height} width={width ?? null} className={className} />;
 }
 
 /* Spinner — circular loading indicator. */
