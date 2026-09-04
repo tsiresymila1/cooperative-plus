@@ -11,7 +11,7 @@
       "name": "client",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@cp/client", "dev"],
-      "port": 3000
+      "port": 4000
     }
   ]
 }
