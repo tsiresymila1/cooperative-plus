@@ -106,21 +106,21 @@ export default function Profile() {
             <Card>
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2.5">
-                  <Moon size={18} color={dark ? "#ff8a33" : "#475569"} />
+                  <Moon size={18} color={dark ? "#e6bd6e" : "#475569"} />
                   <Text className="font-sans text-base text-ink">Thème sombre</Text>
                 </View>
-                <Switch value={dark} onValueChange={toggleTheme} trackColor={{ true: "#ff8a33" }} />
+                <Switch value={dark} onValueChange={toggleTheme} trackColor={{ true: "#e6bd6e" }} />
               </View>
             </Card>
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(160).duration(420)} className="mt-5">
             <Button variant="outline" onPress={() => router.push("/bookings")}>
-              <TicketIcon size={18} color="#16266b" />
+              <TicketIcon size={18} color="#14314C" />
               <Text className="font-sans font-medium text-ink">Mes réservations</Text>
             </Button>
             <Button variant="ghost" className="mt-2" onPress={() => setConfirmOut(true)}>
-              <LogOut size={18} color="#d96d0f" />
+              <LogOut size={18} color="#c2902f" />
               <Text className="font-sans font-medium text-laterite-deep">Se déconnecter</Text>
             </Button>
           </Animated.View>

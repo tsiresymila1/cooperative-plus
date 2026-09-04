@@ -201,7 +201,7 @@ export default function Home() {
                         {/* Route */}
                         <View className="mt-2.5 flex-row items-center gap-2">
                           <Text className="font-display text-lg text-ink" numberOfLines={1}>{r.originName}</Text>
-                          <ArrowRight size={15} color="#f5821f" />
+                          <ArrowRight size={15} color="#D9A441" />
                           <Text className="flex-1 font-display text-lg text-laterite" numberOfLines={1}>{r.destName}</Text>
                           <Text className="font-mono text-sm font-bold text-ink">{fmtMoney(r.price, r.currency)}</Text>
                         </View>

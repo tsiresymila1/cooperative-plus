@@ -30,7 +30,7 @@ export async function setupNotifications(): Promise<void> {
         name: "Rappels de départ",
         importance: Notifications.AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#ff7a00",
+        lightColor: "#D9A441",
       });
     }
     const { status } = await Notifications.getPermissionsAsync();

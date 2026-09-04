@@ -58,7 +58,7 @@ export default function Bookings() {
               style={
                 tab === k
                   ? {
-                      shadowColor: "#16266b",
+                      shadowColor: "#14314C",
                       shadowOpacity: 0.1,
                       shadowRadius: 8,
                       shadowOffset: { width: 0, height: 3 },
@@ -191,7 +191,7 @@ function TicketCard({
           <View className="w-full flex-row items-center">
             <View className="h-2 w-2 rounded-full border-2 border-ink/30" />
             <View className="h-px flex-1 bg-ink/15" />
-            <Bus size={15} color="#f5821f" />
+            <Bus size={15} color="#D9A441" />
             <View className="h-px flex-1 bg-ink/15" />
             <View className="h-2 w-2 rounded-full bg-laterite" />
           </View>
@@ -242,7 +242,7 @@ function TicketCard({
           <Text className="font-sans text-sm font-medium text-white">
             Voir le billet
           </Text>
-          <ArrowRight size={15} color="#f5821f" />
+          <ArrowRight size={15} color="#D9A441" />
         </Pressable>
       </View>
     </Card>
@@ -263,7 +263,7 @@ function EmptyState({
   return (
     <View className="flex-1 items-center justify-center px-10 pb-24">
       <View className="h-24 w-24 items-center justify-center rounded-full bg-laterite/10">
-        <Frown size={44} color="#f5821f" />
+        <Frown size={44} color="#D9A441" />
       </View>
       <Text className="mt-5 font-display text-xl text-ink">{title}</Text>
       <Text className="mt-1.5 text-center font-sans text-sm text-ink-soft/70">

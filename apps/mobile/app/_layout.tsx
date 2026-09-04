@@ -83,8 +83,8 @@ export default function RootLayout() {
   // React Navigation manages the navigator/transition surfaces — give it a
   // matching theme so expo-router screens don't stay light.
   const navTheme = dark
-    ? { ...DarkTheme, colors: { ...DarkTheme.colors, background: bg, card: "#161719", text: "#ededf0", border: "#2a2a2f", primary: "#ff8a33" } }
-    : { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: bg, card: "#ffffff", text: "#0f2d5c", border: "#e2e8f0", primary: "#ff7a00" } };
+    ? { ...DarkTheme, colors: { ...DarkTheme.colors, background: bg, card: "#161719", text: "#ededf0", border: "#2a2a2f", primary: "#e6bd6e" } }
+    : { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: bg, card: "#ffffff", text: "#14314C", border: "#e2e8f0", primary: "#D9A441" } };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }} onLayout={onLayoutRootView}>

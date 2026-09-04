@@ -185,7 +185,7 @@ export default function Confirmation() {
                   <QRCode
                     value={tickets[0]?.qrToken ?? booking.reference}
                     size={100}
-                    color="#16266b"
+                    color="#14314C"
                     backgroundColor="#ffffff"
                   />
                 </View>
@@ -207,7 +207,7 @@ export default function Confirmation() {
           {/* See seats in the vehicle */}
           {cells.length > 0 && (
             <Button variant="outline" className="mt-6" onPress={() => setSeatsOpen(true)}>
-              <Armchair size={18} color="#ff7a00" />
+              <Armchair size={18} color="#D9A441" />
               <Text className="font-sans font-medium text-ink">Voir mes sièges dans le véhicule</Text>
             </Button>
           )}
@@ -220,7 +220,7 @@ export default function Confirmation() {
               loading={pdfBusy}
               onPress={() => run(setPdfBusy, () => shareTicketPdf(pdfArgs()))}
             >
-              {!pdfBusy && <Download size={18} color="#16266b" />}
+              {!pdfBusy && <Download size={18} color="#14314C" />}
               <Text className="font-sans font-medium text-ink">
                 Enregistrer PDF
               </Text>
@@ -231,7 +231,7 @@ export default function Confirmation() {
               loading={printBusy}
               onPress={() => run(setPrintBusy, () => printTicket(pdfArgs()))}
             >
-              {!printBusy && <Printer size={18} color="#16266b" />}
+              {!printBusy && <Printer size={18} color="#14314C" />}
               <Text className="font-sans font-medium text-ink">Imprimer</Text>
             </Button>
           </View>

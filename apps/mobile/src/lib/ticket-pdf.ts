@@ -27,7 +27,7 @@ type Args = {
 
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
 
-const PALETTE = ["#16266b", "#f5821f", "#62b22e", "#2b6f8f", "#d96d0f"];
+const PALETTE = ["#14314C", "#D9A441", "#62b22e", "#2b6f8f", "#c2902f"];
 function colorFor(name: string): string {
   let s = 0;
   for (let i = 0; i < name.length; i++) s += name.charCodeAt(i);
@@ -75,10 +75,10 @@ async function html(a: Args): Promise<string> {
   <style>
     @page { size: 80mm auto; margin: 0; }
     * { box-sizing: border-box; }
-    body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #0f2d5c; margin: 0;
+    body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #14314C; margin: 0;
       width: 80mm; padding: 5mm 4mm; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
-    .ticket { border: 1px solid #0f2d5c; border-radius: 8px; overflow: hidden; }
+    .ticket { border: 1px solid #14314C; border-radius: 8px; overflow: hidden; }
 
     .head { background: #00183d; color: #fff; padding: 10px 12px 14px; }
     .bar { display: flex; align-items: center; gap: 8px; }
@@ -87,11 +87,11 @@ async function html(a: Args): Promise<string> {
     .coop { font-size: 13px; font-weight: 700; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ref { text-align: right; }
     .ref .lbl { font-size: 8px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.5); }
-    .ref .val { font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 800; color: #f5821f; }
+    .ref .val { font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 800; color: #D9A441; }
     .route { font-size: 20px; font-weight: 800; line-height: 1.1; margin-top: 12px; }
     .when { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: rgba(255,255,255,.75); margin-top: 4px; }
 
-    .seam { border-top: 2px dashed #0f2d5c; }
+    .seam { border-top: 2px dashed #14314C; }
     .body { padding: 12px; text-align: center; }
     .qr { width: 46mm; height: 46mm; margin: 0 auto 12px; }
     .qr svg { width: 100%; height: 100%; }
@@ -111,7 +111,7 @@ async function html(a: Args): Promise<string> {
           <span class="ref"><span class="lbl">Réf</span><br /><span class="val">${esc(a.reference)}</span></span>
         </div>
         <div class="route">${esc(a.originName)} &rarr; ${esc(a.destName)}</div>
-        ${a.tagName ? `<div style="margin-top:4px"><span style="display:inline-block;background:${esc(a.tagColor) || "#0f2d5c"};color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:4px">${esc(a.tagName)}</span></div>` : ""}
+        ${a.tagName ? `<div style="margin-top:4px"><span style="display:inline-block;background:${esc(a.tagColor) || "#14314C"};color:#fff;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:4px">${esc(a.tagName)}</span></div>` : ""}
         <div class="when">${esc(longDepart(a.departDate, a.departureAt))}</div>
       </div>
       <div class="seam"></div>

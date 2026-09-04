@@ -2,7 +2,7 @@ import { Image, Text, View } from "react-native";
 import { cn } from "@/lib/cn";
 
 // Deterministic brand-ish color per cooperative (used when no logoUrl/brandColor).
-const PALETTE = ["#16266b", "#f5821f", "#62b22e", "#2b6f8f", "#d96d0f"];
+const PALETTE = ["#14314C", "#D9A441", "#62b22e", "#2b6f8f", "#c2902f"];
 
 function colorFor(name: string): string {
   let sum = 0;

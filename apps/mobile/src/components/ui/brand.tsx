@@ -41,7 +41,7 @@ export function Button({
   disabled,
   ...p
 }: PressableProps & VariantProps<typeof button> & { children: React.ReactNode; loading?: boolean }) {
-  const spinnerColor = variant === "outline" || variant === "ghost" ? "#0f2d5c" : "#ffffff";
+  const spinnerColor = variant === "outline" || variant === "ghost" ? "#14314C" : "#ffffff";
   return (
     <Pressable
       className={cn(button({ variant, size }), (loading || disabled) && "opacity-60", className)}
@@ -71,7 +71,7 @@ export function Card({ className, style, ...p }: ViewProps) {
 export function Spinner({ className }: { className?: string }) {
   return (
     <View className={cn("items-center justify-center py-8", className)}>
-      <ActivityIndicator color="#f5821f" />
+      <ActivityIndicator color="#D9A441" />
     </View>
   );
 }
