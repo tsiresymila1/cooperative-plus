@@ -1,6 +1,7 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { db, lookup } from "../lib/db";
+import { getConsent, onConsentChange } from "./cookie-consent";
 
 /**
  * Platform analytics: once per browser session, upsert the signed-in user's
@@ -9,7 +10,15 @@ import { db, lookup } from "../lib/db";
  */
 export function VisitTracker() {
   const { user } = db.useAuth();
+  // Re-run once the visitor accepts, without a reload.
+  const [consent, setConsent] = useState<"accepted" | "rejected" | null>(null);
   useEffect(() => {
+    setConsent(getConsent());
+    return onConsentChange(() => setConsent(getConsent()));
+  }, []);
+
+  useEffect(() => {
+    if (consent !== "accepted") return; // RGPD: no tracking without consent
     const u = user as { id: string; email?: string; isGuest?: boolean } | null | undefined;
     if (!u?.id || u.isGuest) return;
     const key = `cp_visit_${u.id}`;
@@ -51,6 +60,6 @@ export function VisitTracker() {
         /* perms / offline — non-critical */
       }
     })();
-  }, [user]);
+  }, [user, consent]);
   return null;
 }
