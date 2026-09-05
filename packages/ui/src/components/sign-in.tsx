@@ -85,7 +85,7 @@ export function SignInScreen({
         />
         <span
           aria-hidden
-          className="absolute inset-0 [background:linear-gradient(150deg,rgba(23,40,111,.92)_0%,rgba(15,45,92,.88)_55%,rgba(11,29,68,.95)_100%)]"
+          className="absolute inset-0 [background:linear-gradient(150deg,rgba(15,45,92,.50)_0%,rgba(23,40,111,.50)_50%,rgba(11,29,68,.50)_70%)]"
         />
         {/* concentric rings */}
         <svg
