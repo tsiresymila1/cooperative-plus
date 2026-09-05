@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { ArrowRight, Building2 } from "lucide-react";
-import { db, Button, Card, Logo, SignInScreen, FullSpinner, notDeleted, UserMenu, ThemeToggle } from "@cp/ui";
+import { db, Button, Card, Badge, Logo, SignInScreen, FullSpinner, notDeleted, UserMenu, ThemeToggle } from "@cp/ui";
 
 export default function HomePage() {
   const { isLoading: authLoading, user } = db.useAuth();
@@ -50,8 +50,8 @@ export default function HomePage() {
           <UserMenu />
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="font-display text-2xl font-bold text-ink">Mes coopératives</h1>
+      <main className="mx-auto max-w-3xl px-4 py-10 md:px-6">
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">Mes coopératives</h1>
         <p className="mt-1 text-sm text-ink-soft">
           Choisissez une coopérative pour ouvrir son espace de gestion.
         </p>
@@ -92,22 +92,24 @@ function AdminCoopList() {
 }
 
 function CoopRow({ coop, role }: { coop: any; role: string }) {
+  const roleLabel = role === "admin" ? "Admin plateforme" : role === "owner" ? "Propriétaire" : "Assistant";
   return (
-    <Link href={`/${coop.slug}/dashboard`}>
-      <Card className="flex items-center gap-4 p-5 transition-colors hover:border-laterite/40">
-        <div className="grid h-12 w-12 place-items-center rounded-[--radius] bg-laterite/10 text-laterite">
+    <Link href={`/${coop.slug}/dashboard`} className="group block">
+      <div className="flex items-center gap-4 rounded-2xl border border-line bg-paper p-4 shadow-[var(--shadow-card)] transition-colors hover:border-laterite/50">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-laterite/10 text-laterite">
           <Building2 size={22} />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display font-bold text-ink">{coop.displayName}</p>
-          <p className="text-xs text-ink-soft/70">
-            /{coop.slug} · {role === "admin" ? "Admin plateforme" : role === "owner" ? "Propriétaire" : "Assistant"}
+          <p className="truncate font-medium text-ink">{coop.displayName}</p>
+          <p className="mt-0.5 flex items-center gap-2 text-xs text-ink-soft/70">
+            <span className="font-mono">/{coop.slug}</span>
+            <Badge tone={role === "owner" ? "success" : role === "admin" ? "warning" : "neutral"}>{roleLabel}</Badge>
           </p>
         </div>
-        <Button size="sm" variant="outline">
+        <Button size="sm" className="shrink-0">
           Ouvrir <ArrowRight size={16} />
         </Button>
-      </Card>
+      </div>
     </Link>
   );
 }
