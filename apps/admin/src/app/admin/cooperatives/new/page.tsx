@@ -9,7 +9,7 @@ import {
   adminNav,
   db,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
 } from "@cp/ui";
@@ -78,8 +78,8 @@ export default function NewCooperativePage() {
         </Link>
       }
     >
-      <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Identité" description="Informations de la coopérative.">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <ComponentCard title="Identité" desc="Informations de la coopérative.">
           <div className="grid gap-4">
             <Field label="Slug">
               <Input value={form.slug} onChange={(e) => set("slug", e.target.value)} placeholder="cotisse" />
@@ -109,12 +109,11 @@ export default function NewCooperativePage() {
               </Select>
             </Field>
           </div>
-        </FormSection>
+        </ComponentCard>
 
-        <FormSection
-          index="02"
+        <ComponentCard
           title="Compte propriétaire"
-          description="Crée un compte avec mot de passe. Le propriétaire se connecte à l'app coopérative avec cet email + mot de passe."
+          desc="Crée un compte avec mot de passe. Le propriétaire se connecte à l'app coopérative avec cet email + mot de passe."
         >
           <div className="grid gap-4">
             <Field label="Email du propriétaire" hint="Laisser vide pour ne pas créer de compte.">
@@ -138,7 +137,7 @@ export default function NewCooperativePage() {
               />
             </Field>
           </div>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href="/admin/cooperatives">

@@ -14,7 +14,7 @@ import {
   id as newId,
   Button,
   Badge,
-  FormSection,
+  ComponentCard,
   Field,
   ImageUpload,
   DataTable,
@@ -65,7 +65,7 @@ export default function EditCooperativePage({ params }: { params: Promise<{ id: 
 
   return (
     <Shell coop={coop}>
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-4xl space-y-6">
         {coop.subscriptionStatus === "suspended" && (
           <div className="mb-6 flex items-start gap-3 rounded-md border border-danger/30 bg-danger/10 px-4 py-3.5 text-danger">
             <AlertTriangle size={18} className="mt-0.5 shrink-0" />
@@ -179,7 +179,7 @@ function DangerZone({ coop, sub }: { coop: any; sub: any }) {
   }
 
   return (
-    <FormSection index="03" title="Zone de danger" description="Suspendre l'accès ou supprimer définitivement la coopérative.">
+    <ComponentCard title="Zone de danger" desc="Suspendre l'accès ou supprimer définitivement la coopérative." className="border-danger/30">
       <div className="divide-y divide-ink/8 rounded-md border border-danger/25">
         <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -218,7 +218,7 @@ function DangerZone({ coop, sub }: { coop: any; sub: any }) {
           </Button>
         </div>
       </div>
-    </FormSection>
+    </ComponentCard>
   );
 }
 
@@ -333,7 +333,7 @@ function InfoSections({ coop, plans, sub }: { coop: any; plans: any[]; sub: any 
 
   return (
     <>
-      <FormSection index="01" title="Identité" description="Nom, logo et coordonnées de la coopérative.">
+      <ComponentCard title="Identité" desc="Nom, logo et coordonnées de la coopérative.">
         <div className="grid gap-4">
           <ImageUpload value={coop.logoUrl} onFile={onLogo} />
           <div className="grid grid-cols-2 gap-4">
@@ -362,9 +362,9 @@ function InfoSections({ coop, plans, sub }: { coop: any; plans: any[]; sub: any 
             <Input value={form.region} onChange={(e) => set("region", e.target.value)} />
           </Field>
         </div>
-      </FormSection>
+      </ComponentCard>
 
-      <FormSection index="02" title="Abonnement & réservation" description="Formule, délai limite et remboursement.">
+      <ComponentCard title="Abonnement & réservation" desc="Formule, délai limite et remboursement.">
         <div className="grid gap-4">
           <Field label="Plan d'abonnement">
             <Select value={form.planId || "none"} onValueChange={(v) => set("planId", v === "none" ? "" : v)}>
@@ -395,7 +395,7 @@ function InfoSections({ coop, plans, sub }: { coop: any; plans: any[]; sub: any 
             </Button>
           </div>
         </div>
-      </FormSection>
+      </ComponentCard>
     </>
   );
 }
@@ -501,10 +501,9 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
   ];
 
   return (
-    <FormSection
-      index="03"
+    <ComponentCard
       title="Comptes"
-      description="Comptes rattachés à cette coopérative (connexion email + mot de passe sur l'app coopérative)."
+      desc="Comptes rattachés à cette coopérative (connexion email + mot de passe sur l'app coopérative)."
     >
       <div className="mb-6">
         <DataTable columns={columns} rows={members} empty="Aucun compte rattaché." pageSize={100} />
@@ -594,6 +593,6 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
           </div>
         )}
       </div>
-    </FormSection>
+    </ComponentCard>
   );
 }
