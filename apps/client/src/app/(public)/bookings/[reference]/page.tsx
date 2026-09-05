@@ -4,8 +4,26 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
-import { CheckCircle2, Clock, Download, Loader2, X, XCircle, CreditCard, Bus, MapPin } from "lucide-react";
-import { BrandLogo, CoopLogo, Logo, SeatSelector, TagBadge, useConfirm, type Cell } from "@cp/ui";
+import {
+  CheckCircle2,
+  Clock,
+  Download,
+  Loader2,
+  X,
+  XCircle,
+  CreditCard,
+  Bus,
+  MapPin,
+} from "lucide-react";
+import {
+  BrandLogo,
+  CoopLogo,
+  Logo,
+  SeatSelector,
+  TagBadge,
+  useConfirm,
+  type Cell,
+} from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney, toast } from "@cp/ui";
 
@@ -16,7 +34,11 @@ const btnOutline =
 const btnDanger =
   "inline-flex h-14 w-full items-center justify-center gap-2 px-6 font-display text-[15px] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 border border-sale/30 bg-white text-sale hover:bg-sale hover:text-white";
 
-export default function Confirmation({ params }: { params: Promise<{ reference: string }> }) {
+export default function Confirmation({
+  params,
+}: {
+  params: Promise<{ reference: string }>;
+}) {
   const { reference } = use(params);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -33,7 +55,11 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
         body: JSON.stringify({ bookingReference: reference }),
       });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.error ?? "Erreur paiement"); setPaying(false); return; }
+      if (!res.ok) {
+        toast.error(data.error ?? "Erreur paiement");
+        setPaying(false);
+        return;
+      }
       window.location.href = data.url;
     } catch {
       toast.error("Erreur réseau");
@@ -42,52 +68,114 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
   };
 
   const { data, isLoading } = db.useQuery({
-    bookings: { $: { where: { reference } }, tickets: { tripVehicle: {} }, payments: {}, tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} } },
+    bookings: {
+      $: { where: { reference } },
+      tickets: { tripVehicle: {} },
+      payments: {},
+      tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} },
+    },
   });
   const bk = data?.bookings?.[0];
   const trip = bk?.tripInstance;
 
   // Vehicle/driver for this ticket: from the linked tripVehicle (multi-vehicle),
   // else fall back to the trip's own vehicle/driver (legacy mono-vehicle).
-  const tv: any = (bk?.tickets ?? []).map((t: any) => t.tripVehicle).find(Boolean);
+  const tv: any = (bk?.tickets ?? [])
+    .map((t: any) => t.tripVehicle)
+    .find(Boolean);
   const vehLabel = tv?.label ?? "Voiture 1";
-  const vehReg = tv?.registrationNo ?? (trip as any)?.vehicle?.registrationNo ?? null;
+  const vehReg =
+    tv?.registrationNo ?? (trip as any)?.vehicle?.registrationNo ?? null;
   const vehDriver = tv?.driverName ?? (trip as any)?.driverName ?? null;
 
   // Seat-map preview for the ticket: layout from the vehicle (or snapshot),
   // with the passenger's own seats highlighted.
   const ownSeats = (bk?.tickets ?? []).map((t) => t.seatLabel as string);
   // tag may come back as object or single-item array depending on the link traversal.
-  const tag: any = Array.isArray((trip as any)?.tag) ? (trip as any).tag[0] : (trip as any)?.tag;
-  const activeMap = (trip?.vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ?? (trip?.vehicle?.seatMaps ?? [])[0];
+  const tag: any = Array.isArray((trip as any)?.tag)
+    ? (trip as any).tag[0]
+    : (trip as any)?.tag;
+  const activeMap =
+    (trip?.vehicle?.seatMaps ?? []).find((m: any) => m.isActive) ??
+    (trip?.vehicle?.seatMaps ?? [])[0];
   const layout: Cell[] = Array.isArray(activeMap?.layout)
     ? (activeMap.layout as Cell[])
-    : Array.isArray((trip as any)?.seatMapSnapshot) ? ((trip as any).seatMapSnapshot as Cell[]) : [];
+    : Array.isArray((trip as any)?.seatMapSnapshot)
+      ? ((trip as any).seatMapSnapshot as Cell[])
+      : [];
 
   // Status-aware header + label.
   const status = bk?.status ?? "";
   const dead = ["cancelled", "expired", "refunded", "no_show"].includes(status);
   const awaitingPayment = status === "pending" && paymentParam === "success";
   const head = dead
-    ? { Icon: XCircle, wrap: "bg-sale/15 text-sale",
-        title: { cancelled: "Réservation annulée", expired: "Réservation expirée", refunded: "Réservation remboursée", no_show: "Passager absent" }[status] ?? "Réservation annulée",
-        sub: "Cette réservation n'est plus valide." }
+    ? {
+        Icon: XCircle,
+        wrap: "bg-sale/15 text-sale",
+        title:
+          {
+            cancelled: "Réservation annulée",
+            expired: "Réservation expirée",
+            refunded: "Réservation remboursée",
+            no_show: "Passager absent",
+          }[status] ?? "Réservation annulée",
+        sub: "Cette réservation n'est plus valide.",
+      }
     : awaitingPayment
-      ? { Icon: Loader2, wrap: "bg-navy/10 text-navy", title: "Vérification du paiement…", sub: "Paiement en cours de traitement. Page mise à jour automatiquement." }
+      ? {
+          Icon: Loader2,
+          wrap: "bg-navy/10 text-navy",
+          title: "Vérification du paiement…",
+          sub: "Paiement en cours de traitement. Page mise à jour automatiquement.",
+        }
       : status === "pending"
-        ? { Icon: Clock, wrap: "bg-gold/15 text-gold", title: "Réservation enregistrée", sub: "Payez à la gare avant le départ." }
-        : { Icon: CheckCircle2, wrap: "bg-stock/15 text-stock", title: "Réservation confirmée", sub: "Présentez le QR code à l'embarquement." };
-  const STATUS_FR: Record<string, string> = { pending: "En attente", confirmed: "Confirmé", paid: "Payé", cancelled: "Annulé", refunded: "Remboursé", expired: "Expiré", completed: "Terminé", no_show: "Absent" };
+        ? {
+            Icon: Clock,
+            wrap: "bg-gold/15 text-gold",
+            title: "Réservation enregistrée",
+            sub: "Payez à la gare avant le départ.",
+          }
+        : {
+            Icon: CheckCircle2,
+            wrap: "bg-stock/15 text-stock",
+            title: "Réservation confirmée",
+            sub: "Présentez le QR code à l'embarquement.",
+          };
+  const STATUS_FR: Record<string, string> = {
+    pending: "En attente",
+    confirmed: "Confirmé",
+    paid: "Payé",
+    cancelled: "Annulé",
+    refunded: "Remboursé",
+    expired: "Expiré",
+    completed: "Terminé",
+    no_show: "Absent",
+  };
   const canPayOnline = status === "pending";
-  const statusTone = dead ? "bg-sale/15 text-sale" : status === "pending" ? "bg-gold/15 text-gold" : "bg-stock/15 text-stock";
+  const statusTone = dead
+    ? "bg-sale/15 text-sale"
+    : status === "pending"
+      ? "bg-gold/15 text-gold"
+      : "bg-stock/15 text-stock";
 
   // Cancellable only while unpaid (pending). Frees the seats (delete own tickets).
   const cancelBooking = async () => {
     if (!bk) return;
-    if (!(await confirm({ title: "Annuler la réservation ?", message: `${reference} · ${fmtMoney(bk.totalAmount)}`, confirmLabel: "Annuler", tone: "danger" }))) return;
+    if (
+      !(await confirm({
+        title: "Annuler la réservation ?",
+        message: `${reference} · ${fmtMoney(bk.totalAmount)}`,
+        confirmLabel: "Annuler",
+        tone: "danger",
+      }))
+    )
+      return;
     try {
       await db.transact([
-        db.tx.bookings[bk.id].update({ status: "cancelled", cancelledAt: Date.now() }),
+        db.tx.bookings[bk.id].update({
+          status: "cancelled",
+          cancelledAt: Date.now(),
+        }),
         ...(bk.tickets ?? []).map((t: any) => db.tx.tickets[t.id].delete()),
       ]);
       toast.success("Réservation annulée");
@@ -145,16 +233,17 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
             >
               {/* Boarding pass — Tourix "bus ticket" artwork, rebuilt as a real card:
               gold top bar · white world-map body · navy tear-off stub at right. */}
-              <div className="relative flex overflow-hidden rounded-sm bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
+              <div className="relative flex overflow-hidden rounded-xl bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
                 {/* ── Main pass ── */}
                 <div className="min-w-0 flex-1">
                   {/* Gold header bar */}
-                  <div className="flex items-center justify-between gap-3 bg-gold px-5 py-3.5 text-navy">
+                  <div className="flex items-center justify-between gap-3 bg-gold-nav px-5 py-3.5 text-navy">
                     <span className="flex items-center gap-3">
-                      <BrandLogo className="h-10" tone="dark" />
+                      <BrandLogo className="h-10" tone="light" />
                       <span className="font-display text-2xl font-bold uppercase tracking-[0.06em]">
                         Ticket
                       </span>
+                      {tag && <TagBadge name={tag.name} color={tag.color} />}
                     </span>
                     <span className="flex items-center gap-2.5 text-right">
                       <span className="hidden font-body text-[9px] font-semibold uppercase leading-tight tracking-[1.5px] text-navy/70 sm:block">
@@ -212,9 +301,6 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
                               {trip?.destName ?? ""}
                             </p>
                           </div>
-                          {tag && (
-                            <TagBadge name={tag.name} color={tag.color} />
-                          )}
                         </div>
                       </div>
 
@@ -300,15 +386,15 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
                   />
                   {/* Big seat / count */}
                   <span className="flex flex-col items-center">
-                    <span className="font-body text-[8px] uppercase tracking-[2px] text-gold">
+                    <span className="font-body text-[8px] uppercase tracking-[2px] text-gold-nav">
                       Réf
                     </span>
-                    <span className="font-display text-2xl font-bold tracking-wider text-gold">
+                    <span className="font-display text-2xl font-bold tracking-wider text-gold-nav">
                       {reference}
                     </span>
                   </span>
 
-                  <div className="flex">
+                  <div className="flex flex-col text-center">
                     {/* Route + date, vertical */}
                     <span className="font-display text-[12px] font-semibold uppercase tracking-[0.2em] text-white/70  rotate-0">
                       {trip ? `${trip.originName} ` : reference}
@@ -336,7 +422,7 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
                     Vos places
                   </p>
                   <div className="flex justify-center overflow-x-auto">
-                    <div className="pointer-events-none origin-top scale-90">
+                    <div className="pointer-events-none origin-top scale-90 w-full">
                       <SeatSelector
                         layout={layout}
                         taken={[]}
@@ -379,13 +465,22 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
   );
 }
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return <div className="flex items-center justify-between"><span className="font-light text-navy/60">{label}</span><span className="font-medium text-navy">{value}</span></div>;
+  return (
+    <div className="flex items-center justify-between">
+      <span className="font-light text-navy/60">{label}</span>
+      <span className="font-medium text-navy">{value}</span>
+    </div>
+  );
 }
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>
-      <p className="font-body text-[10px] font-semibold uppercase tracking-[2px] text-navy/45">{label}</p>
-      <p className="font-display text-lg font-bold uppercase leading-tight tracking-[-0.3px] text-navy">{value}</p>
+      <p className="font-body text-[10px] font-semibold uppercase tracking-[2px] text-navy/45">
+        {label}
+      </p>
+      <p className="font-display text-lg font-bold uppercase leading-tight tracking-[-0.3px] text-navy">
+        {value}
+      </p>
     </div>
   );
 }
