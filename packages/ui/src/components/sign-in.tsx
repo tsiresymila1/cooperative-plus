@@ -88,7 +88,7 @@ export function SignInScreen({
           className="absolute inset-0 [background:linear-gradient(150deg,rgba(15,45,92,.50)_0%,rgba(23,40,111,.50)_50%,rgba(11,29,68,.50)_70%)]"
         />
         {/* concentric rings */}
-        <svg
+        {/* <svg
           aria-hidden
           className="pointer-events-none absolute -bottom-40 -left-40 h-[36rem] w-[36rem] opacity-[.12]"
           viewBox="0 0 400 400"
@@ -104,8 +104,8 @@ export function SignInScreen({
               strokeWidth="1.5"
             />
           ))}
-        </svg>
-        <Logo dark height={50} width={200} />
+        </svg> */}
+        <Logo dark height={50} width={200} className="z-10" />
 
         <div className="relative">
           <h2 className="font-display text-[2.7rem] font-extrabold leading-[1.05] tracking-tight">
@@ -139,7 +139,7 @@ export function SignInScreen({
       <main className="relative grid place-items-center bg-paper px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="mb-6 lg:hidden">
-            <Logo />
+            <Logo height={80} />
           </div>
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-soft/55">
             {kicker}
