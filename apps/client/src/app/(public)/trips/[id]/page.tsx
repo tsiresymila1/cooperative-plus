@@ -1,9 +1,8 @@
 "use client";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Bus, MapPin, ShieldCheck } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { Badge, Button, Card, CoopLogo, Spinner, TagBadge } from "@cp/ui";
+import { ArrowRight, Bus, Loader2, MapPin, ShieldCheck } from "lucide-react";
+import { CoopLogo, TagBadge } from "@cp/ui";
 import { SeatSelector, type Cell, tripSlots, slotSeatKey } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db, id } from "@cp/ui";
@@ -12,6 +11,9 @@ import { fmtMoney } from "@cp/ui";
 
 const HOLD_MS = 5 * 60 * 1000;
 const DEAD = ["cancelled", "expired", "refunded"];
+
+const btnGold =
+  "inline-flex h-14 w-full items-center justify-center gap-2 px-6 font-display text-[15px] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 bg-gold text-navy hover:bg-navy hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gold disabled:hover:text-navy";
 
 export default function TripDetail({
   params,
@@ -66,21 +68,19 @@ export default function TripDetail({
 
   if (isLoading)
     return (
-      <>
-        <SiteHeader />
-        <main className="mx-auto grid max-w-6xl place-items-center px-5 py-20">
-          <Spinner size={28} />
-        </main>
-      </>
+      <main className="grid min-h-[60vh] place-items-center pt-[100px]">
+        <Loader2 className="animate-spin text-gold" size={32} />
+      </main>
     );
   if (!trip || (trip.cooperative as any)?.subscriptionStatus === "suspended")
     return (
-      <>
-        <SiteHeader />
-        <main className="mx-auto max-w-6xl px-5 py-20">
-          Trajet introuvable.
-        </main>
-      </>
+      <main className="pt-[100px]">
+        <div className="mx-auto max-w-content px-[15px] py-24 text-center">
+          <p className="font-display text-3xl font-semibold uppercase text-navy">
+            Trajet introuvable
+          </p>
+        </div>
+      </main>
     );
 
   const slots = tripSlots(trip);
@@ -161,18 +161,18 @@ export default function TripDetail({
   };
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto max-w-6xl px-5 py-8">
-        <div className="mb-6 flex items-center gap-4">
+    <main className="pt-[100px]">
+      <div className="mx-auto max-w-content px-[15px] py-10 lg:py-14">
+        {/* Trip header */}
+        <div className="mb-8 flex items-start gap-4 border-b border-navy/10 pb-8">
           <CoopLogo
             url={trip.cooperative?.logoUrl}
             name={trip.coopName}
-            size={56}
+            size={60}
           />
           <div>
-            <div className="flex items-center gap-2 text-sm text-ink-soft">
-              <MapPin size={14} className="text-orange" />
+            <div className="flex flex-wrap items-center gap-2 font-body text-[13px] font-medium uppercase tracking-[1px] text-navy/50">
+              <MapPin size={14} className="text-gold" />
               {trip.coopName} · {trip.vehicleName}
               {(trip as any).tag && (
                 <TagBadge
@@ -181,40 +181,39 @@ export default function TripDetail({
                 />
               )}
             </div>
-            <h1 className="mt-1 font-display text-3xl font-bold">
-              {trip.originName} → {trip.destName}
+            <h1 className="mt-2 font-display text-[38px] font-semibold uppercase leading-none tracking-[-1px] text-navy lg:text-[52px]">
+              {trip.originName} <span className="text-gold">→</span>{" "}
+              {trip.destName}
             </h1>
-            <div className="mt-1 flex items-center gap-4 font-mono text-ink-soft">
-              <span className="text-lg font-semibold text-ink">
-                {new Date(trip.departureAt).toLocaleString("fr", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
-            </div>
-            <p className="mt-1 text-sm text-ink-soft">
+            <p className="mt-3 font-body text-[15px] font-medium text-navy">
+              {new Date(trip.departureAt).toLocaleString("fr", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </p>
+            <p className="mt-1 font-body text-sm font-light text-navy/60">
               Chauffeur ·{" "}
-              <span className="font-medium text-ink">
+              <span className="font-medium text-navy">
                 {slot.driverName ?? "-"}
               </span>
             </p>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-          <Card className="p-6">
-            <h2 className="mb-1 font-display text-lg font-bold">
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
+          <div className="border border-navy/10 bg-white p-6">
+            <h2 className="font-display text-2xl font-semibold uppercase tracking-[-0.5px] text-navy">
               Choisissez vos sièges
             </h2>
-            <p className="mb-4 text-sm text-ink-soft">
+            <p className="mb-5 mt-1 font-body text-sm font-light text-navy/60">
               Sélectionnez votre véhicule puis vos places. La connexion est
               demandée au moment de continuer.
             </p>
             {slots.length > 1 && (
-              <div className="mb-4 flex flex-wrap gap-1.5">
+              <div className="mb-5 flex flex-wrap gap-2">
                 {slots.map((s) => {
                   const taken = new Set([
                     ...(s.tickets ?? [])
@@ -231,11 +230,11 @@ export default function TripDetail({
                       onClick={() => pickSlot(s)}
                       className={
                         s.id === slot?.id
-                          ? "inline-flex items-center gap-1.5 rounded-md bg-strong px-3 py-1.5 text-xs font-bold text-white"
-                          : "inline-flex items-center gap-1.5 rounded-md border border-ink/12 px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-ink/5"
+                          ? "inline-flex items-center gap-1.5 bg-navy px-4 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.5px] text-white"
+                          : "inline-flex items-center gap-1.5 border border-navy/15 px-4 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.5px] text-navy/70 transition-colors hover:bg-mist"
                       }
                     >
-                      <Bus size={13} /> {s.label} · {left} pl.
+                      <Bus size={14} /> {s.label} · {left} pl.
                     </button>
                   );
                 })}
@@ -250,12 +249,14 @@ export default function TripDetail({
                 max={6}
               />
             </div>
-          </Card>
+          </div>
 
-          <div className="lg:sticky lg:top-20 lg:self-start">
-            <Card className="p-5">
-              <h3 className="font-display text-lg font-bold">Récapitulatif</h3>
-              <div className="mt-3 space-y-2 text-sm">
+          <div className="lg:sticky lg:top-[120px] lg:self-start">
+            <div className="border border-navy/10 bg-white p-6">
+              <h3 className="font-display text-xl font-semibold uppercase tracking-[-0.5px] text-navy">
+                Récapitulatif
+              </h3>
+              <div className="mt-4 space-y-2.5">
                 {slots.length > 1 && (
                   <Row label="Véhicule" value={slot?.label ?? "—"} />
                 )}
@@ -269,14 +270,16 @@ export default function TripDetail({
                 />
                 <Row label="Prix unitaire" value={fmtMoney(trip.price)} />
               </div>
-              <div className="mt-4 flex items-end justify-between border-t border-ink/8 pt-4">
-                <span className="text-sm text-ink-soft">Total</span>
-                <span className="font-mono text-2xl font-bold">
+              <div className="mt-5 flex items-end justify-between border-t border-navy/10 pt-4">
+                <span className="font-body text-[11px] font-semibold uppercase tracking-[2px] text-navy/50">
+                  Total
+                </span>
+                <span className="font-display text-3xl font-semibold text-gold">
                   {fmtMoney(total)}
                 </span>
               </div>
-              <Button
-                className="mt-4 w-full text-white"
+              <button
+                className={`mt-5 ${btnGold}`}
                 disabled={!draft.seats.length || reserving}
                 onClick={proceed}
               >
@@ -286,30 +289,37 @@ export default function TripDetail({
                     ? "Se connecter pour continuer"
                     : "Continuer"}{" "}
                 <ArrowRight size={16} />
-              </Button>
-              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-soft/70">
-                <ShieldCheck size={13} className="text-baobab" /> Siège garanti,
+              </button>
+              <p className="mt-4 flex items-center justify-center gap-1.5 font-body text-xs font-light text-navy/50">
+                <ShieldCheck size={14} className="text-gold" /> Siège garanti,
                 zéro double-réservation
               </p>
-            </Card>
+            </div>
             <div className="mt-3 flex justify-center">
-              <Badge tone={available <= 3 ? "warning" : "success"}>
+              <span
+                className={
+                  "inline-flex items-center border px-3 py-1.5 font-display text-[12px] font-semibold uppercase tracking-[0.5px] " +
+                  (available <= 3
+                    ? "border-sale/30 bg-sale/10 text-sale"
+                    : "border-navy/15 bg-navy/[.04] text-navy/70")
+                }
+              >
                 {available} places restantes
                 {slots.length > 1 ? ` · ${slot?.label}` : ""}
-              </Badge>
+              </span>
             </div>
           </div>
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between">
-      <span className="text-ink-soft">{label}</span>
-      <span className="font-medium text-ink">{value}</span>
+    <div className="flex justify-between font-body text-sm">
+      <span className="font-light text-navy/60">{label}</span>
+      <span className="font-medium text-navy">{value}</span>
     </div>
   );
 }

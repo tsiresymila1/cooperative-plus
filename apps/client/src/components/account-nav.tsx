@@ -16,20 +16,20 @@ export function AccountNav() {
   const path = usePathname();
   const router = useRouter();
   return (
-    <div className="flex items-center gap-1 overflow-x-auto rounded-[--radius] border border-ink/8 bg-paper p-1">
+    <div className="flex items-center gap-1 overflow-x-auto border border-navy/10 bg-white p-1">
       {tabs.map((t) => {
         const active = path === t.href;
         const Icon = t.icon;
         return (
           <Link key={t.href} href={t.href}
-            className={cn("flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium transition-colors",
-              active ? "bg-strong text-white" : "text-ink-soft hover:bg-ink/5")}>
+            className={cn("flex items-center gap-2 px-4 py-2 text-sm font-display uppercase tracking-wide transition-colors",
+              active ? "bg-gold text-navy" : "text-navy/60 hover:bg-navy/5 hover:text-navy")}>
             <Icon size={16} /> {t.label}
           </Link>
         );
       })}
       <button onClick={async () => { await db.auth.signOut(); router.push("/"); }}
-        className="ml-auto flex items-center gap-2 rounded-sm px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-ink/5">
+        className="ml-auto flex items-center gap-2 px-4 py-2 text-sm font-display uppercase tracking-wide text-navy/60 transition-colors hover:bg-navy/5 hover:text-navy">
         <LogOut size={16} /> Déconnexion
       </button>
     </div>

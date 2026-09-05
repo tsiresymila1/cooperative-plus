@@ -12,9 +12,9 @@ export function DatePicker({ value, onChange, placeholder = "Choisir une date", 
   return (
     <Popover>
       <PopoverTrigger
-        className={cn("flex h-11 w-full items-center gap-2 rounded-[--radius] border border-ink/12 bg-paper px-3.5 text-left text-[15px] outline-none transition-all focus:border-orange focus:ring-2 focus:ring-orange/20", className)}>
-        <CalendarDays size={16} className="shrink-0 text-ink-soft/60" />
-        <span className={cn("truncate", value ? "text-ink" : "text-ink-soft/50")}>
+        className={cn("flex h-11 w-full items-center gap-2 rounded-[--radius] border border-navy/12 bg-white px-3.5 text-left text-[15px] outline-none transition-all focus:border-orange focus:ring-2 focus:ring-orange/20", className)}>
+        <CalendarDays size={16} className="shrink-0 text-navy/60" />
+        <span className={cn("truncate", value ? "text-navy" : "text-navy/50")}>
           {value ? format(value, "EEE d MMM yyyy", { locale: fr }) : placeholder}
         </span>
       </PopoverTrigger>
