@@ -46,7 +46,7 @@ export default function Benefits({
   if (layout === "split") {
     return (
       <section className="grid lg:grid-cols-2">
-        <div className="bg-navy px-[15px] py-[70px] lg:py-[90px] lg:pl-[calc((100vw-1410px)/2+15px)] lg:pr-[60px]">
+        <div className="bg-navy px-[20px] py-[70px] lg:py-[90px] lg:min-pl-[calc((100vw-1410px)/2+15px)] lg:pr-[60px]">
           <SectionHeading
             eyebrow="Nos avantages"
             tone="dark"
@@ -59,7 +59,10 @@ export default function Benefits({
               const Icon = ICONS[i];
               return (
                 <li key={label} className="flex flex-col items-start">
-                  <Icon className="mb-[14px] size-[46px] text-gold" strokeWidth={1} />
+                  <Icon
+                    className="mb-[14px] size-[46px] text-gold"
+                    strokeWidth={1}
+                  />
                   <span className="font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-white">
                     {label}
                   </span>

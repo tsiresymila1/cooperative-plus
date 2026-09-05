@@ -17,19 +17,20 @@ export default function AppPromo() {
         <div className="grid items-center gap-[60px] lg:grid-cols-2">
           <div>
             <SectionHeading
-              eyebrow="Mobile application"
+              eyebrow="Application mobile"
               title={
                 <>
-                  Book your trips faster
+                  Réservez vos trajets
                   <br />
-                  with our app
+                  plus vite avec l'app
                 </>
               }
               className="mb-[26px]"
             />
             <p className="max-w-[520px] font-body text-[16px] font-light leading-[25.6px] text-navy/70">
-              Curabitur imperdiet varius lacus, id placerat purus vulputate non.
-              Fusce in felis vel arcu maximus placerat eu ut arcu.
+              Recherchez une ligne, choisissez votre place et payez en quelques
+              secondes. Retrouvez vos billets et vos QR codes d'embarquement
+              directement dans votre poche, partout à Madagascar.
             </p>
 
             <div className="mt-[36px] flex flex-wrap gap-4">

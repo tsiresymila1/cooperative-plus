@@ -142,28 +142,28 @@ export const FAQS = [
 
 export const TESTIMONIALS = [
   {
-    author: "Stefanie Rashford",
+    author: "Hanta Rakotonirina",
     avatar: "/wp-content/uploads/2024/12/testimonials_01-140x140.jpg",
     quote:
-      "Absolutely delightful! The sushi here is always fresh and beautifully presented, with a fantastic variety of rolls and sashimi to choose from. The atmosphere is warm and inviting, and the",
+      "Réservation en ligne très simple et j'ai pu choisir ma place à l'avance. Le taxi-brousse est parti à l'heure et le trajet Antananarivo–Toamasina s'est très bien passé.",
   },
   {
-    author: "Patric Stone",
+    author: "Tiana Andrianina",
     avatar: "/wp-content/uploads/2024/12/testimonials_02-140x140.jpg",
     quote:
-      "Service was exceptional, and it's clear that you have a genuine passion for what you do. The attention to detail and willingness to personalize the experience made it truly memorable.",
+      "Enfin une façon fiable de réserver un taxi-brousse ! Plus besoin de faire la queue à la gare. J'ai payé par Mobile Money et reçu mon billet avec QR code aussitôt.",
   },
   {
-    author: "Hugo James",
+    author: "Miora Razafy",
     avatar: "/wp-content/uploads/2024/12/testimonials_03-140x140.jpg",
     quote:
-      "The work done was outstanding! The dedication and hard work put into it were evident and greatly appreciated. The level of skill and expertise demonstrated was truly impressive, and it",
+      "Chauffeur expérimenté, véhicule propre et confortable pour aller à Fianarantsoa. Les tarifs sont clairs, affichés à l'avance. Je recommande Coopérative Plus.",
   },
   {
-    author: "Cassie Carleton",
+    author: "Fanja Ratsimba",
     avatar: "/wp-content/uploads/2024/12/testimonials_04-480x480.jpg",
     quote:
-      "The product delivered exceeded expectations! The attention to detail and commitment to quality were evident in every aspect. The level of customer service provided was also exceptional and greatly appreciated.",
+      "Service au top pour mon trajet vers Mahajanga. Départs réguliers et personnel à l'écoute. La réservation depuis le téléphone m'a fait gagner beaucoup de temps.",
   },
 ];
 
