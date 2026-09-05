@@ -75,7 +75,7 @@ export function SignInScreen({
     <div className="grid min-h-dvh lg:grid-cols-2">
       {/* ── Brand panel ─────────────────────────────────────── */}
       <aside className="relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex
-        [background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)] dark:[background:transparent] dark:border-r dark:border-r-ink/5">
+        [background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)]">
         {/* concentric rings */}
         <svg aria-hidden className="pointer-events-none absolute -bottom-40 -left-40 h-[36rem] w-[36rem] opacity-[.12]" viewBox="0 0 400 400">
           {[60, 110, 160, 200].map((r) => <circle key={r} cx="200" cy="200" r={r} fill="none" stroke="white" strokeWidth="1.5" />)}
