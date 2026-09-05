@@ -328,16 +328,19 @@ export default function Checkout() {
   const isOnline = method === "mobile_money"; // PAPI online payment
 
   return (
-    <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center justify-between px-5 py-3">
+    <View className="flex-1 bg-sand">
+      <View
+        className="flex-row items-center justify-between rounded-b-[20px] bg-strong px-5 pb-4"
+        style={{ paddingTop: insets.top + 8 }}
+      >
         <View className="flex-row items-center gap-3">
-          <Pressable onPress={leave} className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper">
-            <ChevronLeft size={20} color={c.ink} />
+          <Pressable onPress={leave} className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15">
+            <ChevronLeft size={20} color="#ffffff" />
           </Pressable>
-          <Text className="font-display text-lg text-ink">Paiement</Text>
+          <Text className="font-display text-lg uppercase tracking-wide text-white">Paiement</Text>
         </View>
-        <View className={cn("rounded-[4px] px-3 py-1", expiring ? "bg-laterite/15" : "bg-baobab/15")}>
-          <Text className={cn("font-mono text-sm", expiring ? "text-laterite-deep" : "text-baobab")}>
+        <View className={cn("rounded-[4px] px-3 py-1", expiring ? "bg-laterite/25" : "bg-white/15")}>
+          <Text className={cn("font-mono text-sm", expiring ? "text-laterite" : "text-white")}>
             {fmtCountdown(Math.max(0, remaining))}
           </Text>
         </View>
@@ -437,11 +440,11 @@ export default function Checkout() {
       <View className="absolute inset-x-0 bottom-0 border-t border-ink/10 bg-paper px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         <View className="mb-2 flex-row items-center justify-between">
           <Text className="font-sans font-bold text-sm text-ink-soft">Total</Text>
-          <Text className="font-mono  font-bold text-xl text-ink">{fmtMoney(total, selection.currency)}</Text>
+          <Text className="font-mono font-bold text-xl text-green">{fmtMoney(total, selection.currency)}</Text>
         </View>
-        <Button onPress={() => setConfirmOpen(true)} loading={submitting} disabled={!canSubmit}>
-          <Text className="font-sans font-medium text-white">
-            {isOnline ? `Payer ${fmtMoney(total, selection.currency)} en ligne` : "Réserver · payer à la gare"}
+        <Button className="w-full" onPress={() => setConfirmOpen(true)} loading={submitting} disabled={!canSubmit}>
+          <Text className="font-sans font-semibold uppercase tracking-wide text-white">
+            {isOnline ? `Payer ${fmtMoney(total, selection.currency)}` : "Réserver · payer à la gare"}
           </Text>
         </Button>
       </View>

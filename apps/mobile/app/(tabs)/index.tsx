@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { Dimensions, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
-import { LinearGradient } from "expo-linear-gradient";
 import { useColorScheme } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ArrowRight, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
@@ -88,54 +87,50 @@ export default function Home() {
 
   return (
     <SafeAreaView edges={['bottom']} className="h-full w-full" >
-      <View className="relative w-full h-full bg-sand">
-        {/* Hero image with fade to sand (onboarding style) */}
-        <View style={{ position: "absolute", top: 0, left: 0, right: 0, height: Dimensions.get("window").height * 0.4 + insets.top }}>
-          <Image source={require("../../assets/onboarding-bus.png")} style={{ width: "100%", height: "100%" }} resizeMode="cover" />
-          <LinearGradient
-            colors={["rgba(0,0,0,0.35)", "rgba(0,0,0,0.1)", dark ? c.sand: "#0a0a0a"]}
-            locations={[0, 0.45, 1]}
-            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-            pointerEvents="none"
-          />
-        </View>
-
-        {/* Header (over image) */}
-        <Animated.View entering={FadeIn.duration(500)} className="flex-row items-center justify-between px-5 pb-4" style={{ paddingTop: insets.top + 8 }}>
-          <Image source={require("../../assets/logo-long.png")} style={{ width: 170, height: 40, borderRadius: 8 }} resizeMode="contain" />
-          <View className="flex-row items-center gap-2">
-            <Pressable
-              onPress={toggleTheme}
-              className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
-            >
-              {dark ? <Sun size={18} color="#ffffff" /> : <Moon size={18} color="#ffffff" />}
-            </Pressable>
-            <Pressable
-              onPress={() => router.push(user ? "/profile" : "/sign-in")}
-              className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
-            >
-              <UserIcon size={18} color="#ffffff" />
-            </Pressable>
-          </View>
-        </Animated.View>
-        <ScrollView
-          className="flex-1"
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingTop: 6}}
-          showsVerticalScrollIndicator={false}
+      <View className="w-full h-full bg-sand">
+        {/* Navy header band */}
+        <Animated.View
+          entering={FadeIn.duration(500)}
+          className="rounded-b-[20px] bg-strong px-5 pb-7"
+          style={{ paddingTop: insets.top + 8 }}
         >
-          {/* Greeting (over image) */}
-          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="px-5 pt-12 pb-12">
-            <Text className="font-sans text-sm text-white/80" style={{ textShadowColor: "rgba(0,0,0,0.4)", textShadowRadius: 8 }}>
+          <View className="flex-row items-center justify-between">
+            <Image source={require("../../assets/logo-long.png")} style={{ width: 170, height: 40, borderRadius: 8 }} resizeMode="contain" />
+            <View className="flex-row items-center gap-2">
+              <Pressable
+                onPress={toggleTheme}
+                className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
+              >
+                {dark ? <Sun size={18} color="#ffffff" /> : <Moon size={18} color="#ffffff" />}
+              </Pressable>
+              <Pressable
+                onPress={() => router.push(user ? "/profile" : "/sign-in")}
+                className="h-9 w-9 items-center justify-center rounded-full bg-white/15"
+              >
+                <UserIcon size={18} color="#ffffff" />
+              </Pressable>
+            </View>
+          </View>
+
+          {/* Greeting + title */}
+          <Animated.View entering={FadeInDown.delay(80).duration(420)} className="mt-6">
+            <Text className="font-sans text-sm text-white/70">
               {user?.email ? `Bonjour, ${user.email.split("@")[0]} 👋` : "Bonjour 👋"}
             </Text>
-            <Text className="mt-1 font-display text-3xl text-white" style={{ textShadowColor: "rgba(0,0,0,0.4)", textShadowRadius: 10 }}>
+            <Text className="mt-1 font-display text-3xl uppercase tracking-wide text-white">
               Où allez-vous ?
             </Text>
           </Animated.View>
+        </Animated.View>
 
+        <ScrollView
+          className="flex-1"
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
+          showsVerticalScrollIndicator={false}
+        >
           {/* Search card — primary focus, gets the most space */}
-          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 pt-15">
+          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5">
             <Card className="gap-6 p-5 shadow-lg">
               <DestinationField
                 label="Départ"
@@ -159,15 +154,15 @@ export default function Home() {
               <DateField value={date} onChange={setDate} className="py-2" />
               <View className="h-px bg-ink/8" />
               {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
-              <Button size="md" className="mt-1" onPress={goSearch} loading={searching}>
+              <Button size="md" className="mt-1 w-full" onPress={goSearch} loading={searching}>
                 {!searching && <Search size={18} color="#ffffff" />}
-                <Text className="font-sans text-base font-medium text-white">Rechercher</Text>
+                <Text className="font-sans text-base font-semibold uppercase tracking-wide text-white">Rechercher</Text>
               </Button>
             </Card>
           </Animated.View>
 
           {/* Prochains départs — secondary, kept compact */}
-          <View className="px-5 pt-15">
+          <View className="px-5 pt-8">
             <Text className="mb-1 font-sans text-xs font-semibold uppercase tracking-wider text-ink-soft/60">
               Prochains départs
             </Text>
@@ -203,7 +198,7 @@ export default function Home() {
                           <Text className="font-display text-lg text-ink" numberOfLines={1}>{r.originName}</Text>
                           <ArrowRight size={15} color="#D9A441" />
                           <Text className="flex-1 font-display text-lg text-laterite" numberOfLines={1}>{r.destName}</Text>
-                          <Text className="font-mono text-sm font-bold text-ink">{fmtMoney(r.price, r.currency)}</Text>
+                          <Text className="font-mono text-sm font-bold text-green">{fmtMoney(r.price, r.currency)}</Text>
                         </View>
 
                         {/* Date · time + seats */}

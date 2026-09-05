@@ -46,22 +46,22 @@ export default function Results() {
 
   return (
     <View className="flex-1 bg-sand">
-      {/* Header banner */}
-      <View className="rounded-b-[4px]  px-5 pb-5" style={{ paddingTop: insets.top + 8 }}>
+      {/* Navy header band */}
+      <View className="rounded-b-[20px] bg-strong px-5 pb-6" style={{ paddingTop: insets.top + 8 }}>
         <View className="flex-row items-center gap-3">
-          <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper">
-            <ChevronLeft size={20} color={c.ink} />
+          <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15">
+            <ChevronLeft size={20} color="#ffffff" />
           </Pressable>
-          <Text className="font-display text-lg text-ink">Recherche de trajet</Text>
+          <Text className="font-display text-lg uppercase tracking-wide text-white">Trajets</Text>
         </View>
 
         {/* Trajet en bas du header */}
         <View className="mt-5 flex-row items-center gap-2">
-          <Text className="font-display text-2xl text-ink" numberOfLines={1}>{origin}</Text>
+          <Text className="font-display text-2xl text-white" numberOfLines={1}>{origin}</Text>
           <ArrowRight size={18} color="#D9A441" />
-          <Text className="font-display text-2xl text-orange" numberOfLines={1}>{dest}</Text>
+          <Text className="flex-1 font-display text-2xl text-laterite" numberOfLines={1}>{dest}</Text>
         </View>
-        <Text className="mt-1.5 font-mono text-xs text-ink-soft/70">
+        <Text className="mt-1.5 font-mono text-xs text-white/70">
           {fmtDateKey(date)}
           {!isLoading && !error ? ` · ${trips.length} départ${trips.length > 1 ? "s" : ""}` : ""}
         </Text>
@@ -124,15 +124,18 @@ export default function Results() {
                           </Text>
                         </View>
 
-                        {/* Footer: vehicle + price */}
+                        {/* Footer: vehicle + price + gold CTA */}
                         <View className="mt-3 flex-row items-center justify-between border-t border-ink/8 px-4 py-3">
-                          <View className="flex-row items-center gap-1.5">
-                            <Bus size={13} color="#4a5680" />
-                            <Text className="font-mono text-xs text-ink-soft/70">{t.vehicleName}</Text>
+                          <View>
+                            <View className="flex-row items-center gap-1.5">
+                              <Bus size={13} color="#4a5680" />
+                              <Text className="font-mono text-xs text-ink-soft/70">{t.vehicleName}</Text>
+                            </View>
+                            <Text className="mt-1 font-mono text-lg font-bold text-green">{fmtMoney(t.price, t.currency)}</Text>
                           </View>
-                          <View className="flex-row items-center gap-1">
-                            <Text className="font-mono text-lg text-ink">{fmtMoney(t.price, t.currency)}</Text>
-                            <ChevronRight size={18} color="#D9A441" />
+                          <View className="flex-row items-center gap-1 rounded-[4px] bg-laterite px-4 py-2.5">
+                            <Text className="font-sans text-sm font-semibold uppercase tracking-wide text-white">Réserver</Text>
+                            <ChevronRight size={16} color="#ffffff" />
                           </View>
                         </View>
                       </Card>

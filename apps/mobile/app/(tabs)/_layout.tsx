@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 
 function TabIcon({ Icon, color, focused }: { Icon: typeof Home; color: string; focused: boolean }) {
   return (
-    <View className={cn("h-9 w-14 items-center justify-center rounded-[4px]", focused && "bg-laterite/12")}>
+    <View className={cn("h-9 w-14 items-center justify-center rounded-[4px]", focused && "bg-laterite/15")}>
       <Icon size={22} color={color} />
     </View>
   );
