@@ -12,7 +12,7 @@ import { db } from "../lib/db";
 import { cn } from "../lib/cn";
 
 export type NavChild = { href: string; label: string; active?: boolean };
-export type NavItem = { href: string; label: string; icon: React.ReactNode; active?: boolean; children?: NavChild[] };
+export type NavItem = { href: string; label: string; icon: React.ReactNode; active?: boolean; children?: NavChild[]; group?: string };
 
 type ShellProps = {
   nav: NavItem[]; title: string; subtitle?: string; action?: React.ReactNode; children: React.ReactNode;
@@ -230,18 +230,30 @@ function AppSidebar({ nav, tenant, logoUrl, kicker, footer }: {
       </div>
 
       <div className="flex flex-1 flex-col overflow-y-auto no-scrollbar duration-300 ease-linear">
-        <nav className="mb-6">
-          <div>
-            <h2
-              className={cn(
-                "mb-4 flex text-xs uppercase leading-[20px] text-ink-soft/70",
-                collapsed ? "lg:justify-center" : "justify-start",
-              )}
-            >
-              {showText ? "Menu" : <MoreHorizontal className="h-5 w-5" />}
-            </h2>
-            {renderMenuItems(main)}
-          </div>
+        <nav className="mb-6 flex flex-col gap-5">
+          {(() => {
+            // Group main items by their `group` label, preserving order.
+            const groups: { title: string; items: NavItem[] }[] = [];
+            for (const n of main) {
+              const title = n.group ?? "Menu";
+              const g = groups.find((x) => x.title === title);
+              if (g) g.items.push(n);
+              else groups.push({ title, items: [n] });
+            }
+            return groups.map((g) => (
+              <div key={g.title}>
+                <h2
+                  className={cn(
+                    "mb-3 flex text-xs font-medium uppercase leading-[20px] tracking-wider text-ink-soft/60",
+                    collapsed ? "lg:justify-center" : "justify-start",
+                  )}
+                >
+                  {showText ? g.title : <MoreHorizontal className="h-5 w-5" />}
+                </h2>
+                {renderMenuItems(g.items)}
+              </div>
+            ));
+          })()}
         </nav>
 
         <div className="mt-auto flex flex-col gap-1 border-t border-line pt-3">

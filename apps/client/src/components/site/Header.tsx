@@ -25,7 +25,9 @@ export default function Header() {
   const authed = isReal(user);
 
   const overlay = pathname === "/";
-  const onDark = overlay && !stuck;
+  // Header ground is dark whenever it overlays the hero (transparent) or is the
+  // navy stuck bar — both need white ink. Only inner white pages use navy ink.
+  const onDark = overlay;
 
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   useEffect(() => {
