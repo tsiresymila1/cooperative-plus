@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Logo } from "@cp/ui";
+import Image from "next/image";
 
 const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -30,20 +31,41 @@ export default function Footer() {
       <div className="mx-auto max-w-shell px-[15px] py-[76px]">
         <div className="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-center lg:justify-between">
           <Logo dark height={48} width={190} />
+          <div className="mt-[36px] flex flex-wrap gap-4">
+            {[
+              "/wp-content/uploads/2025/03/app-2.png",
+              "/wp-content/uploads/2025/03/app-3.png",
+            ].map((src) => (
+              <Image
+                key={src}
+                src={src}
+                alt=""
+                width={200}
+                height={59}
+                className="h-[59px] w-[200px] object-contain"
+              />
+            ))}
+          </div>
           <p className="max-w-md font-display text-[28px] font-semibold uppercase leading-[1.05] text-white">
-            Réservez votre taxi-brousse en 2 minutes.
+            Réservez votre place en 2 minutes.
           </p>
         </div>
 
         <div className="grid gap-10 py-12 sm:grid-cols-3">
           {COLS.map((c) => (
             <div key={c.title}>
-              <p className="font-display text-[22px] font-semibold uppercase text-gold">{c.title}</p>
+              <p className="font-display text-[22px] font-semibold uppercase text-gold">
+                {c.title}
+              </p>
               <ul className="mt-4 space-y-2.5">
                 {c.links.map((l) => (
                   <li key={l.href}>
-                    <Link href={l.href} className="inline-flex items-center gap-2 text-[14px] text-white/80 transition-colors duration-500 hover:text-gold">
-                      <span className="inline-block size-[6px] rotate-45 bg-gold" /> {l.label}
+                    <Link
+                      href={l.href}
+                      className="inline-flex items-center gap-2 text-[14px] text-white/80 transition-colors duration-500 hover:text-gold"
+                    >
+                      <span className="inline-block size-[6px] rotate-45 bg-gold" />{" "}
+                      {l.label}
                     </Link>
                   </li>
                 ))}

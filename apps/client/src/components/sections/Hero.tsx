@@ -1,5 +1,6 @@
 import Image from "next/image";
 import BookingForm from "./BookingForm";
+import Link from "next/link";
 
 /* Hero band: 1440x1057 at desktop, 390x624 at mobile (styles.390.json) — the
    booking form drops out of the banner below lg and occupies its own band.
@@ -29,7 +30,7 @@ export default function Hero() {
               the remaining two lines white at the same size. */}
           {/* The source sets the strapline beside the heading, bottom-aligned
               with its last line — not stacked under it. */}
-          <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:gap-[24px]">
+          <div className="flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:gap-[24px]">
             <h1 className="font-display text-[64px] font-semibold uppercase leading-[0.85] tracking-[-1.5px] text-white lg:text-hero lg:leading-[110.5px] lg:tracking-[-2.5px]">
               <span className="text-gold">Voyager</span>
               <br />
@@ -42,6 +43,12 @@ export default function Hero() {
               Réservez et payez vos trajets en ligne, en toute simplicité
             </p>
           </div>
+          <Link
+            href="/search"
+            className="mt-[40px] flex w-[200px] items-center justify-center bg-gold px-5 py-3 text-center font-display text-lg font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:bg-navy hover:text-white sm:inline-flex"
+          >
+            Réserver
+          </Link>
 
           {/* Source pins the form at y=857 in a 1057-tall hero — 96px off the
               bottom — rather than letting it sit under the centred heading. */}
