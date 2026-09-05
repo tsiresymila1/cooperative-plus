@@ -13,8 +13,8 @@ import { TESTIMONIALS } from "./data";
 const PER_VIEW = 3;
 
 export default function Testimonials({
-  eyebrow = "Testimonials",
-  title = "What our clients say",
+  eyebrow = "Témoignages",
+  title = "Ce que disent nos voyageurs",
   padding = "py-[110px]",
 }: {
   eyebrow?: string;
