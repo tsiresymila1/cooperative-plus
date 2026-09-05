@@ -186,15 +186,18 @@ export default function TripDetail() {
   const total = trip ? trip.price * selectedLabels.length : 0;
 
   return (
-    <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
-      <View className="flex-row items-center gap-3 px-5 py-3">
+    <View className="flex-1 bg-sand">
+      <View
+        className="flex-row items-center gap-3 rounded-b-[20px] bg-strong px-5 pb-4"
+        style={{ paddingTop: insets.top + 8 }}
+      >
         <Pressable
           onPress={() => router.back()}
-          className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper"
+          className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
         >
-          <ChevronLeft size={20} color={c.ink} />
+          <ChevronLeft size={20} color="#ffffff" />
         </Pressable>
-        <Text className="font-display text-lg text-ink">Détail du trajet</Text>
+        <Text className="font-display text-lg uppercase tracking-wide text-white">Détail du trajet</Text>
       </View>
 
       {isLoading ? (
@@ -258,7 +261,7 @@ export default function TripDetail() {
                   </Text>
                 </View>
                 <View className="mt-3 flex-row items-center justify-between">
-                  <Text className="font-mono font-bold text-xl text-ink">
+                  <Text className="font-mono font-bold text-xl text-green">
                     {fmtMoney(trip.price, trip.currency)} / place
                   </Text>
                   <Badge
@@ -327,10 +330,11 @@ export default function TripDetail() {
               onPress={proceed}
               loading={holding}
               disabled={selectedLabels.length === 0}
+              className="w-full"
             >
-              <Text className="font-sans font-medium text-white">
+              <Text className="font-sans font-semibold uppercase tracking-wide text-white">
                 {user
-                  ? "Continuer vers le paiement"
+                  ? "Continuer"
                   : "Se connecter pour réserver"}
               </Text>
             </Button>
