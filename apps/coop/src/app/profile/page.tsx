@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, User, Phone, Mail, Building2, Save, ArrowRight } from "lucide-react";
-import { db, Button, Logo, FormSection, Field, Badge, FullSpinner, toast, memberRole } from "@cp/ui";
+import { db, Button, Logo, ComponentCard, Field, Badge, FullSpinner, toast, memberRole } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 
 export default function Page() {
@@ -67,13 +67,13 @@ export default function Page() {
           backgroundAttachment: "fixed",
         }}
       >
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-6">
           <div className="mb-2">
             <h1 className="font-display text-[1.85rem] font-extrabold leading-none tracking-tight text-ink">Mon compte</h1>
             <p className="mt-2 text-sm text-ink-soft">Gérez vos informations personnelles et vos coopératives.</p>
           </div>
 
-          <FormSection index="01" title="Identité" description="Vos informations personnelles affichées dans l'application.">
+          <ComponentCard title="Identité" desc="Vos informations personnelles affichées dans l'application.">
             <div className="grid gap-4">
               <div className="flex items-center gap-3.5">
                 <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-strong text-lg font-bold text-white">
@@ -108,9 +108,9 @@ export default function Page() {
                 </Button>
               </div>
             </div>
-          </FormSection>
+          </ComponentCard>
 
-          <FormSection index="02" title="Coopératives" description="Les espaces auxquels vous avez accès.">
+          <ComponentCard title="Coopératives" desc="Les espaces auxquels vous avez accès.">
             {memberships.length === 0 ? (
               <p className="text-sm text-ink-soft">Vous n'appartenez à aucune coopérative.</p>
             ) : (
@@ -133,7 +133,7 @@ export default function Page() {
                 ))}
               </div>
             )}
-          </FormSection>
+          </ComponentCard>
         </div>
       </main>
     </div>
