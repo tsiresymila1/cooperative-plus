@@ -12,9 +12,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
   },
   {
     title: "Coopératives",
-    links: [
-      { label: "Devenir coopérative", href: "/coop/request" },
-    ],
+    links: [{ label: "Rejoindre", href: "/coop/request" }],
   },
   {
     title: "Légal",
