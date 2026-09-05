@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Quote } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
-import type { Testimonial } from "./testimonials";
+import type { Testimonial } from "./testimonials-data";
 
 /* The source drives this with Swiper, one slide at a time, arrows beside the
    heading. Card measured 450x553 with 80px/45px padding on /about-us. */

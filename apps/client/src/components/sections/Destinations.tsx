@@ -6,11 +6,11 @@ import SectionHeading from "@/components/ui/SectionHeading";
 
 /* Custom destination marker — a pin carrying the brand chevron (not a lucide
    icon). Inherits currentColor. */
-function DestIcon({ className }: { className?: string }) {
+function DestIcon({ className, chevronFill = "#14314C" }: { className?: string; chevronFill?: string }) {
   return (
     <svg viewBox="0 0 24 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
       <path d="M12 0C5.7 0 .6 5.1.6 11.4.6 20 12 32 12 32s11.4-12 11.4-20.6C23.4 5.1 18.3 0 12 0Z" fill="currentColor" />
-      <path d="M9 6.5 16 12l-7 5.5V13l3-1-3-1V6.5Z" fill="#14314C" />
+      <path d="M9 6.5 16 12l-7 5.5V13l3-1-3-1V6.5Z" fill={chevronFill} />
     </svg>
   );
 }
@@ -44,7 +44,11 @@ export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { p
   return (
     <section className={padding}>
       <div className="mx-auto max-w-shell px-[15px]">
-        <SectionHeading eyebrow="Voyageons ensemble" title="Destinations populaires" className="mb-[20px] lg:mb-[50px]" />
+        <SectionHeading
+          eyebrow="Voyageons ensemble"
+          title="Destinations populaires"
+          className="mb-[20px] lg:mb-[50px]"
+        />
 
         <div className="grid grid-cols-1 gap-[30px] sm:grid-cols-2 lg:grid-cols-4">
           {featured.map((d) => (
@@ -56,17 +60,24 @@ export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { p
               {/* Real city photo (deterministic) with a slow zoom on hover */}
               <span
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-[900ms] ease-out group-hover:scale-110"
-                style={{ backgroundImage: `url('${cityImg(d.imageUrl, d.name)}')` }}
+                style={{
+                  backgroundImage: `url('${cityImg(d.imageUrl, d.name)}')`,
+                }}
               />
               {/* Navy legibility wash + brand tint */}
-              <span className="absolute inset-0 bg-gradient-to-t from-navy via-navy/45 to-navy/10" />
-              <DestIcon className="pointer-events-none absolute -right-6 -top-8 h-56 w-56 text-white/[0.08]" />
+              <span className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/30 to-navy/10" />
+              {/* Gold brand watermark (was navy — now gold) */}
               <span className="absolute left-[26px] top-[26px] inline-flex h-11 w-11 items-center justify-center rounded-full bg-gold/20 text-gold ring-1 ring-gold/40 backdrop-blur-sm">
                 <DestIcon className="h-5 w-5" />
               </span>
               <span className="absolute inset-x-0 bottom-0 flex items-center gap-3 p-[26px]">
-                <span className="font-display text-[22px] font-semibold uppercase leading-none tracking-[0.5px] text-white drop-shadow">{d.name}</span>
-                <ArrowRight className="ml-auto size-5 text-white transition-colors duration-500 group-hover:text-gold" strokeWidth={1.5} />
+                <span className="font-display text-[22px] font-semibold uppercase leading-none tracking-[0.5px] text-white drop-shadow">
+                  {d.name}
+                </span>
+                <ArrowRight
+                  className="ml-auto size-5 text-white transition-colors duration-500 group-hover:text-gold"
+                  strokeWidth={1.5}
+                />
               </span>
             </Link>
           ))}
@@ -76,7 +87,10 @@ export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { p
           <ul className="mt-[20px] grid grid-cols-2 gap-[10px] sm:grid-cols-3 lg:mt-[50px] lg:grid-cols-6">
             {rest.map((c) => (
               <li key={c.id ?? c.name}>
-                <Link href={`/search?to=${encodeURIComponent(c.name)}&pax=1`} className="flex h-[55px] items-center gap-3 border border-navy/10 px-[18px] font-body text-[14px] font-normal text-navy transition-colors duration-500 hover:border-gold hover:text-gold">
+                <Link
+                  href={`/search?to=${encodeURIComponent(c.name)}&pax=1`}
+                  className="flex h-[55px] items-center gap-3 border border-navy/10 px-[18px] font-body text-[14px] font-normal text-navy transition-colors duration-500 hover:border-gold hover:text-gold"
+                >
                   <DestIcon className="h-4 w-3.5 shrink-0 text-gold" />
                   {c.name}
                 </Link>
