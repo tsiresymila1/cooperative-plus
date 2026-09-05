@@ -101,15 +101,8 @@ export function SignInScreen({
         </div>
       </aside>
 
-      {/* ── Form panel ──────────────────────────────────────── */}
-      <main
-        className="relative grid place-items-center bg-sand px-6 py-12"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(15,45,92,.045) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,45,92,.045) 1px, transparent 1px)",
-          backgroundSize: "26px 26px",
-        }}
-      >
+      {/* ── Form panel — clean light surface (brand navy is the other side) ── */}
+      <main className="relative grid place-items-center bg-paper px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="mb-6 lg:hidden"><Logo /></div>
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-soft/55">{kicker}</p>
