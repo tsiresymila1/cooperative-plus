@@ -61,8 +61,8 @@ export function AdminShell({
       title={title}
       subtitle={subtitle}
       action={action}
-      tenant="Administration"
-      kicker="Console plateforme"
+      tenant="Admin"
+      kicker="Console"
       breadcrumb={breadcrumb ?? <AutoCrumb path={path} />}
       logoUrl={'/logo-round.png'}
     >

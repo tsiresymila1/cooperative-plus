@@ -11,7 +11,7 @@ const display = Outfit({ subsets: ["latin"], variable: "--font-display-next", di
 const mono = Spline_Sans_Mono({ subsets: ["latin"], variable: "--font-mono-next", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Cooperative Plus — Administration",
+  title: "Coop Plus — Administration",
   description: "Console plateforme.",
 };
 export const viewport: Viewport = { themeColor: "#14314C" };

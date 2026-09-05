@@ -222,8 +222,8 @@ function AppSidebar({ nav, tenant, logoUrl, kicker, footer }: {
           <CoopLogo url={logoUrl} name={tenant} size={40} className="rounded-xl" />
           {showText && (
             <div className="min-w-0">
-              <p className="truncate font-display text-[15px] font-extrabold leading-tight text-ink">{tenant ?? "Cooperative Plus"}</p>
-              <p className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-soft/55">{kicker ?? "Espace coopérative"}</p>
+              <p className="truncate font-display text-[15px] font-extrabold leading-tight text-ink">{tenant ?? "Coop Plus"}</p>
+              <p className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-soft/55">{kicker ?? "Espace"}</p>
             </div>
           )}
         </Link>
