@@ -47,28 +47,33 @@ export function CookieConsent({ privacyHref = "/privacy" }: { privacyHref?: stri
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[100] p-3 sm:p-4">
-      <div className="mx-auto flex max-w-3xl flex-col gap-3 rounded-xl border border-white/10 bg-[#0b1d44] p-4 text-white shadow-[0_20px_60px_-20px_rgba(0,0,0,.6)] sm:flex-row sm:items-center sm:gap-4 sm:p-5">
-        <p className="flex-1 text-sm leading-relaxed text-white/80">
-          Nous utilisons des cookies et des mesures d'audience (dont votre adresse IP
-          et une localisation approximative) pour améliorer le service. Elles ne sont
-          activées qu'avec votre accord.{" "}
-          <a href={privacyHref} className="font-medium text-gold underline underline-offset-2 hover:text-white">
-            En savoir plus
-          </a>
-        </p>
-        <div className="flex shrink-0 gap-2.5">
+    <div className="fixed inset-x-0 bottom-0 z-[100] p-4 sm:p-6">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6 border border-white/10 bg-[#0b1d44] p-7 text-white shadow-[0_30px_80px_-24px_rgba(0,0,0,.7)] lg:flex-row lg:items-center lg:gap-10 lg:p-9">
+        <div className="flex-1">
+          <h3 className="font-display text-2xl font-semibold uppercase leading-tight tracking-[-0.5px] text-white">
+            Votre vie privée
+          </h3>
+          <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/75">
+            Nous utilisons des cookies et des mesures d'audience — dont votre adresse IP
+            et une localisation approximative — pour améliorer le service. Elles ne sont
+            activées qu'avec votre accord.{" "}
+            <a href={privacyHref} className="font-medium text-gold underline underline-offset-2 hover:text-white">
+              En savoir plus
+            </a>
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
           <button
             type="button"
             onClick={() => choose("rejected")}
-            className="rounded-lg border border-white/25 px-4 py-2 text-sm font-medium text-white/80 transition-colors hover:bg-white/10"
+            className="inline-flex h-[52px] items-center justify-center border border-white/30 px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-white transition-colors duration-200 hover:bg-white hover:text-navy"
           >
             Refuser
           </button>
           <button
             type="button"
             onClick={() => choose("accepted")}
-            className="rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-white"
+            className="inline-flex h-[52px] items-center justify-center bg-gold px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-200 hover:bg-white"
           >
             Accepter
           </button>
