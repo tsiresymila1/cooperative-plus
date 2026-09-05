@@ -6,9 +6,9 @@ import { AuthGate } from "@cp/ui";
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <Header />
-      <main className="pt-[100px]">
+      <main className="flex-1 pt-[100px]">
         <div className="mx-auto max-w-content px-[15px] py-10 lg:py-14">
           <AuthGate>
             <AccountNav />
@@ -18,6 +18,6 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
       </main>
       <Footer />
       <GoTop />
-    </>
+    </div>
   );
 }
