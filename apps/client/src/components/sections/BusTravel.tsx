@@ -68,7 +68,7 @@ export default function BusTravel() {
 
         {/* Boarding-pass artwork (Antananarivo → Mahajanga). */}
         <Image
-          src="/wp-content/uploads/2025/02/tickets_img.png?v=2"
+          src="/wp-content/uploads/2025/02/tickets_img.png?v=3"
           alt=""
           width={564}
           height={593}
