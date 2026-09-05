@@ -54,10 +54,13 @@ export function CookieConsent({ privacyHref = "/privacy" }: { privacyHref?: stri
             Votre vie privée
           </h3>
           <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-white/75">
-            Nous utilisons des cookies et des mesures d'audience — dont votre adresse IP
-            et une localisation approximative — pour améliorer le service. Elles ne sont
-            activées qu'avec votre accord.{" "}
-            <a href={privacyHref} className="font-medium text-gold underline underline-offset-2 hover:text-white">
+            Nous utilisons des cookies et des mesures d'audience — dont votre
+            adresse IP et une localisation approximative — pour améliorer le
+            service. Elles ne sont activées qu'avec votre accord.{" "}
+            <a
+              href={privacyHref}
+              className="font-medium text-gold underline underline-offset-2 hover:text-white"
+            >
               En savoir plus
             </a>
           </p>
@@ -73,7 +76,7 @@ export function CookieConsent({ privacyHref = "/privacy" }: { privacyHref?: stri
           <button
             type="button"
             onClick={() => choose("accepted")}
-            className="inline-flex h-[52px] items-center justify-center bg-gold px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-200 hover:bg-white"
+            className="inline-flex h-[52px] items-center justify-center bg-[#d9a441] px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-200 hover:bg-white"
           >
             Accepter
           </button>
