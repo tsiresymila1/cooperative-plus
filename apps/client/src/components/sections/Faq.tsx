@@ -22,12 +22,12 @@ export default function Faq() {
         <div className="grid items-center gap-[60px] lg:grid-cols-2">
           <div>
             <SectionHeading
-              eyebrow="Questions & answers"
+              eyebrow="Questions & réponses"
               title={
                 <>
-                  Popular questions
+                  Questions fréquentes
                   <br />
-                  about transfers
+                  sur nos trajets
                 </>
               }
               className="mb-[40px]"
@@ -70,7 +70,7 @@ export default function Faq() {
             </ul>
 
             <TextLink href="/faq" className="mt-[40px]">
-              Read more
+              En savoir plus
             </TextLink>
           </div>
 

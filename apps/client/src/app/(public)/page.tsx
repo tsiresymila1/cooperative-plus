@@ -7,7 +7,6 @@ import Schedule from "@/components/sections/Schedule";
 import BusTravel from "@/components/sections/BusTravel";
 import TransportTrust from "@/components/sections/TransportTrust";
 import Faq from "@/components/sections/Faq";
-import BlogSection from "@/components/sections/BlogSection";
 
 export default function Home() {
   return (
@@ -21,7 +20,6 @@ export default function Home() {
       <BusTravel />
       <TransportTrust />
       <Faq />
-      <BlogSection />
     </main>
   );
 }
