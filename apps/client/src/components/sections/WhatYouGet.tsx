@@ -7,18 +7,18 @@ import CtaButton from "@/components/ui/CtaButton";
 const POINTS = [
   {
     n: "01.",
-    title: "Travel between cities easily and comfortably",
+    title: "Voyagez entre les villes en toute simplicité et confort",
     lines: [
-      "Air conditioning and USB chargers in every bus – top comfort!",
-      "Free Wi-Fi is now available on all our buses.",
+      "Des véhicules entretenus et des chauffeurs expérimentés – sérénité assurée !",
+      "Réservez votre place à l'avance sur toutes nos lignes.",
     ],
   },
   {
     n: "02.",
-    title: "Save time and money – choose the bus",
+    title: "Gagnez du temps et de l'argent – choisissez le taxi-brousse",
     lines: [
-      "Comfort, safety, and speed – everything for your journey.",
-      "With us, always on time and hassle-free.",
+      "Confort, sécurité et ponctualité – tout pour votre trajet.",
+      "Avec nous, des départs fiables et sans tracas.",
     ],
   },
 ];
@@ -49,8 +49,8 @@ export default function WhatYouGet({
 
           <div>
             <SectionHeading
-              eyebrow="What will you get"
-              title="Day and night routes is available for the best time for you"
+              eyebrow="Ce que vous obtenez"
+              title="Des départs de jour comme de nuit, à l'horaire qui vous convient"
               className="mb-[50px] max-w-[480px]"
             />
 
@@ -79,7 +79,7 @@ export default function WhatYouGet({
             </div>
 
             <CtaButton href="/about-us" className="mt-[50px]">
-              Read more
+              En savoir plus
             </CtaButton>
           </div>
         </div>

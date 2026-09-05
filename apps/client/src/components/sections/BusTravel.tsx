@@ -13,8 +13,8 @@ import CtaButton from "@/components/ui/CtaButton";
    this band 354px too tall. */
 
 const TRUST = [
-  "Curabitur imperdiet varius lacus, id placerat purus vulputate non. Fusce in felis vel arcu maximus placerat eu ut arcu.",
-  "Curabitur imperdiet varius lacus, id placerat purus vulputate non. Fusce in felis vel arcu maximus placerat eu ut arcu.",
+  "Une coopérative de transporteurs qui relie les grandes villes de Madagascar avec des départs réguliers et des tarifs justes.",
+  "Des chauffeurs expérimentés, des véhicules contrôlés et une équipe à votre écoute pour chaque trajet.",
 ];
 
 export default function BusTravel() {
@@ -25,23 +25,23 @@ export default function BusTravel() {
           <div className="lg:pt-[40px]">
             <h2 className="font-display font-semibold uppercase">
               <span className="block text-[70px] leading-[70px] tracking-[-2px] text-gold lg:text-display lg:leading-[120px] lg:tracking-[-2.5px]">
-                Bus travel
+                Le taxi-brousse
               </span>
               <span className="block text-[70px] leading-[70px] tracking-[-2px] text-navy lg:text-display lg:leading-[120px] lg:tracking-[-2.5px]">
-                with easy
+                en toute simplicité
               </span>
             </h2>
 
             <h4 className="mt-[44px] max-w-[440px] font-display text-[28px] font-semibold uppercase leading-[1.05] tracking-[-0.5px] text-navy lg:text-h4">
-              Affordable tickets for fast and comfortable bus trips across
-              Europe
+              Des billets abordables pour des trajets rapides et confortables à
+              travers Madagascar
             </h4>
 
             <Link
               href="/about-us"
               className="mt-[50px] inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
             >
-              Read more
+              En savoir plus
               <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
           </div>
@@ -51,7 +51,7 @@ export default function BusTravel() {
               {TRUST.map((copy, i) => (
                 <div key={i}>
                   <h4 className="mb-[15px] font-display text-[24px] font-semibold uppercase leading-[33.6px] text-navy">
-                    Transport you can trust
+                    Un transport de confiance
                   </h4>
                   <p className="font-body text-[16px] font-light leading-[25.6px] text-navy/70">
                     {copy}
@@ -61,7 +61,7 @@ export default function BusTravel() {
             </div>
 
             <CtaButton href="/tours" className="mt-[75px]">
-              View schedule
+              Voir les horaires
             </CtaButton>
           </div>
         </div>

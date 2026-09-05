@@ -12,7 +12,7 @@ export function Field({ label, hint, error, children, className }: { label?: str
   );
 }
 
-const base = "h-11 w-full rounded-[--radius] border border-ink/12 bg-paper px-3.5 text-[15px] text-ink outline-none transition-all placeholder:text-ink-soft/40 focus:border-orange focus:ring-2 focus:ring-orange/20";
+const base = "h-11 w-full rounded-lg border border-line bg-paper px-4 text-sm text-ink outline-none transition-all placeholder:text-ink-soft/40 focus:border-laterite focus:ring-3 focus:ring-laterite/10 disabled:cursor-not-allowed disabled:opacity-60";
 
 export function Input({ className, ...p }: React.ComponentProps<"input">) {
   return <input className={cn(base, className)} {...p} />;

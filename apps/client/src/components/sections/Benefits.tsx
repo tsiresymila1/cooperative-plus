@@ -20,9 +20,9 @@ const ICONS = [Wifi, Tv, Coffee, ShowerHead, Plug, Snowflake];
    theme paints gold (`lte-subcolor-main`); the rest of the h2 stays white. */
 const DEFAULT_TITLE = (
   <>
-    Our buses are equipped with{" "}
-    <span className="text-gold">comfortable seats and facilities</span> for your
-    pleasant and convenient journey
+    Nos véhicules sont équipés de{" "}
+    <span className="text-gold">sièges confortables et d'équipements</span> pour
+    un trajet agréable et pratique
   </>
 );
 
@@ -48,7 +48,7 @@ export default function Benefits({
       <section className="grid lg:grid-cols-2">
         <div className="bg-navy px-[15px] py-[70px] lg:py-[90px] lg:pl-[calc((100vw-1410px)/2+15px)] lg:pr-[60px]">
           <SectionHeading
-            eyebrow="Our Benefits"
+            eyebrow="Nos avantages"
             tone="dark"
             title={title}
             className="mb-[50px] max-w-[520px]"
@@ -131,13 +131,13 @@ export default function Benefits({
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <button
               type="button"
-              aria-label="Play video tour"
+              aria-label="Lancer la visite vidéo"
               className="group flex size-[80px] items-center justify-center rounded-full bg-white text-navy transition-colors duration-500 hover:bg-gold"
             >
               <Play className="size-6 translate-x-0.5 fill-current" />
             </button>
             <span className="mt-[22px] font-display text-[24px] font-semibold uppercase tracking-[2px] text-gold">
-              Video tour
+              Visite vidéo
             </span>
           </div>
         </div>

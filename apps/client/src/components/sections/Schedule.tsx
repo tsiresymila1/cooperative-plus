@@ -35,8 +35,8 @@ export default function Schedule({
     >
       <div className="mx-auto max-w-shell px-[15px]">
         <SectionHeading
-          eyebrow="Departure time"
-          title="Recent schedule"
+          eyebrow="Heure de départ"
+          title="Horaires récents"
           align="center"
           className="mb-[50px]"
         />
@@ -106,10 +106,10 @@ export default function Schedule({
 
               <div>
                 <span className="block font-display text-[24px] font-semibold leading-none text-navy">
-                  ${r.price}
+                  {r.price.toLocaleString("fr-FR")} Ar
                 </span>
                 <span className="mt-1 block font-body text-[12px] font-light text-navy/60">
-                  per adult
+                  par adulte
                 </span>
               </div>
 
@@ -118,7 +118,7 @@ export default function Schedule({
                   {r.seats}
                 </span>
                 <span className="mt-1 block font-body text-[12px] font-light text-navy/60">
-                  seats left
+                  places restantes
                 </span>
               </div>
 
@@ -128,7 +128,7 @@ export default function Schedule({
                 href="/cart"
                 className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
               >
-                Buy tickets
+                Réserver
                 <ArrowRight className="size-4" strokeWidth={2} />
               </Link>
             </li>

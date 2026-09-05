@@ -2,15 +2,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { BrandLogo } from "./logo";
 
-/* Button — laterite-first, tactile. */
+/* Button — TailAdmin: gold primary, hairline outline. */
 const button = cva(
-  "inline-flex items-center justify-center gap-2 font-medium rounded-[--radius] transition-all duration-200 active:scale-[.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-laterite/60 disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 font-medium rounded-lg transition-all duration-200 active:scale-[.98] focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-laterite/20 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "bg-laterite text-[#14314C] font-semibold hover:bg-laterite-deep",
+        primary: "bg-laterite text-[#14314C] font-semibold shadow-[var(--shadow-card)] hover:bg-laterite-deep",
         ink: "bg-strong text-white hover:bg-ink-soft",
-        outline: "border border-ink/15 bg-paper/60 text-ink hover:bg-paper backdrop-blur",
+        outline: "border border-line bg-paper text-ink shadow-[var(--shadow-card)] hover:bg-ink/[.03]",
         ghost: "text-ink hover:bg-ink/5",
       },
       size: { sm: "h-9 px-3 text-sm", md: "h-11 px-5 text-[15px]", lg: "h-13 px-7 text-base" },
@@ -25,12 +25,12 @@ export function Button({ className, variant, size, ...p }: React.ComponentProps<
 
 export function Badge({ tone = "neutral", children }: { tone?: "neutral" | "success" | "warning" | "danger"; children: React.ReactNode }) {
   const tones = {
-    neutral: "bg-ink/[.06] text-ink-soft ring-1 ring-inset ring-ink/8",
-    success: "bg-success/12 text-success ring-1 ring-inset ring-success/20",
-    warning: "bg-warning/12 text-[#b45309] ring-1 ring-inset ring-warning/25",
-    danger: "bg-danger/10 text-danger ring-1 ring-inset ring-danger/20",
+    neutral: "bg-ink/[.06] text-ink-soft dark:bg-white/5",
+    success: "bg-success/15 text-success dark:bg-success/15",
+    warning: "bg-warning/15 text-[#b45309] dark:text-warning",
+    danger: "bg-danger/15 text-danger",
   };
-  return <span className={cn("inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold", tones[tone])}>{children}</span>;
+  return <span className={cn("inline-flex items-center justify-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", tones[tone])}>{children}</span>;
 }
 
 /** Settings/form section: numbered label + description on the left, card on the right. */
@@ -51,7 +51,7 @@ export function FormSection({ index, title, description, children, className }: 
 }
 
 export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-[var(--radius-card,0.5rem)] border border-line bg-paper shadow-[var(--shadow-card)]", className)}>{children}</div>;
+  return <div className={cn("rounded-2xl border border-line bg-paper shadow-[var(--shadow-card)]", className)}>{children}</div>;
 }
 
 export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
@@ -60,18 +60,22 @@ export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
 }) {
   const accent = { ink: "text-ink", laterite: "text-laterite", baobab: "text-baobab" }[tone];
   return (
-    <Card className="p-5 transition-colors hover:border-ink/15">
-      <div className="flex items-start justify-between">
-        <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/70">{label}</p>
-        {icon && <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink/[.04] text-ink-soft/70">{icon}</span>}
-      </div>
-      <p className={cn("mt-3 font-display text-[2rem] font-extrabold leading-none tabular-nums", accent)}>{value}</p>
-      {hint && (
-        <p className={cn("mt-2 inline-flex items-center gap-1 text-sm font-medium",
-          trend === "up" ? "text-success" : trend === "down" ? "text-danger" : "text-ink-soft/70")}>
-          {trend === "up" ? "↑" : trend === "down" ? "↓" : null} {hint}
-        </p>
+    <Card className="p-5 transition-colors hover:border-ink/15 md:p-6">
+      {icon && (
+        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-ink/[.04] text-ink-soft dark:bg-white/5">{icon}</span>
       )}
+      <div className={cn("flex items-end justify-between", icon && "mt-5")}>
+        <div>
+          <p className="text-sm text-ink-soft">{label}</p>
+          <p className={cn("mt-2 font-display text-[1.75rem] font-bold leading-none tabular-nums", accent)}>{value}</p>
+        </div>
+        {hint && (
+          <span className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
+            trend === "up" ? "bg-success/15 text-success" : trend === "down" ? "bg-danger/15 text-danger" : "bg-ink/[.06] text-ink-soft")}>
+            {trend === "up" ? "↑" : trend === "down" ? "↓" : null} {hint}
+          </span>
+        )}
+      </div>
     </Card>
   );
 }

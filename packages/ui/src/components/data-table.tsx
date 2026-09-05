@@ -35,8 +35,8 @@ export function DataTable<T extends { id: string }>({
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
-            <tr className="border-b border-ink/8">
+          <thead className="bg-sand text-left text-xs font-medium uppercase tracking-wider text-ink-soft">
+            <tr className="border-b border-line">
               {columns.map((c) => (
                 <th key={c.key} className={cn("px-5 py-3.5", c.className)}>
                   {c.header}
@@ -47,7 +47,7 @@ export function DataTable<T extends { id: string }>({
           <tbody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-ink/5 last:border-0">
+                <tr key={i} className="border-b border-line last:border-0">
                   {columns.map((c) => (
                     <td key={c.key} className="px-5 py-4">
                       <Skeleton className="h-4 w-full max-w-[8rem]" />
@@ -67,7 +67,7 @@ export function DataTable<T extends { id: string }>({
                   key={row.id}
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                   className={cn(
-                    "group border-b border-ink/[.06] transition-colors last:border-0 hover:bg-ink/[.03]",
+                    "group border-b border-line transition-colors last:border-0 hover:bg-ink/[.02]",
                     onRowClick && "cursor-pointer",
                   )}
                 >
@@ -83,7 +83,7 @@ export function DataTable<T extends { id: string }>({
         </table>
       </div>
       {!loading && rows.length > pageSize && (
-        <div className="flex items-center justify-between border-t border-ink/8 px-5 py-3 text-sm text-ink-soft">
+        <div className="flex items-center justify-between border-t border-line px-5 py-3 text-sm text-ink-soft">
           <span>{safePage * pageSize + 1}–{Math.min(rows.length, (safePage + 1) * pageSize)} sur {rows.length}</span>
           <div className="flex items-center gap-1">
             <button onClick={() => setPage((p) => Math.max(0, p - 1))} disabled={safePage === 0}

@@ -84,19 +84,19 @@ export const COUNTRIES = [
 ];
 
 export const BENEFITS = [
-  "Free WiFi",
-  "TV Zone",
-  "Hot Drinks",
-  "Restroom",
-  "Sockets",
-  "Climate Control",
+  "Wi-Fi gratuit",
+  "Écran vidéo",
+  "Boissons chaudes",
+  "Sanitaires",
+  "Prises USB",
+  "Climatisation",
 ];
 
 export const COUNTERS = [
-  { value: 95, label: "Comfortable buses" },
-  { value: 32, label: "European countries" },
-  { value: 120, label: "Intercity routes" },
-  { value: 67, label: "Routes per day" },
+  { value: 95, label: "Véhicules confortables" },
+  { value: 32, label: "Villes desservies" },
+  { value: 120, label: "Lignes interurbaines" },
+  { value: 67, label: "Départs par jour" },
 ];
 
 /* The source renders the current Mon-Sun week with today's tab labelled
@@ -106,8 +106,8 @@ export const COUNTERS = [
 export type ScheduleDay = { day: string; date: string; today?: boolean };
 
 export function scheduleDays(now: Date = new Date()): ScheduleDay[] {
-  const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-  const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+  const MONTHS = ["JANV", "FÉVR", "MARS", "AVR", "MAI", "JUIN", "JUIL", "AOÛT", "SEPT", "OCT", "NOV", "DÉC"];
   const monday = new Date(now);
   // getDay(): 0 = Sunday, so shift back to the Monday of this week
   monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
@@ -116,28 +116,28 @@ export function scheduleDays(now: Date = new Date()): ScheduleDay[] {
     d.setDate(monday.getDate() + i);
     const isToday = d.toDateString() === now.toDateString();
     return isToday
-      ? { day: "Today", date: "", today: true }
+      ? { day: "Aujourd'hui", date: "", today: true }
       : { day, date: `${String(d.getDate()).padStart(2, "0")} ${MONTHS[d.getMonth()]}` };
   });
 }
 
 export const SCHEDULE_ROWS = [
-  { from: "Kaunas", depart: "10:00", duration: "9h 43m", to: "Brno", arrive: "19:43", price: 117, seats: 42 },
-  { from: "Berlin", depart: "08:00", duration: "8h 1m", to: "Kaunas", arrive: "16:01", price: 42, seats: 40 },
-  { from: "Bratislava", depart: "05:00", duration: "10h 42m", to: "Porto", arrive: "15:42", price: 73, seats: 39 },
-  { from: "Vienna", depart: "08:00", duration: "9h 38m", to: "Munich", arrive: "17:38", price: 76, seats: 20 },
-  { from: "Antwerp", depart: "17:00", duration: "10h 54m", to: "Porto", arrive: "03:54", price: 22, seats: 38 },
-  { from: "Lisbon", depart: "05:00", duration: "9h 33m", to: "Madrid", arrive: "14:33", price: 26, seats: 49 },
-  { from: "Istanbul", depart: "07:00", duration: "7h 52m", to: "Brno", arrive: "14:52", price: 65, seats: 37 },
-  { from: "Zagreb", depart: "19:30", duration: "2h 58m", to: "Split", arrive: "22:28", price: 78, seats: 36 },
+  { from: "Antananarivo", depart: "06:00", duration: "10h 30m", to: "Mahajanga", arrive: "16:30", price: 55000, seats: 18 },
+  { from: "Antananarivo", depart: "07:00", duration: "7h 15m", to: "Toamasina", arrive: "14:15", price: 35000, seats: 22 },
+  { from: "Fianarantsoa", depart: "05:30", duration: "11h 20m", to: "Toliara", arrive: "16:50", price: 50000, seats: 15 },
+  { from: "Antananarivo", depart: "08:00", duration: "3h 10m", to: "Antsirabe", arrive: "11:10", price: 15000, seats: 20 },
+  { from: "Antananarivo", depart: "18:00", duration: "9h 00m", to: "Fianarantsoa", arrive: "03:00", price: 40000, seats: 12 },
+  { from: "Toamasina", depart: "07:30", duration: "7h 15m", to: "Antananarivo", arrive: "14:45", price: 35000, seats: 25 },
+  { from: "Mahajanga", depart: "06:30", duration: "10h 30m", to: "Antananarivo", arrive: "17:00", price: 55000, seats: 16 },
+  { from: "Antananarivo", depart: "16:00", duration: "18h 00m", to: "Toliara", arrive: "10:00", price: 90000, seats: 10 },
 ];
 
 export const FAQS = [
-  "Can I book a ticket online?",
-  "Does the bus make stops along the way?",
-  "Are there discounts for children, seniors, and students?",
-  "How can I return or exchange a ticket?",
-  "Do the buses have Wi-Fi and charging ports?",
+  "Puis-je réserver un billet en ligne ?",
+  "Le taxi-brousse fait-il des arrêts en cours de route ?",
+  "Existe-t-il des réductions pour les enfants, les seniors et les étudiants ?",
+  "Comment annuler ou modifier un billet ?",
+  "Les véhicules proposent-ils des prises de recharge à bord ?",
 ];
 
 export const TESTIMONIALS = [
