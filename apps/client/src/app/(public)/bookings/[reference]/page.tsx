@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { QRCodeSVG } from "qrcode.react";
-import { CheckCircle2, Clock, Download, Loader2, X, XCircle, CreditCard } from "lucide-react";
+import { CheckCircle2, Clock, Download, Loader2, X, XCircle, CreditCard, Bus, MapPin } from "lucide-react";
 import { CoopLogo, SeatSelector, TagBadge, useConfirm, type Cell } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney, toast } from "@cp/ui";
@@ -127,33 +127,45 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
         {/* ── Left: ticket + seat preview ── */}
         <div className="space-y-6">
         <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}>
-          <div className="overflow-hidden border border-navy/10 bg-white">
-            <div className="bg-navy p-5 text-white">
-              <div className="flex items-center justify-between gap-3">
+          {/* Boarding pass — Tourix "bus ticket" artwork, built as a real card. */}
+          <div className="relative flex overflow-hidden bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
+            {/* Gold stub */}
+            <div className="relative flex w-[140px] shrink-0 flex-col items-center justify-between bg-gold py-5">
+              <Bus className="size-6 text-navy" strokeWidth={2} />
+              <span className="font-display text-[15px] font-bold uppercase tracking-[0.35em] text-navy [writing-mode:vertical-rl] rotate-180">Bus Ticket</span>
+              <Bus className="size-6 text-navy" strokeWidth={2} />
+              <span aria-hidden className="absolute -right-2.5 top-0 h-full w-5 [background:radial-gradient(circle_at_left,transparent_9px,#fff_10px)] [background-size:100%_20px]" />
+            </div>
+
+            {/* Body — dotted "map" texture */}
+            <div className="relative min-w-0 flex-1" style={{ backgroundImage: "radial-gradient(rgba(20,49,76,.06) 1px, transparent 1px)", backgroundSize: "14px 14px" }}>
+              <div className="flex items-start justify-between gap-3 border-b border-dashed border-navy/15 p-5">
                 <span className="flex items-center gap-2.5">
-                  <CoopLogo url={trip?.cooperative?.logoUrl} name={trip?.coopName} size={34} className="rounded-none border border-white/20" />
-                  <span className="font-display text-lg font-semibold uppercase leading-tight">{trip?.coopName ?? "Cooperative Plus"}</span>
+                  <CoopLogo url={trip?.cooperative?.logoUrl} name={trip?.coopName} size={34} className="rounded-none border border-navy/10" />
+                  <span className="min-w-0 font-display text-lg font-semibold uppercase leading-tight text-navy">{trip?.coopName ?? "Cooperative Plus"}</span>
+                  {tag && <TagBadge name={tag.name} color={tag.color} />}
                 </span>
-                <span className="text-right">
-                  <span className="block font-body text-[10px] uppercase tracking-[2px] text-white/55">Référence</span>
-                  <span className="font-display text-lg font-semibold tracking-wider text-gold">{reference}</span>
+                <span className="shrink-0 text-right">
+                  <span className="block font-body text-[10px] uppercase tracking-[2px] text-navy/45">Référence</span>
+                  <span className="font-display text-lg font-bold tracking-wider text-gold">{reference}</span>
                 </span>
               </div>
-              <div className="mt-4 flex flex-wrap items-center gap-2 font-display text-[28px] font-semibold uppercase leading-none tracking-[-0.5px]">
-                {trip ? <>{trip.originName} <span className="text-gold">→</span> {trip.destName}</> : (isLoading ? "Chargement…" : "—")}
-                {tag && <TagBadge name={tag.name} color={tag.color} />}
+
+              <div className="flex items-center justify-between gap-4 p-5">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-[26px] font-semibold uppercase leading-none tracking-[-0.5px] text-navy">
+                    <span className="inline-flex items-center gap-1.5"><MapPin size={16} className="text-gold" /> {trip ? trip.originName : (isLoading ? "…" : "—")}</span>
+                    <span className="text-gold">→</span>
+                    <span className="inline-flex items-center gap-1.5"><MapPin size={16} className="text-gold" /> {trip?.destName ?? ""}</span>
+                  </div>
+                  {trip && <p className="mt-2 font-body text-sm font-light text-navy/60">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>}
+                </div>
+                <div className="grid shrink-0 place-items-center border border-navy/10 bg-white p-2">
+                  <QRCodeSVG value={reference} size={92} level="M" />
+                </div>
               </div>
-              {trip && <p className="mt-2 font-body text-sm font-light text-white/70">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>}
-            </div>
-            <div className="relative border-y border-dashed border-navy/15">
-              <span className="absolute -left-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-white" />
-              <span className="absolute -right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-full bg-white" />
-            </div>
-            <div className="flex items-center gap-5 p-5">
-              <div className="grid shrink-0 place-items-center border border-navy/10 bg-white p-2">
-                <QRCodeSVG value={reference} size={96} level="M" />
-              </div>
-              <div className="flex-1 space-y-1.5 font-body text-sm">
+
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 border-t border-dashed border-navy/15 p-5 font-body text-sm sm:grid-cols-3">
                 <Row label="Sièges" value={(bk?.tickets ?? []).map((t) => t.seatLabel).sort().join(", ") || "—"} />
                 <Row label="Véhicule" value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel} />
                 {vehDriver && <Row label="Chauffeur" value={vehDriver} />}

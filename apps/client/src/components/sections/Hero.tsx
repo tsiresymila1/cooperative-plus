@@ -31,7 +31,7 @@ export default function Hero() {
               with its last line — not stacked under it. */}
           <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-end lg:gap-[24px]">
             <h1 className="font-display text-[64px] font-semibold uppercase leading-[0.85] tracking-[-1.5px] text-white lg:text-hero lg:leading-[110.5px] lg:tracking-[-2.5px]">
-              <span className="text-gold">Taxi-brousse</span>
+              <span className="text-gold">Voyager</span>
               <br />
               partout à
               <br />
