@@ -5,7 +5,7 @@
       "name": "coop",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@cp/coop", "dev"],
-      "port": 3001
+      "port": 4001
     },
     {
       "name": "client",

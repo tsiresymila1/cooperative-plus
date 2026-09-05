@@ -74,21 +74,46 @@ export function SignInScreen({
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       {/* ── Brand panel ─────────────────────────────────────── */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex
-        [background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)]">
+      <aside
+        className="relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex
+        [background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)] dark:[background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)] dark:border-r dark:border-r-ink/5"
+      >
         {/* concentric rings */}
-        <svg aria-hidden className="pointer-events-none absolute -bottom-40 -left-40 h-[36rem] w-[36rem] opacity-[.12]" viewBox="0 0 400 400">
-          {[60, 110, 160, 200].map((r) => <circle key={r} cx="200" cy="200" r={r} fill="none" stroke="white" strokeWidth="1.5" />)}
+        <svg
+          aria-hidden
+          className="pointer-events-none absolute -bottom-40 -left-40 h-[36rem] w-[36rem] opacity-[.12]"
+          viewBox="0 0 400 400"
+        >
+          {[60, 110, 160, 200].map((r) => (
+            <circle
+              key={r}
+              cx="200"
+              cy="200"
+              r={r}
+              fill="none"
+              stroke="white"
+              strokeWidth="1.5"
+            />
+          ))}
         </svg>
         <Logo dark height={50} width={200} />
 
         <div className="relative">
           <h2 className="font-display text-[2.7rem] font-extrabold leading-[1.05] tracking-tight">
             {brandLines.map((l, i) => (
-              <span key={i} className={i === brandLines.length - 1 ? "block text-white/55" : "block"}>{l}</span>
+              <span
+                key={i}
+                className={
+                  i === brandLines.length - 1 ? "block text-white/55" : "block"
+                }
+              >
+                {l}
+              </span>
             ))}
           </h2>
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">{brandSub}</p>
+          <p className="mt-5 max-w-sm text-sm leading-relaxed text-white/70">
+            {brandSub}
+          </p>
         </div>
 
         <div className="relative flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white/45">
@@ -104,34 +129,102 @@ export function SignInScreen({
       {/* ── Form panel — clean light surface (brand navy is the other side) ── */}
       <main className="relative grid place-items-center bg-paper px-6 py-12">
         <div className="w-full max-w-sm">
-          <div className="mb-6 lg:hidden"><Logo /></div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-soft/55">{kicker}</p>
-          <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-ink">{title}</h1>
+          <div className="mb-6 lg:hidden">
+            <Logo />
+          </div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink-soft/55">
+            {kicker}
+          </p>
+          <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-ink">
+            {title}
+          </h1>
           <p className="mt-1.5 text-sm text-ink-soft">{sub}</p>
 
           {mode === "password" ? (
             <form onSubmit={signInPassword} className="mt-7 space-y-4">
-              <Field label="Email"><Input type="email" autoFocus placeholder="vous@exemple.mg" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-              <Field label="Mot de passe"><Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required /></Field>
-              <Button className="w-full text-white" disabled={loading}>{loading ? "Connexion…" : "Se connecter"}</Button>
-              <button type="button" onClick={() => { setMode("magic"); setStep("email"); }} className="w-full text-center text-sm font-medium text-ink-soft hover:text-ink">Recevoir un code par email</button>
+              <Field label="Email">
+                <Input
+                  type="email"
+                  autoFocus
+                  placeholder="vous@exemple.mg"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Field>
+              <Field label="Mot de passe">
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </Field>
+              <Button className="w-full text-white" disabled={loading}>
+                {loading ? "Connexion…" : "Se connecter"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode("magic");
+                  setStep("email");
+                }}
+                className="w-full text-center text-sm font-medium text-ink-soft hover:text-ink"
+              >
+                Recevoir un code par email
+              </button>
             </form>
           ) : step === "email" ? (
             <form onSubmit={send} className="mt-7 space-y-4">
-              <Field label="Email"><Input type="email" autoFocus placeholder="vous@exemple.mg" value={email} onChange={(e) => setEmail(e.target.value)} required /></Field>
-              <Button className="w-full text-white" disabled={loading}>{loading ? "Envoi…" : "Recevoir le code"}</Button>
+              <Field label="Email">
+                <Input
+                  type="email"
+                  autoFocus
+                  placeholder="vous@exemple.mg"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </Field>
+              <Button className="w-full text-white" disabled={loading}>
+                {loading ? "Envoi…" : "Recevoir le code"}
+              </Button>
               {allowPassword && (
-                <button type="button" onClick={() => setMode("password")} className="w-full text-center text-sm font-medium text-ink-soft hover:text-ink">← Utiliser un mot de passe</button>
+                <button
+                  type="button"
+                  onClick={() => setMode("password")}
+                  className="w-full text-center text-sm font-medium text-ink-soft hover:text-ink"
+                >
+                  ← Utiliser un mot de passe
+                </button>
               )}
             </form>
           ) : (
             <form onSubmit={verify} className="mt-7 space-y-4">
               <Field label="Code de vérification">
-                <Input inputMode="numeric" autoFocus placeholder="123456" maxLength={6} value={code}
-                  onChange={(e) => setCode(e.target.value)} className="text-center font-mono text-2xl tracking-[0.4em]" required />
+                <Input
+                  inputMode="numeric"
+                  autoFocus
+                  placeholder="123456"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  className="text-center font-mono text-2xl tracking-[0.4em]"
+                  required
+                />
               </Field>
-              <Button className="w-full text-white" disabled={loading}>{loading ? "Vérification…" : "Se connecter"}</Button>
-              <button type="button" onClick={() => setStep("email")} className="w-full text-center text-sm font-medium text-ink-soft hover:text-ink">← Changer d'email</button>
+              <Button className="w-full text-white" disabled={loading}>
+                {loading ? "Vérification…" : "Se connecter"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setStep("email")}
+                className="w-full text-center text-sm font-medium text-ink-soft hover:text-ink"
+              >
+                ← Changer d'email
+              </button>
             </form>
           )}
         </div>
