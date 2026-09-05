@@ -129,11 +129,11 @@ export function CoopLogo({ url, name, size = 40, className }: { url?: string | n
               const img = e.currentTarget;
               if (img.dataset.fb) { img.style.display = "none"; return; } // fallback also failed
               img.dataset.fb = "1";
-              img.src = "/logo.svg";
+              img.src = "/logo.png";
               img.className = "h-full w-full object-contain p-1";
             }} />
         // eslint-disable-next-line @next/next/no-img-element
-        : <img src="/logo.svg" alt="Cooperative Plus" className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget.style.display = "none"); }} />}
+        : <img src="/logo.png" alt="Cooperative Plus" className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget.style.display = "none"); }} />}
     </span>
   );
 }
