@@ -2,7 +2,7 @@
 
 # Cooperative Plus
 
-**Réservez votre place de _taxi-brousse_ en 2 minutes — partout à Madagascar.**
+**Réservez votre place de _trajet_ en 2 minutes — partout à Madagascar.**
 
 Plateforme multi-coopératives : comparez les départs, choisissez votre siège sur le plan réel du véhicule, payez (Mobile Money / espèces / carte) et recevez un billet électronique avec QR code. Côté pro, chaque coopérative gère ses véhicules, itinéraires, départs, réservations et paiements.
 

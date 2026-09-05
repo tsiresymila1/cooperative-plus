@@ -1,9 +1,10 @@
-import { Building2, Globe, Inbox, LayoutDashboard, Receipt, Tag, Users } from "lucide-react";
+import { BarChart3, Building2, Globe, Inbox, LayoutDashboard, Receipt, Tag, Users } from "lucide-react";
 import type { NavItem } from "./dashboard-shell";
 
 export function adminNav(active: string): NavItem[] {
   const items = [
     { key: "dashboard", group: "Pilotage", href: "/admin/dashboard", label: "Vue d'ensemble", icon: <LayoutDashboard size={18} /> },
+    { key: "statistics", group: "Pilotage", href: "/admin/statistics", label: "Statistiques", icon: <BarChart3 size={18} /> },
     {
       key: "cooperatives",
       group: "Réseau",
