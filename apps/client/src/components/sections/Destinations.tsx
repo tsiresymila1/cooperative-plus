@@ -15,6 +15,17 @@ function DestIcon({ className }: { className?: string }) {
   );
 }
 
+// Deterministic city photo: use the destination's own imageUrl when set,
+// otherwise a stable Flickr shot tagged with the city (no API key, no config).
+function cityImg(imageUrl: string | undefined, name: string) {
+  if (imageUrl) return imageUrl;
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
+  // Single tag = the city itself → real photos tagged with that city, not the
+  // broad "madagascar" wildlife pool.
+  return `https://loremflickr.com/640/900/${encodeURIComponent(name)}?lock=${h}`;
+}
+
 /* Template "Popular destinations" band — same layout; real Coopérative Plus
    destinations. Branded gradient cards (no stock photos) + custom marker icon. */
 export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { padding?: string } = {}) {
@@ -23,33 +34,31 @@ export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { p
   const featured = all.filter((d) => d.isPopular).concat(all.filter((d) => !d.isPopular)).slice(0, 4);
   const rest = all.slice(0, 18);
 
-  const GRAD = [
-    "linear-gradient(155deg,#1c3d5c 0%,#14314C 55%,#0f2740 100%)",
-    "linear-gradient(155deg,#14314C 0%,#0f2740 60%,#0b1f30 100%)",
-    "linear-gradient(155deg,#1c3d5c 0%,#12314a 55%,#0d243a 100%)",
-    "linear-gradient(155deg,#173350 0%,#14314C 55%,#0f2740 100%)",
-  ];
-
   return (
     <section className={padding}>
       <div className="mx-auto max-w-shell px-[15px]">
         <SectionHeading eyebrow="Voyageons ensemble" title="Destinations populaires" className="mb-[20px] lg:mb-[50px]" />
 
         <div className="grid grid-cols-1 gap-[30px] sm:grid-cols-2 lg:grid-cols-4">
-          {featured.map((d, i) => (
+          {featured.map((d) => (
             <Link
               key={d.id ?? d.name}
               href={`/search?to=${encodeURIComponent(d.name)}&pax=1`}
-              className="group relative block h-[357px] overflow-hidden lg:h-[490px]"
-              style={{ background: GRAD[i % GRAD.length] }}
+              className="group relative block h-[357px] overflow-hidden bg-navy lg:h-[490px]"
             >
-              {/* faint marker watermark */}
-              <DestIcon className="pointer-events-none absolute -right-6 -top-8 h-56 w-56 text-white/[0.06] transition-transform duration-700 group-hover:scale-110" />
-              <span className="absolute left-[26px] top-[26px] inline-flex h-11 w-11 items-center justify-center rounded-full bg-gold/15 text-gold ring-1 ring-gold/30">
+              {/* Real city photo (deterministic) with a slow zoom on hover */}
+              <span
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-[900ms] ease-out group-hover:scale-110"
+                style={{ backgroundImage: `url('${cityImg(d.imageUrl, d.name)}')` }}
+              />
+              {/* Navy legibility wash + brand tint */}
+              <span className="absolute inset-0 bg-gradient-to-t from-navy via-navy/45 to-navy/10" />
+              <DestIcon className="pointer-events-none absolute -right-6 -top-8 h-56 w-56 text-white/[0.08]" />
+              <span className="absolute left-[26px] top-[26px] inline-flex h-11 w-11 items-center justify-center rounded-full bg-gold/20 text-gold ring-1 ring-gold/40 backdrop-blur-sm">
                 <DestIcon className="h-5 w-5" />
               </span>
               <span className="absolute inset-x-0 bottom-0 flex items-center gap-3 p-[26px]">
-                <span className="font-display text-[22px] font-semibold uppercase leading-none tracking-[0.5px] text-white">{d.name}</span>
+                <span className="font-display text-[22px] font-semibold uppercase leading-none tracking-[0.5px] text-white drop-shadow">{d.name}</span>
                 <ArrowRight className="ml-auto size-5 text-white transition-colors duration-500 group-hover:text-gold" strokeWidth={1.5} />
               </span>
             </Link>
