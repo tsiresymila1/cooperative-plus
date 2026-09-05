@@ -58,19 +58,11 @@ export default function Page() {
         </a>
       </header>
 
-      <main
-        className="px-6 py-8 lg:px-8"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, rgba(15,45,92,.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(15,45,92,.04) 1px, transparent 1px)",
-          backgroundSize: "26px 26px",
-          backgroundAttachment: "fixed",
-        }}
-      >
+      <main className="px-4 py-8 md:px-6">
         <div className="mx-auto max-w-4xl space-y-6">
           <div className="mb-2">
-            <h1 className="font-display text-[1.85rem] font-extrabold leading-none tracking-tight text-ink">Mon compte</h1>
-            <p className="mt-2 text-sm text-ink-soft">Gérez vos informations personnelles et vos coopératives.</p>
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-ink">Mon compte</h1>
+            <p className="mt-1 text-sm text-ink-soft">Gérez vos informations personnelles et vos coopératives.</p>
           </div>
 
           <ComponentCard title="Identité" desc="Vos informations personnelles affichées dans l'application.">
