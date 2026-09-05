@@ -8,6 +8,7 @@ export * from "./components/theme";
 export * from "./components/data-table";
 export * from "./components/chart";
 export * from "./components/dashboard-shell";
+export * from "./components/sidebar-context";
 export * from "./components/seat-map";
 export * from "./components/providers";
 export * from "./components/auth-gate";
