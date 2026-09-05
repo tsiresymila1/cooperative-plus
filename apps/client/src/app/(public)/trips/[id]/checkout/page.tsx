@@ -3,9 +3,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Banknote, CreditCard, Smartphone, Lock } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { Button, Card, slotSeatKey, isValidPhone } from "@cp/ui";
-import { Field, Input } from "@cp/ui";
+import { slotSeatKey, isValidPhone } from "@cp/ui";
 import { toast } from "@cp/ui";
 import { db, id } from "@cp/ui";
 import { useBookingDraft } from "@/lib/booking-store";
@@ -28,6 +26,13 @@ const buildMethods = (accepted: string[]) =>
   });
 
 const ref = () => "CP-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+
+const btnGold =
+  "inline-flex h-14 w-full items-center justify-center gap-2 px-6 font-display text-[15px] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 bg-gold text-navy hover:bg-navy hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gold disabled:hover:text-navy";
+const fieldCls =
+  "h-12 w-full border border-navy/15 bg-white px-4 font-body text-[15px] text-navy outline-none transition-colors placeholder:text-navy/30 focus:border-gold";
+const labelCls =
+  "mb-2 block font-body text-[11px] font-semibold uppercase tracking-[1.5px] text-navy/50";
 
 export default function Checkout({ params }: { params: Promise<{ id: string }> }) {
   const { id: instanceId } = use(params);
@@ -84,10 +89,16 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   }, [me?.id, seats.join(",")]);
 
   if (!seats.length) {
-    return (<><SiteHeader /><main className="mx-auto max-w-3xl px-5 py-20 text-center">
-      <p className="text-ink-soft">Aucun siège sélectionné.</p>
-      <Button className="mt-4" onClick={() => router.push(`/trips/${instanceId}`)}>Choisir un siège</Button>
-    </main></>);
+    return (
+      <main className="pt-[100px]">
+        <div className="mx-auto max-w-content px-[15px] py-24 text-center">
+          <p className="font-body text-navy/60">Aucun siège sélectionné.</p>
+          <button className={`mx-auto mt-6 max-w-xs ${btnGold}`} onClick={() => router.push(`/trips/${instanceId}`)}>
+            Choisir un siège
+          </button>
+        </div>
+      </main>
+    );
   }
 
   const total = (trip?.price ?? draft.price) * seats.length;
@@ -160,75 +171,88 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   };
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto max-w-5xl px-5 py-8">
-        <h1 className="mb-6 font-display text-3xl font-bold">Finaliser la réservation</h1>
-        <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+    <main className="pt-[100px]">
+      <div className="mx-auto max-w-content px-[15px] py-10 lg:py-14">
+        <p className="font-body text-[11px] font-semibold uppercase tracking-[3px] text-gold">
+          Réservation
+        </p>
+        <h1 className="mb-8 mt-2 font-display text-[38px] font-semibold uppercase leading-none tracking-[-1px] text-navy lg:text-[52px]">
+          Finaliser la réservation
+        </h1>
+        <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-6">
-            <Card className="p-6">
-              <h2 className="mb-4 font-display text-lg font-bold">Contact</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Nom"><Input value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} required /></Field>
-                <Field label="Téléphone"><Input inputMode="tel" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} required /></Field>
-                <Field label="Email (optionnel)" className="sm:col-span-2"><Input type="email" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} /></Field>
+            <div className="border border-navy/10 bg-white p-6">
+              <h2 className="mb-5 font-display text-2xl font-semibold uppercase tracking-[-0.5px] text-navy">Contact</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  <span className={labelCls}>Nom</span>
+                  <input className={fieldCls} value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} required />
+                </label>
+                <label className="block">
+                  <span className={labelCls}>Téléphone</span>
+                  <input className={fieldCls} inputMode="tel" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} required />
+                </label>
+                <label className="block sm:col-span-2">
+                  <span className={labelCls}>Email (optionnel)</span>
+                  <input className={fieldCls} type="email" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
+                </label>
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-              <h2 className="mb-4 font-display text-lg font-bold">Passagers</h2>
+            <div className="border border-navy/10 bg-white p-6">
+              <h2 className="mb-5 font-display text-2xl font-semibold uppercase tracking-[-0.5px] text-navy">Passagers</h2>
               <div className="space-y-3">
                 {seats.map((s) => (
-                  <div key={s} className="grid grid-cols-[64px_1fr] gap-3">
-                    <div className="flex h-11 items-center justify-center rounded-[--radius] bg-orange/10 font-mono font-bold text-orange-deep">{s}</div>
-                    <Field><Input placeholder={`Nom passager siège ${s}`} value={passengers[s] ?? ""} onChange={(e) => setPassengers({ ...passengers, [s]: e.target.value })} /></Field>
+                  <div key={s} className="grid grid-cols-[56px_1fr] gap-3">
+                    <div className="flex h-12 items-center justify-center bg-navy/[.05] font-display text-lg font-semibold text-navy">{s}</div>
+                    <input className={fieldCls} placeholder={`Nom passager siège ${s}`} value={passengers[s] ?? ""} onChange={(e) => setPassengers({ ...passengers, [s]: e.target.value })} />
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-6">
-              <h2 className="mb-4 font-display text-lg font-bold">Paiement</h2>
+            <div className="border border-navy/10 bg-white p-6">
+              <h2 className="mb-5 font-display text-2xl font-semibold uppercase tracking-[-0.5px] text-navy">Paiement</h2>
               <div className="grid gap-3 sm:grid-cols-3">
                 {methods.map((mm) => {
                   const Icon = mm.icon; const active = method === mm.id;
                   return (
                     <button key={mm.id} onClick={() => setMethod(mm.id)}
-                      className={cn("rounded-[--radius] border p-4 text-left transition-all", active ? "border-orange bg-orange/5 ring-2 ring-orange/20" : "border-ink/12 hover:border-ink/25")}>
-                      <Icon size={20} className={active ? "text-orange" : "text-ink-soft"} />
-                      <p className="mt-2 font-semibold text-ink">{mm.label}</p>
-                      <p className="text-xs text-ink-soft">{mm.desc}</p>
+                      className={cn("border p-4 text-left transition-colors", active ? "border-gold bg-gold/5" : "border-navy/15 hover:border-navy/40")}>
+                      <Icon size={22} className={active ? "text-gold" : "text-navy/50"} />
+                      <p className="mt-2 font-display text-base font-semibold uppercase tracking-[0.5px] text-navy">{mm.label}</p>
+                      <p className="font-body text-xs font-light text-navy/60">{mm.desc}</p>
                     </button>
                   );
                 })}
               </div>
               {method === "mobile_money" && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4">
-                  <p className="text-sm text-ink-soft">Vous serez redirigé vers la page de paiement PAPI pour finaliser via MVola, Orange Money ou Airtel Money.</p>
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 overflow-hidden">
+                  <p className="font-body text-sm font-light text-navy/60">Vous serez redirigé vers la page de paiement PAPI pour finaliser via MVola, Orange Money ou Airtel Money.</p>
                 </motion.div>
               )}
-            </Card>
+            </div>
           </div>
 
-          <div className="lg:sticky lg:top-20 lg:self-start">
-            <Card className="p-5">
-              <h3 className="font-display text-lg font-bold">{draft.origin} → {draft.dest}</h3>
-              <p className="text-sm text-ink-soft">{new Date(draft.departureAt).toLocaleString("fr", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
-              <div className="mt-4 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-ink-soft">{seats.length} × {fmtMoney(trip?.price ?? draft.price)}</span><span className="font-medium">{fmtMoney(total)}</span></div>
-                <div className="flex justify-between"><span className="text-ink-soft">Sièges</span><span className="font-mono font-medium">{seats.join(", ")}</span></div>
+          <div className="lg:sticky lg:top-[120px] lg:self-start">
+            <div className="border border-navy/10 bg-white p-6">
+              <h3 className="font-display text-xl font-semibold uppercase tracking-[-0.5px] text-navy">{draft.origin} <span className="text-gold">→</span> {draft.dest}</h3>
+              <p className="mt-1 font-body text-sm font-light text-navy/60">{new Date(draft.departureAt).toLocaleString("fr", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+              <div className="mt-4 space-y-2.5 font-body text-sm">
+                <div className="flex justify-between"><span className="font-light text-navy/60">{seats.length} × {fmtMoney(trip?.price ?? draft.price)}</span><span className="font-medium text-navy">{fmtMoney(total)}</span></div>
+                <div className="flex justify-between"><span className="font-light text-navy/60">Sièges</span><span className="font-medium text-navy">{seats.join(", ")}</span></div>
               </div>
-              <div className="mt-4 flex items-end justify-between border-t border-ink/8 pt-4">
-                <span className="text-sm text-ink-soft">Total</span><span className="font-mono text-2xl font-bold">{fmtMoney(total)}</span>
+              <div className="mt-5 flex items-end justify-between border-t border-navy/10 pt-4">
+                <span className="font-body text-[11px] font-semibold uppercase tracking-[2px] text-navy/50">Total</span><span className="font-display text-3xl font-semibold text-gold">{fmtMoney(total)}</span>
               </div>
-              <Button className="mt-4 w-full" disabled={loading || !contact.name || !contact.phone} onClick={pay}>
+              <button className={`mt-5 ${btnGold}`} disabled={loading || !contact.name || !contact.phone} onClick={pay}>
                 {loading ? "Traitement…" : method === "mobile_money" ? `Payer ${fmtMoney(total)} en ligne` : "Réserver · payer à la gare"}
-              </Button>
-              <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-ink-soft/70"><Lock size={13} /> Paiement sécurisé</p>
-            </Card>
+              </button>
+              <p className="mt-4 flex items-center justify-center gap-1.5 font-body text-xs font-light text-navy/50"><Lock size={14} className="text-gold" /> Paiement sécurisé</p>
+            </div>
           </div>
         </div>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

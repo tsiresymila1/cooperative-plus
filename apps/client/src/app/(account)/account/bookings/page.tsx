@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Search, Ticket, X } from "lucide-react";
-import { Badge, Button, Card, CoopLogo, Input, TagBadge, useConfirm, toast } from "@cp/ui";
+import { CoopLogo, TagBadge, useConfirm, toast } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
 
@@ -21,15 +21,15 @@ async function cancelOwnBooking(b: any, confirm: ReturnType<typeof useConfirm>) 
   }
 }
 
-const tone: Record<string, "success" | "warning" | "danger" | "neutral"> = {
-  confirmed: "success",
-  paid: "success",
-  pending: "warning",
-  cancelled: "danger",
-  refunded: "danger",
-  expired: "neutral",
-  completed: "neutral",
-  no_show: "danger",
+const tone: Record<string, string> = {
+  confirmed: "bg-stock/10 text-stock",
+  paid: "bg-stock/10 text-stock",
+  pending: "bg-gold/15 text-gold-hover",
+  cancelled: "bg-sale/10 text-sale",
+  refunded: "bg-sale/10 text-sale",
+  expired: "bg-navy/5 text-navy/60",
+  completed: "bg-navy/5 text-navy/60",
+  no_show: "bg-sale/10 text-sale",
 };
 const label: Record<string, string> = {
   confirmed: "confirmé",
@@ -105,41 +105,42 @@ export default function Bookings() {
 
   return (
     <div className=" space-y-3">
-      <h1 className="font-display text-2xl font-bold">Mes réservations</h1>
+      <h1 className="font-display text-2xl font-bold uppercase">Mes réservations</h1>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex rounded-[--radius] bg-ink/5 p-1">
+        <div className="inline-flex bg-navy/5 p-1">
           {TABS.map((t) => (
             <button key={t.key} onClick={() => { setTab(t.key); setPage(0); }}
               className={t.key === tab
-                ? "rounded-[calc(var(--radius)-2px)] bg-paper px-4 py-1.5 text-sm font-semibold text-ink shadow-sm"
-                : "rounded-[calc(var(--radius)-2px)] px-4 py-1.5 text-sm font-medium text-ink-soft hover:text-ink"}>
-              {t.label} <span className="ml-1 text-xs text-ink-soft/60">{t.n}</span>
+                ? "bg-white px-4 py-1.5 text-sm font-display uppercase tracking-wide text-navy shadow-sm"
+                : "px-4 py-1.5 text-sm font-display uppercase tracking-wide text-navy/60 hover:text-navy"}>
+              {t.label} <span className="ml-1 text-xs text-navy/40">{t.n}</span>
             </button>
           ))}
         </div>
         <div className="relative sm:w-64">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/50" />
-          <Input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="Rechercher…" className="pl-9" />
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-navy/40" />
+          <input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="Rechercher…"
+            className="h-11 w-full border border-navy/12 bg-white pl-9 pr-3.5 text-[15px] text-navy outline-none transition-colors placeholder:text-navy/40 focus:border-gold" />
         </div>
       </div>
 
       {isLoading ? (
         [0, 1].map((i) => (
-          <div key={i} className="h-24 animate-pulse rounded-2xl bg-ink/5" />
+          <div key={i} className="h-24 animate-pulse bg-navy/5" />
         ))
       ) : bookings.length === 0 ? (
-        <Card className="flex flex-col items-center gap-3 p-12 text-center">
-          <Ticket className="text-ink-soft/40" />
-          <p className="font-display text-lg font-bold">
+        <div className="flex flex-col items-center gap-3 border border-navy/10 bg-white p-12 text-center">
+          <Ticket className="text-navy/40" />
+          <p className="font-display text-lg font-bold uppercase">
             {all.length === 0 ? "Aucune réservation" : q ? "Aucun résultat" : tab === "expired" ? "Aucune réservation expirée" : "Aucune réservation active"}
           </p>
           {all.length === 0 && (
-            <Link href="/search">
-              <Button size="sm">Réserver un trajet</Button>
+            <Link href="/search" className="inline-flex h-9 items-center justify-center gap-2 bg-gold px-3 text-sm font-display uppercase tracking-wide text-navy transition-colors hover:bg-navy hover:text-white">
+              Réserver un trajet
             </Link>
           )}
-        </Card>
+        </div>
       ) : (
         <div className="gap-2 flex flex-col">
           {shown.map((b) => {
@@ -147,11 +148,11 @@ export default function Bookings() {
             const tg = Array.isArray(ti?.tag) ? ti.tag[0] : ti?.tag;
             return (
             <Link className="" key={b.id} href={`/bookings/${b.reference}`}>
-              <Card className="flex items-center gap-4 p-5 transition-colors hover:bg-ink/[.02]">
-                <CoopLogo url={b.tripInstance?.cooperative?.logoUrl} name={b.tripInstance?.coopName} size={44} className="border border-ink/10" />
+              <div className="flex items-center gap-4 border border-navy/10 bg-white p-5 transition-colors hover:bg-navy/[.02]">
+                <CoopLogo url={b.tripInstance?.cooperative?.logoUrl} name={b.tripInstance?.coopName} size={44} className="border border-navy/10" />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-ink">
+                    <span className="truncate text-sm font-semibold text-navy">
                       {b.tripInstance?.coopName ?? "Cooperative Plus"}
                     </span>
                     {tg && <TagBadge name={tg.name} color={tg.color} />}
@@ -159,47 +160,49 @@ export default function Bookings() {
                   <p className="mt-1 font-display text-lg font-bold">
                     {b.tripInstance?.originName} → {b.tripInstance?.destName}
                   </p>
-                  <p className="truncate text-sm text-ink-soft">
+                  <p className="truncate text-sm text-navy/60">
                     {b.tripInstance
                       ? new Date(b.tripInstance.departureAt).toLocaleString("fr", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
                       : ""}
                     {" · "}sièges{" "}
                     {(b.tickets ?? []).map((t) => t.seatLabel).sort().join(", ")}
                     {" · "}
-                    <span className="font-mono text-orange-deep">{b.reference}</span>
+                    <span className="font-mono text-gold-hover">{b.reference}</span>
                   </p>
                 </div>
 
                 <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <Badge tone={tone[b.status] ?? "neutral"}>{label[b.status] ?? b.status}</Badge>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold ${tone[b.status] ?? "bg-navy/5 text-navy/60"}`}>{label[b.status] ?? b.status}</span>
                   <div className="flex items-center gap-2">
                     {b.status === "pending" && (
                       <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelOwnBooking(b, confirm); }}
-                        className="grid h-8 w-8 place-items-center rounded-full text-ink-soft/50 transition-colors hover:bg-danger/10 hover:text-danger"
+                        className="grid h-8 w-8 place-items-center rounded-full text-navy/40 transition-colors hover:bg-sale/10 hover:text-sale"
                         title="Annuler la réservation"
                       >
                         <X size={16} />
                       </button>
                     )}
                     <p className="font-mono text-lg font-bold">{fmtMoney(b.totalAmount)}</p>
-                    <ChevronRight size={18} className="text-ink-soft/50" />
+                    <ChevronRight size={18} className="text-navy/40" />
                   </div>
                 </div>
-              </Card>
+              </div>
             </Link>
             );
           })}
 
           {pageCount > 1 && (
             <div className="mt-4 flex items-center justify-center gap-2">
-              <Button variant="outline" size="sm" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
+              <button disabled={safePage === 0} onClick={() => setPage(safePage - 1)}
+                className="inline-flex h-9 items-center justify-center gap-2 border border-navy/20 px-3 text-sm font-display uppercase tracking-wide text-navy transition-colors hover:border-gold hover:text-gold disabled:opacity-50 disabled:hover:border-navy/20 disabled:hover:text-navy">
                 <ChevronLeft size={16} /> Précédent
-              </Button>
-              <span className="px-2 text-sm text-ink-soft">Page {safePage + 1} / {pageCount}</span>
-              <Button variant="outline" size="sm" disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)}>
+              </button>
+              <span className="px-2 text-sm text-navy/60">Page {safePage + 1} / {pageCount}</span>
+              <button disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)}
+                className="inline-flex h-9 items-center justify-center gap-2 border border-navy/20 px-3 text-sm font-display uppercase tracking-wide text-navy transition-colors hover:border-gold hover:text-gold disabled:opacity-50 disabled:hover:border-navy/20 disabled:hover:text-navy">
                 Suivant <ChevronRight size={16} />
-              </Button>
+              </button>
             </div>
           )}
         </div>

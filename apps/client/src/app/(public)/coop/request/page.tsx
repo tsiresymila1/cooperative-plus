@@ -2,11 +2,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Building2, ArrowRight } from "lucide-react";
-import { SiteHeader } from "@/components/site-header";
-import { Button, Card, db, id, toast } from "@cp/ui";
-import { Input } from "@/components/ui/input";
+import { db, id, toast } from "@cp/ui";
+import PageBanner from "@/components/site/PageBanner";
 
 const empty = { displayName: "", legalName: "", region: "", contactName: "", email: "", phone: "", address: "", message: "" };
+
+const FIELD =
+  "h-[60px] w-full border border-navy/15 bg-white px-5 font-body text-[16px] text-navy outline-none transition-colors duration-300 placeholder:text-navy/35 focus:border-gold";
+const LABEL = "mb-2 block font-body text-[14px] text-navy";
+const GOLD_BTN =
+  "inline-flex h-[60px] items-center justify-center gap-2 bg-gold px-8 font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:bg-navy hover:text-white disabled:opacity-60";
 
 export default function CoopRequest() {
   const [form, setForm] = useState(empty);
@@ -44,72 +49,85 @@ export default function CoopRequest() {
   };
 
   return (
-    <>
-      <SiteHeader />
-      <main className="mx-auto max-w-2xl px-5 py-12">
-        {done ? (
-          <Card className="flex flex-col items-center gap-3 p-12 text-center">
-            <span className="grid h-16 w-16 place-items-center rounded-full bg-baobab/15 text-baobab"><CheckCircle2 size={36} /></span>
-            <h1 className="font-display text-2xl font-bold">Demande envoyée</h1>
-            <p className="max-w-md text-ink-soft">Notre équipe examine votre demande. Vous serez contacté à <span className="font-semibold text-ink">{form.email}</span> dès validation, avec vos accès à l&apos;espace coopérative.</p>
-            <Link href="/" className="mt-2"><Button variant="outline">Retour à l&apos;accueil</Button></Link>
-          </Card>
-        ) : (
-          <>
-            <div className="mb-6">
-              <span className="inline-flex items-center gap-2 rounded-full bg-orange/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-orange"><Building2 size={14} /> Espace professionnel</span>
-              <h1 className="mt-4 font-display text-3xl font-bold">Inscrire votre coopérative</h1>
-              <p className="mt-2 text-ink-soft">Remplissez le formulaire. Après validation par notre équipe, vous recevrez vos accès pour gérer routes, véhicules, horaires et réservations.</p>
-            </div>
+    <main>
+      <PageBanner title="Inscrire votre coopérative" />
 
-            <Card className="grid gap-4 p-6">
-              <Field label="Nom de la coopérative *">
-                <Input value={form.displayName} onChange={(e) => set("displayName", e.target.value)} placeholder="Soatrans Plus" />
-              </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Raison sociale">
-                  <Input value={form.legalName} onChange={(e) => set("legalName", e.target.value)} placeholder="Soatrans SARL" />
-                </Field>
-                <Field label="Région">
-                  <Input value={form.region} onChange={(e) => set("region", e.target.value)} placeholder="Analamanga" />
-                </Field>
+      <section className="py-[100px]">
+        <div className="mx-auto max-w-narrow px-[15px]">
+          {done ? (
+            <div className="mx-auto flex max-w-[640px] flex-col items-center gap-4 border border-navy/10 bg-white p-12 text-center">
+              <span className="grid h-16 w-16 place-items-center rounded-full bg-gold/15 text-gold"><CheckCircle2 size={36} /></span>
+              <h1 className="font-display text-[36px] font-semibold uppercase leading-none tracking-[-1px] text-navy">Demande envoyée</h1>
+              <p className="max-w-md font-body text-[16px] leading-[26px] text-navy/70">
+                Notre équipe examine votre demande. Vous serez contacté à <span className="font-semibold text-navy">{form.email}</span> dès validation, avec vos accès à l&apos;espace coopérative.
+              </p>
+              <Link href="/" className="mt-2 inline-flex h-[56px] items-center justify-center border border-navy/20 px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:border-gold hover:text-gold">
+                Retour à l&apos;accueil
+              </Link>
+            </div>
+          ) : (
+            <div className="mx-auto max-w-[720px]">
+              <div className="mb-10">
+                <span className="inline-flex items-center gap-2 font-body text-eyebrow font-semibold uppercase tracking-[3px] text-gold">
+                  <Building2 size={16} /> Espace professionnel
+                </span>
+                <h2 className="mt-4 font-display text-[40px] font-semibold uppercase leading-none tracking-[-1.5px] text-navy lg:text-[52px]">
+                  Rejoindre le réseau
+                </h2>
+                <p className="mt-4 max-w-[560px] font-body text-[16px] leading-[26px] text-navy/70">
+                  Remplissez le formulaire. Après validation par notre équipe, vous recevrez vos accès pour gérer routes, véhicules, horaires et réservations.
+                </p>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Personne de contact *">
-                  <Input value={form.contactName} onChange={(e) => set("contactName", e.target.value)} placeholder="Rakoto Jean" />
+
+              <div className="grid gap-5 border border-navy/10 bg-white p-8 lg:p-10">
+                <Field label="Nom de la coopérative *">
+                  <input className={FIELD} value={form.displayName} onChange={(e) => set("displayName", e.target.value)} placeholder="Soatrans Plus" />
                 </Field>
-                <Field label="Téléphone *">
-                  <Input value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="034 00 000 00" />
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Raison sociale">
+                    <input className={FIELD} value={form.legalName} onChange={(e) => set("legalName", e.target.value)} placeholder="Soatrans SARL" />
+                  </Field>
+                  <Field label="Région">
+                    <input className={FIELD} value={form.region} onChange={(e) => set("region", e.target.value)} placeholder="Analamanga" />
+                  </Field>
+                </div>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field label="Personne de contact *">
+                    <input className={FIELD} value={form.contactName} onChange={(e) => set("contactName", e.target.value)} placeholder="Rakoto Jean" />
+                  </Field>
+                  <Field label="Téléphone *">
+                    <input className={FIELD} value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="034 00 000 00" />
+                  </Field>
+                </div>
+                <Field label="Email *">
+                  <input className={FIELD} type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="contact@coop.mg" />
                 </Field>
+                <Field label="Adresse">
+                  <input className={FIELD} value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Lot II… Antananarivo" />
+                </Field>
+                <Field label="Message (optionnel)">
+                  <textarea value={form.message} onChange={(e) => set("message", e.target.value)} rows={3}
+                    className={`${FIELD} h-auto resize-none py-3.5`}
+                    placeholder="Flotte, lignes desservies, volume…" />
+                </Field>
+                <div className="flex justify-end pt-1">
+                  <button type="button" className={GOLD_BTN} onClick={submit} disabled={saving}>
+                    {saving ? "Envoi…" : "Envoyer la demande"} <ArrowRight size={18} />
+                  </button>
+                </div>
               </div>
-              <Field label="Email *">
-                <Input type="email" value={form.email} onChange={(e) => set("email", e.target.value)} placeholder="contact@coop.mg" />
-              </Field>
-              <Field label="Adresse">
-                <Input value={form.address} onChange={(e) => set("address", e.target.value)} placeholder="Lot II… Antananarivo" />
-              </Field>
-              <Field label="Message (optionnel)">
-                <textarea value={form.message} onChange={(e) => set("message", e.target.value)} rows={3}
-                  className="w-full rounded-[--radius] border border-ink/12 bg-paper px-3.5 py-2.5 text-[15px] text-ink outline-none transition-all placeholder:text-ink-soft/40 focus:border-orange focus:ring-2 focus:ring-orange/20"
-                  placeholder="Flotte, lignes desservies, volume…" />
-              </Field>
-              <div className="flex justify-end pt-1">
-                <Button size="lg" onClick={submit} disabled={saving}>
-                  {saving ? "Envoi…" : "Envoyer la demande"} <ArrowRight size={18} />
-                </Button>
-              </div>
-            </Card>
-          </>
-        )}
-      </main>
-    </>
+            </div>
+          )}
+        </div>
+      </section>
+    </main>
   );
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm font-medium text-ink">{label}</span>
+      <span className={LABEL}>{label}</span>
       {children}
     </label>
   );
