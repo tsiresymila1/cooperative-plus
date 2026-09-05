@@ -15,15 +15,22 @@ function DestIcon({ className }: { className?: string }) {
   );
 }
 
-// Deterministic city photo: use the destination's own imageUrl when set,
-// otherwise a stable Flickr shot tagged with the city (no API key, no config).
+// Real, representative city photos from Wikimedia Commons (stable, scaled via
+// Special:FilePath). Keyed by city; falls back to the destination's own
+// imageUrl or a plain navy card for anything unmapped.
+const COMMONS: Record<string, string> = {
+  antananarivo: "Lake Anosy, Central Antananarivo, Capital of Madagascar, Photo by Sascha Grabow.jpg",
+  antsirabe: "Antsirabe - rue principale02.JPG",
+  fianarantsoa: "Vue globale de la ville Fianarantsoa 2.jpg",
+  mahajanga: "Mahajanga cathedrale.jpg",
+  morondava: "Strada di Morondava.jpg",
+  toamasina: "Tamatave - panoramio.jpg",
+  toliara: "MADAGASCAR TOLIARA (1).jpg",
+};
 function cityImg(imageUrl: string | undefined, name: string) {
   if (imageUrl) return imageUrl;
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffff;
-  // Single tag = the city itself → real photos tagged with that city, not the
-  // broad "madagascar" wildlife pool.
-  return `https://loremflickr.com/640/900/${encodeURIComponent(name)}?lock=${h}`;
+  const file = COMMONS[name.trim().toLowerCase()];
+  return file ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=800` : "";
 }
 
 /* Template "Popular destinations" band — same layout; real Coopérative Plus
