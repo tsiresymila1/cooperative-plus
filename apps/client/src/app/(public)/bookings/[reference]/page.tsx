@@ -127,52 +127,85 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
         {/* ── Left: ticket + seat preview ── */}
         <div className="space-y-6">
         <motion.div id="ticket" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.15 }}>
-          {/* Boarding pass — Tourix "bus ticket" artwork, built as a real card. */}
-          <div className="relative flex overflow-hidden bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
-            {/* Gold stub */}
-            <div className="relative flex w-[140px] shrink-0 flex-col items-center justify-between bg-gold py-5">
-              <Bus className="size-6 text-navy" strokeWidth={2} />
-              <span className="font-display text-[15px] font-bold uppercase tracking-[0.35em] text-navy [writing-mode:vertical-rl] rotate-180">Bus Ticket</span>
-              <Bus className="size-6 text-navy" strokeWidth={2} />
-              <span aria-hidden className="absolute -right-2.5 top-0 h-full w-5 [background:radial-gradient(circle_at_left,transparent_9px,#fff_10px)] [background-size:100%_20px]" />
+          {/* Boarding pass — Tourix "bus ticket" artwork, rebuilt as a real card:
+              gold top bar · white world-map body · navy tear-off stub at right. */}
+          <div className="relative flex overflow-hidden rounded-sm bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
+            {/* ── Main pass ── */}
+            <div className="min-w-0 flex-1">
+              {/* Gold header bar */}
+              <div className="flex items-center justify-between gap-3 bg-gold px-5 py-3.5 text-navy">
+                <span className="flex items-center gap-3">
+                  <Bus className="size-7 shrink-0" strokeWidth={2} />
+                  <span className="font-display text-2xl font-bold uppercase tracking-[0.06em]">Bus Ticket</span>
+                </span>
+                <span className="flex items-center gap-2.5 text-right">
+                  <span className="hidden font-body text-[9px] font-semibold uppercase leading-tight tracking-[1.5px] text-navy/70 sm:block">
+                    {trip?.coopName ?? "Cooperative Plus"}<br />Transport
+                  </span>
+                  <CoopLogo url={trip?.cooperative?.logoUrl} name={trip?.coopName} size={30} className="rounded-full border border-navy/20" />
+                </span>
+              </div>
+
+              {/* Map body */}
+              <div className="relative px-5 py-6" style={{ backgroundImage: "radial-gradient(rgba(20,49,76,.09) 1.1px, transparent 1.2px)", backgroundSize: "13px 13px" }}>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1.3fr)_1fr]">
+                  {/* Route with pin markers + dashed connector */}
+                  <div className="relative pl-7">
+                    <span aria-hidden className="absolute left-[7px] top-[26px] bottom-[26px] w-px border-l-2 border-dashed border-navy/25" />
+                    <div className="relative">
+                      <MapPin size={17} className="absolute -left-7 top-0.5 fill-gold text-gold" />
+                      <p className="font-body text-[10px] font-semibold uppercase tracking-[2px] text-navy/45">Départ</p>
+                      <p className="font-display text-[24px] font-bold uppercase leading-none tracking-[-0.5px] text-navy">{trip ? trip.originName : (isLoading ? "…" : "—")}</p>
+                    </div>
+                    <div className="relative mt-6 flex items-center gap-2">
+                      <MapPin size={17} className="absolute -left-7 top-0.5 fill-gold text-gold" />
+                      <div>
+                        <p className="font-body text-[10px] font-semibold uppercase tracking-[2px] text-navy/45">Destination</p>
+                        <p className="font-display text-[24px] font-bold uppercase leading-none tracking-[-0.5px] text-navy">{trip?.destName ?? ""}</p>
+                      </div>
+                      {tag && <TagBadge name={tag.name} color={tag.color} />}
+                    </div>
+                  </div>
+
+                  {/* Date / time / seat / price grid */}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-5 self-center">
+                    <Field label="Date" value={trip ? new Date(trip.departureAt).toLocaleDateString("fr", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"} />
+                    <Field label="Heure" value={trip ? new Date(trip.departureAt).toLocaleTimeString("fr", { hour: "2-digit", minute: "2-digit" }) : "—"} />
+                    <Field label="Sièges" value={(bk?.tickets ?? []).map((t) => t.seatLabel).sort().join(", ") || "—"} />
+                    <Field label="Total" value={bk ? fmtMoney(bk.totalAmount) : "—"} />
+                  </div>
+                </div>
+
+                {/* Secondary details + QR */}
+                <div className="mt-6 flex items-end justify-between gap-4 border-t border-dashed border-navy/15 pt-4">
+                  <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 font-body text-sm sm:grid-cols-2">
+                    <Row label="Véhicule" value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel} />
+                    {vehDriver && <Row label="Chauffeur" value={vehDriver} />}
+                    <Row label="Passagers" value={String(bk?.seatCount ?? "—")} />
+                    <Row label="Statut" value={<span className={`px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wide ${statusTone}`}>{STATUS_FR[status] ?? status ?? "—"}</span>} />
+                  </div>
+                  <div className="grid shrink-0 place-items-center border border-navy/10 bg-white p-1.5">
+                    <QRCodeSVG value={reference} size={72} level="M" />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Body — dotted "map" texture */}
-            <div className="relative min-w-0 flex-1" style={{ backgroundImage: "radial-gradient(rgba(20,49,76,.06) 1px, transparent 1px)", backgroundSize: "14px 14px" }}>
-              <div className="flex items-start justify-between gap-3 border-b border-dashed border-navy/15 p-5">
-                <span className="flex items-center gap-2.5">
-                  <CoopLogo url={trip?.cooperative?.logoUrl} name={trip?.coopName} size={34} className="rounded-none border border-navy/10" />
-                  <span className="min-w-0 font-display text-lg font-semibold uppercase leading-tight text-navy">{trip?.coopName ?? "Cooperative Plus"}</span>
-                  {tag && <TagBadge name={tag.name} color={tag.color} />}
-                </span>
-                <span className="shrink-0 text-right">
-                  <span className="block font-body text-[10px] uppercase tracking-[2px] text-navy/45">Référence</span>
-                  <span className="font-display text-lg font-bold tracking-wider text-gold">{reference}</span>
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between gap-4 p-5">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-[26px] font-semibold uppercase leading-none tracking-[-0.5px] text-navy">
-                    <span className="inline-flex items-center gap-1.5"><MapPin size={16} className="text-gold" /> {trip ? trip.originName : (isLoading ? "…" : "—")}</span>
-                    <span className="text-gold">→</span>
-                    <span className="inline-flex items-center gap-1.5"><MapPin size={16} className="text-gold" /> {trip?.destName ?? ""}</span>
-                  </div>
-                  {trip && <p className="mt-2 font-body text-sm font-light text-navy/60">{new Date(trip.departureAt).toLocaleString("fr", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>}
-                </div>
-                <div className="grid shrink-0 place-items-center border border-navy/10 bg-white p-2">
-                  <QRCodeSVG value={reference} size={92} level="M" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 border-t border-dashed border-navy/15 p-5 font-body text-sm sm:grid-cols-3">
-                <Row label="Sièges" value={(bk?.tickets ?? []).map((t) => t.seatLabel).sort().join(", ") || "—"} />
-                <Row label="Véhicule" value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel} />
-                {vehDriver && <Row label="Chauffeur" value={vehDriver} />}
-                <Row label="Passagers" value={String(bk?.seatCount ?? "—")} />
-                <Row label="Total" value={bk ? fmtMoney(bk.totalAmount) : "—"} />
-                <Row label="Statut" value={<span className={`px-2 py-0.5 font-display text-[11px] font-semibold uppercase tracking-wide ${statusTone}`}>{STATUS_FR[status] ?? status ?? "—"}</span>} />
-              </div>
+            {/* ── Navy tear-off stub ── */}
+            <div className="relative flex w-[92px] shrink-0 flex-col items-center justify-between bg-navy py-4 text-white">
+              {/* Perforation notch line */}
+              <span aria-hidden className="absolute -left-2 top-0 h-full w-4 [background:radial-gradient(circle_at_left,#fff_9px,transparent_10px)] [background-size:100%_18px]" />
+              {/* Barcode */}
+              <span aria-hidden className="h-10 w-14" style={{ backgroundImage: "repeating-linear-gradient(90deg,#fff 0 1px,transparent 1px 2px,#fff 2px 4px,transparent 4px 7px,#fff 7px 9px,transparent 9px 11px)" }} />
+              {/* Route + date, vertical */}
+              <span className="font-display text-[12px] font-semibold uppercase tracking-[0.2em] text-white/70 [writing-mode:vertical-rl] rotate-180">
+                {trip ? `${trip.originName} → ${trip.destName}` : reference}
+              </span>
+              {/* Big seat / count */}
+              <span className="flex flex-col items-center">
+                <span className="font-body text-[8px] uppercase tracking-[2px] text-gold">Réf</span>
+                <span className="font-display text-2xl font-bold tracking-wider text-gold">{reference}</span>
+              </span>
             </div>
           </div>
         </motion.div>
@@ -213,4 +246,12 @@ export default function Confirmation({ params }: { params: Promise<{ reference: 
 }
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return <div className="flex items-center justify-between"><span className="font-light text-navy/60">{label}</span><span className="font-medium text-navy">{value}</span></div>;
+}
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <p className="font-body text-[10px] font-semibold uppercase tracking-[2px] text-navy/45">{label}</p>
+      <p className="font-display text-lg font-bold uppercase leading-tight tracking-[-0.3px] text-navy">{value}</p>
+    </div>
+  );
 }
