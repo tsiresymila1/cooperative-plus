@@ -41,6 +41,7 @@
   --font-mono: var(--font-mono-next), "Spline Sans Mono", ui-monospace, monospace;
 
   --radius: 0.25rem;              /* squarer, Tourix-style */
+  --radius-card: 0.25rem;
   --shadow-card: 0 1px 2px rgba(20,49,76,.05), 0 12px 30px -14px rgba(20,49,76,.16);
   --shadow-lift: 0 2px 4px rgba(20,49,76,.07), 0 22px 44px -18px rgba(20,49,76,.26);
 }

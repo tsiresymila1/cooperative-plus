@@ -8,7 +8,7 @@ const button = cva(
   {
     variants: {
       variant: {
-        primary: "bg-laterite text-paper hover:bg-laterite-deep",
+        primary: "bg-laterite text-[#14314C] font-semibold hover:bg-laterite-deep",
         ink: "bg-strong text-white hover:bg-ink-soft",
         outline: "border border-ink/15 bg-paper/60 text-ink hover:bg-paper backdrop-blur",
         ghost: "text-ink hover:bg-ink/5",
@@ -51,7 +51,7 @@ export function FormSection({ index, title, description, children, className }: 
 }
 
 export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <div className={cn("rounded-md border border-ink/8 bg-paper", className)}>{children}</div>;
+  return <div className={cn("rounded-[var(--radius-card,0.5rem)] border border-line bg-paper shadow-[var(--shadow-card)]", className)}>{children}</div>;
 }
 
 export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
@@ -111,7 +111,7 @@ export function TagBadge({ name, color, className }: { name: string; color?: str
   return (
     <span
       className={cn("inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm", className)}
-      style={{ backgroundColor: color || "#0f2d5c" }}
+      style={{ backgroundColor: color || "#14314C" }}
     >
       {name}
     </span>

@@ -38,6 +38,7 @@ export function DashboardShell({ nav, title, subtitle, action, children, tenant,
         </div>
 
         <nav className="mt-7 flex flex-1 flex-col gap-1 overflow-y-auto">
+          <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-soft/45">Menu</p>
           {main.map((n) => (
             <NavLink key={n.href} item={n} />
           ))}
@@ -103,15 +104,7 @@ export function DashboardShell({ nav, title, subtitle, action, children, tenant,
             <p className="text-sm font-medium">Coopérative suspendue — accès administrateur uniquement. Le propriétaire et les assistants sont bloqués, et les trajets sont masqués côté voyageurs.</p>
           </div>
         )}
-        <main
-          className="relative flex-1 px-4 py-6 sm:px-6 sm:py-7 lg:px-8"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px)",
-            backgroundSize: "26px 26px",
-            backgroundAttachment: "fixed",
-          }}
-        >
+        <main className="relative flex-1 px-4 py-6 sm:px-6 sm:py-7 lg:px-8">
           <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
             <div className="animate-rise">
               {breadcrumb && (
@@ -179,13 +172,13 @@ function NavLink({ item: n }: { item: NavItem }) {
       <Link
         href={n.href}
         className={cn(
-          "group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-semibold transition-all",
+          "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-[14px] font-medium transition-all",
           n.active
-            ? "bg-laterite text-white"
+            ? "bg-laterite/12 text-laterite dark:bg-laterite/15"
             : "text-ink-soft hover:bg-ink/[.04] hover:text-ink",
         )}
       >
-        <span className={cn("transition-colors", n.active ? "text-white" : "text-ink-soft/60 group-hover:text-ink")}>
+        <span className={cn("transition-colors", n.active ? "text-laterite" : "text-ink-soft/70 group-hover:text-ink")}>
           {n.icon}
         </span>
         {n.label}
