@@ -250,8 +250,6 @@ export default function Confirmation({
                     <span className="flex items-center gap-2.5 text-right">
                       <span className="hidden font-body text-[9px] font-semibold uppercase leading-tight tracking-[1.5px] text-navy/70 sm:block">
                         {trip?.coopName ?? "Cooperative Plus"}
-                        <br />
-                        Transport
                       </span>
                       <CoopLogo
                         url={trip?.cooperative?.logoUrl}
@@ -271,7 +269,7 @@ export default function Confirmation({
                       backgroundSize: "13px 13px",
                     }}
                   >
-                    <div className="grid grid-cols-1 gap-5 ">
+                    <div className="grid grid-cols-2 grid-no-wrap gap-5 now-wrap">
                       {/* Route with pin markers + dashed connector */}
                       <div className="relative pl-7">
                         <span
@@ -352,7 +350,7 @@ export default function Confirmation({
 
                     {/* Secondary details + QR */}
                     <div className="mt-6 flex items-end justify-between gap-4 border-t border-dashed border-navy/15 pt-4">
-                      <div className="flex gap-x-6 gap-y-1.5 font-body text-sm">
+                      <div className="flex gap-x-5 gap-y-1.5 justify-between font-body text-sm w-full">
                         <Row
                           label="Véhicule"
                           value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel}
@@ -424,7 +422,7 @@ export default function Confirmation({
                     Vos places
                   </p>
                   <div className="flex justify-center overflow-x-auto">
-                    <div className="pointer-events-none origin-top scale-90 w-full">
+                    <div className="pointer-events-none origin-top scale-100">
                       <SeatSelector
                         layout={layout}
                         taken={[]}
@@ -468,7 +466,7 @@ export default function Confirmation({
 }
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between gap-2">
+    <div className="flex flex-col items-start justify-between gap-2">
       <span className="font-light text-navy/60">{label}:</span>
       <span className="font-medium text-navy">{value}</span>
     </div>

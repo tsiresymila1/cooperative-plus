@@ -30,9 +30,9 @@ export function SeatSelector({ layout, taken, held = [], selected, onToggle, max
           </span>
         </div>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 justify-center">
           {Array.from({ length: rows }).map((_, r) => (
-            <div key={r} className="flex gap-2">
+            <div key={r} className="flex gap-2 justify-center">
               {Array.from({ length: cols }).map((_, c) => {
                 const cell = at(r, c);
                 if (!cell || cell.type === "empty") return <div key={c} className="h-11 w-11" />;
