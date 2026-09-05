@@ -13,7 +13,7 @@ import {
   useCoop,
   db,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   Textarea,
   Badge,
@@ -132,8 +132,8 @@ export default function EditVehiclePage() {
       ) : !vehicle ? (
         <p className="text-ink-soft">Véhicule introuvable.</p>
       ) : (
-        <div className="mx-auto max-w-4xl">
-          <FormSection index="01" title="Identité" description="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <ComponentCard title="Identité" desc="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Nom" error={errors.name?.message}>
@@ -172,7 +172,7 @@ export default function EditVehiclePage() {
               </Link>
               <Button size="sm" onClick={submit} disabled={isSubmitting}>{isSubmitting ? "…" : "Enregistrer"}</Button>
             </div>
-          </FormSection>
+          </ComponentCard>
         </div>
       )}
     </DashboardShell>

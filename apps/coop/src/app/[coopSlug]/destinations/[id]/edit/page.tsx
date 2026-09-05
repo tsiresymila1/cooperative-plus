@@ -13,7 +13,7 @@ import {
   useCoop,
   db,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   logActivity,
@@ -107,8 +107,8 @@ export default function EditDestinationPage() {
       ) : !dest ? (
         <p className="text-ink-soft">Destination introuvable ou en lecture seule.</p>
       ) : (
-        <div className="mx-auto max-w-4xl">
-          <FormSection index="01" title="Localisation" description="Nom, région et pays de la destination.">
+        <div className="mx-auto max-w-4xl space-y-6">
+          <ComponentCard title="Localisation" desc="Nom, région et pays de la destination.">
           <div className="grid gap-4">
             <Field label="Nom" error={errors.name?.message}>
               <Input {...register("name")} />
@@ -129,7 +129,7 @@ export default function EditDestinationPage() {
               </Field>
             </div>
           </div>
-          </FormSection>
+          </ComponentCard>
 
           <div className="flex justify-end gap-2 pt-2">
             <Link href={`/${slug}/destinations`}>

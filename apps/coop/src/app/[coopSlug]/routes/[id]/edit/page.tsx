@@ -14,7 +14,7 @@ import {
   db,
   Button,
   Card,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   routeStatus,
@@ -162,9 +162,9 @@ export default function EditRoutePage() {
       ) : !route ? (
         <p className="text-ink-soft">Itinéraire introuvable.</p>
       ) : (
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-4xl space-y-6">
           {hasTrips && (
-            <Card className="mb-6 flex items-start gap-3 border-laterite/30 bg-laterite/5 p-4">
+            <Card className="flex items-start gap-3 border-laterite/30 bg-laterite/5 p-4">
               <Lock size={18} className="mt-0.5 shrink-0 text-laterite" />
               <p className="text-sm text-ink-soft">
                 Cet itinéraire a des trajets associés. L'origine et la destination sont
@@ -172,7 +172,7 @@ export default function EditRoutePage() {
               </p>
             </Card>
           )}
-          <FormSection index="01" title="Trajet" description="Origine, destination et nom affiché de l'itinéraire.">
+          <ComponentCard title="Trajet" desc="Origine, destination et nom affiché de l'itinéraire.">
           <div className="grid gap-4">
             <Field label="Nom" hint="Auto-rempli depuis Origine → Destination">
               <Input value={name ?? ""} onChange={(e) => { setValue("name", e.target.value); setNameEdited(true); }} placeholder="Origine → Destination" />
@@ -214,9 +214,9 @@ export default function EditRoutePage() {
               </Field>
             </div>
           </div>
-          </FormSection>
+          </ComponentCard>
 
-          <FormSection index="02" title="Tarif & détails" description="Prix de base, distance, durée et statut de l'itinéraire.">
+          <ComponentCard title="Tarif & détails" desc="Prix de base, distance, durée et statut de l'itinéraire.">
           <div className="grid gap-4">
             <div className="grid grid-cols-3 gap-4">
               <Field label="Prix (MGA)">
@@ -244,7 +244,7 @@ export default function EditRoutePage() {
               </Select>
             </Field>
           </div>
-          </FormSection>
+          </ComponentCard>
 
           <div className="flex justify-end gap-2 pt-2">
             <Link href={`/${slug}/routes`}>

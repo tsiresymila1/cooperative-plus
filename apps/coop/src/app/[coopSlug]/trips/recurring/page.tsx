@@ -17,7 +17,6 @@ import {
   X,
   Trash2,
   CalendarX,
-  CalendarDays,
   IdCard,
 } from "lucide-react";
 import {
@@ -27,9 +26,8 @@ import {
   db,
   id,
   Button,
-  Card,
   Badge,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   useConfirm,
@@ -368,12 +366,11 @@ export default function RecurringTripPage() {
         </Link>
       }
     >
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* 01 Trajet & véhicule */}
-        <FormSection
-          index="01"
+        <ComponentCard
           title="Itinéraire & véhicule"
-          description="L'itinéraire et le véhicule définissent le plan de sièges réservable."
+          desc="L'itinéraire et le véhicule définissent le plan de sièges réservable."
         >
           <div className="grid gap-4">
             <Field label="Itinéraire" error={errors.routeId?.message}>
@@ -473,13 +470,12 @@ export default function RecurringTripPage() {
               </div>
             </Field>
           </div>
-        </FormSection>
+        </ComponentCard>
 
         {/* 02 Récurrence */}
-        <FormSection
-          index="02"
+        <ComponentCard
           title="Récurrence"
-          description="Définissez la fréquence et la période de génération des trajets."
+          desc="Définissez la fréquence et la période de génération des trajets."
         >
           <div className="grid gap-4">
             <Field label="Fréquence">
@@ -576,13 +572,12 @@ export default function RecurringTripPage() {
               </div>
             )}
           </div>
-        </FormSection>
+        </ComponentCard>
 
         {/* 03 Heures de départ */}
-        <FormSection
-          index="03"
+        <ComponentCard
           title="Heures de départ"
-          description="Chaque heure génère un trajet par date valide. Au moins une est requise."
+          desc="Chaque heure génère un trajet par date valide. Au moins une est requise."
         >
           <div className="grid gap-4">
             <Field label="Ajouter une heure" error={timeError}>
@@ -616,13 +611,12 @@ export default function RecurringTripPage() {
               <p className="text-sm text-ink-soft/60">Aucune heure ajoutée.</p>
             )}
           </div>
-        </FormSection>
+        </ComponentCard>
 
         {/* 04 Exclusions */}
-        <FormSection
-          index="04"
+        <ComponentCard
           title="Exclusions"
-          description="Retirez certains jours de la semaine ou des dates spécifiques."
+          desc="Retirez certains jours de la semaine ou des dates spécifiques."
         >
           <div className="grid gap-4">
             <Field label="Jours de semaine à exclure">
@@ -679,18 +673,17 @@ export default function RecurringTripPage() {
               )}
             </Field>
           </div>
-        </FormSection>
+        </ComponentCard>
 
         {/* Aperçu */}
-        <Card className="mt-2 p-5">
-          <div className="mb-3 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 font-display text-base font-bold text-ink">
-              <CalendarDays size={17} className="text-laterite" /> Aperçu
-            </h3>
+        <ComponentCard
+          title="Aperçu"
+          action={
             <Badge tone={total > MAX_TRIPS ? "danger" : total > 0 ? "success" : "neutral"}>
               {total} trajet{total > 1 ? "s" : ""} seront créés
             </Badge>
-          </div>
+          }
+        >
           {total > MAX_TRIPS && (
             <p className="mb-3 text-sm text-danger">
               Trop de trajets, réduisez la période ou les heures (max {MAX_TRIPS}).
@@ -725,7 +718,7 @@ export default function RecurringTripPage() {
               Configurez la récurrence et les heures pour voir l'aperçu.
             </p>
           )}
-        </Card>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-4">
           <Link href={`/${slug}/trips`}>

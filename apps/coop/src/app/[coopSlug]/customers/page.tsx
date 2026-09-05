@@ -3,8 +3,9 @@ import { useMemo, useState } from "react";
 import { ChevronRight, Users, Wallet, Star, Phone, Search } from "lucide-react";
 import {
   DashboardShell, coopNav, useCoop, db,
-  Card, KpiCard, Drawer, Badge, PageSkeleton,
+  Card, KpiCard, Drawer, Badge, DataTable, FilterBar,
   fmtMoney, fmtDate, fmtDateTime, notDeleted,
+  type Column, type Tone,
 } from "@cp/ui";
 import { Input, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@cp/ui/shadcn";
 
@@ -13,11 +14,11 @@ type Customer = {
   last: any; bookings: any[]; first: number;
 };
 
-const TIERS = [
-  { key: "platinum", label: "Platine", min: 500_000, badge: "bg-strong text-white", dot: "var(--color-ink)" },
-  { key: "gold", label: "Or", min: 200_000, badge: "bg-[#f4c430]/20 text-[#8a6d00]", dot: "#f4c430" },
-  { key: "silver", label: "Argent", min: 50_000, badge: "bg-ink/[.06] text-ink-soft", dot: "#94a3b8" },
-  { key: "basic", label: "Base", min: 0, badge: "bg-laterite/12 text-laterite-deep", dot: "var(--color-laterite)" },
+const TIERS: { key: string; label: string; min: number; tone: Tone }[] = [
+  { key: "platinum", label: "Platine", min: 500_000, tone: "success" },
+  { key: "gold", label: "Or", min: 200_000, tone: "warning" },
+  { key: "silver", label: "Argent", min: 50_000, tone: "neutral" },
+  { key: "basic", label: "Base", min: 0, tone: "neutral" },
 ];
 const tierOf = (spent: number) => TIERS.find((t) => spent >= t.min) ?? TIERS[TIERS.length - 1]!;
 
@@ -62,6 +63,52 @@ export default function CustomersPage() {
 
   const selected = selKey ? customers.find((c) => c.key === selKey) : null;
 
+  const columns: Column<any>[] = [
+    {
+      key: "client",
+      header: "Client",
+      render: (c) => (
+        <div className="flex items-center gap-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-strong text-sm font-bold text-white">
+            {(c.name?.[0] ?? "?").toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-semibold text-ink">{c.name}</p>
+            <p className="font-mono text-[11px] text-ink-soft/60">{fmtMoney(c.spent)} cumulé</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "contact",
+      header: "Contact",
+      render: (c) => <span className="inline-flex items-center gap-1.5 text-ink-soft"><Phone size={13} /> {c.phone}</span>,
+    },
+    {
+      key: "trips",
+      header: "Trajets",
+      render: (c) => <span className="font-display text-base font-bold text-ink">{c.trips}</span>,
+    },
+    {
+      key: "last",
+      header: "Dernier trajet",
+      render: (c) => (
+        <div className="text-ink-soft">
+          {c.last?.tripInstance ? `${c.last.tripInstance.originName} → ${c.last.tripInstance.destName}` : "—"}
+          <span className="block text-[11px] text-ink-soft/55">{fmtDate(c.last.createdAt)}</span>
+        </div>
+      ),
+    },
+    {
+      key: "tier",
+      header: "Niveau",
+      render: (c) => {
+        const t = tierOf(c.spent);
+        return <Badge tone={t.tone}>{t.label}</Badge>;
+      },
+    },
+  ];
+
   return (
     <DashboardShell
       nav={coopNav(slug, "customers", { role, permissions, isPlatformAdmin })}
@@ -71,78 +118,39 @@ export default function CustomersPage() {
       logoUrl={coop.logoUrl}
       breadcrumb={<><span>{coop.displayName}</span><ChevronRight size={12} /><span className="text-ink">Clients</span></>}
     >
-      {isLoading ? (
-        <PageSkeleton />
-      ) : (
-        <div className="space-y-5 stagger-children">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <KpiCard label="Total clients" value={String(customers.length)} icon={<Users size={18} />} />
-            <KpiCard label="Nouveaux (30j)" value={String(newCount)} trend="30 derniers jours" trendDir="up" />
-            <KpiCard label="Dépense moyenne" value={fmtMoney(avgSpent)} icon={<Wallet size={18} />} />
-            <KpiCard label="Clients fidèles" value={String(loyal)} pill={{ text: "≥ 3 trajets", tone: "neutral" }} icon={<Star size={18} />} />
-          </div>
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Total clients" value={String(customers.length)} icon={<Users size={18} />} />
+        <KpiCard label="Nouveaux (30j)" value={String(newCount)} trend="30 derniers jours" trendDir="up" />
+        <KpiCard label="Dépense moyenne" value={fmtMoney(avgSpent)} icon={<Wallet size={18} />} />
+        <KpiCard label="Clients fidèles" value={String(loyal)} pill={{ text: "≥ 3 trajets", tone: "neutral" }} icon={<Star size={18} />} />
+      </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
-              <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
-              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Nom ou téléphone…" className="h-9 w-64 pl-9" />
-            </div>
-            <Select value={tierF} onValueChange={setTierF}>
-              <SelectTrigger className="h-9 w-40"><SelectValue placeholder="Tous niveaux" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous niveaux</SelectItem>
-                {TIERS.map((t) => <SelectItem key={t.key} value={t.key}>{t.label}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Card className="overflow-hidden">
-            {rows.length === 0 ? (
-              <p className="px-6 py-12 text-center text-sm text-ink-soft/60">Aucun client.</p>
-            ) : (
-              <div className="overflow-x-auto"><table className="w-full min-w-[42rem] text-sm">
-                <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
-                  <tr className="border-b border-ink/8">
-                    <th className="px-6 py-3.5">Client</th>
-                    <th className="px-6 py-3.5 hidden md:table-cell">Contact</th>
-                    <th className="px-6 py-3.5">Trajets</th>
-                    <th className="px-6 py-3.5 hidden lg:table-cell">Dernier trajet</th>
-                    <th className="px-6 py-3.5">Niveau</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((c) => {
-                    const tier = tierOf(c.spent);
-                    return (
-                      <tr key={c.key} onClick={() => setSelKey(c.key)}
-                        className="group cursor-pointer border-b border-ink/[.06] transition-colors last:border-0 hover:bg-ink/[.03]">
-                        <td className="px-6 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-strong text-sm font-bold text-white">
-                              {(c.name?.[0] ?? "?").toUpperCase()}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="truncate font-semibold text-ink">{c.name}</p>
-                              <p className="font-mono text-[11px] text-ink-soft/60">{fmtMoney(c.spent)} cumulé</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-3.5 hidden md:table-cell text-ink-soft"><span className="inline-flex items-center gap-1.5"><Phone size={13} /> {c.phone}</span></td>
-                        <td className="px-6 py-3.5"><span className="font-display text-base font-bold text-ink">{c.trips}</span></td>
-                        <td className="px-6 py-3.5 hidden lg:table-cell text-ink-soft">
-                          {c.last?.tripInstance ? `${c.last.tripInstance.originName} → ${c.last.tripInstance.destName}` : "—"}
-                          <span className="block text-[11px] text-ink-soft/55">{fmtDate(c.last.createdAt)}</span>
-                        </td>
-                        <td className="px-6 py-3.5"><span className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold ${tier.badge}`}><span className="h-1.5 w-1.5 rounded-full" style={{ background: tier.dot }} />{tier.label}</span></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table></div>
-            )}
-          </Card>
+      <FilterBar>
+        <div className="relative">
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
+          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Nom ou téléphone…" className="h-9 w-64 pl-9" />
         </div>
-      )}
+        <Select value={tierF} onValueChange={setTierF}>
+          <SelectTrigger className="h-9 w-40"><SelectValue placeholder="Tous niveaux" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous niveaux</SelectItem>
+            {TIERS.map((t) => <SelectItem key={t.key} value={t.key}>{t.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </FilterBar>
+
+      <DataTable
+        columns={columns}
+        rows={rows.map((c) => ({ ...c, id: c.key }))}
+        loading={isLoading}
+        onRowClick={(c) => setSelKey(c.key)}
+        empty={
+          <span className="inline-flex flex-col items-center gap-2 text-ink-soft/60">
+            <Users size={28} className="text-ink-soft/30" />
+            Aucun client.
+          </span>
+        }
+      />
 
       <Drawer
         open={!!selected}
@@ -161,7 +169,7 @@ export default function CustomersPage() {
                 <p className="truncate font-display text-lg font-bold text-ink">{selected.name}</p>
                 <p className="text-xs text-ink-soft">Client depuis {fmtDate(selected.first)}</p>
               </div>
-              {(() => { const t = tierOf(selected.spent); return <span className={`rounded-lg px-2.5 py-1 text-xs font-semibold ${t.badge}`}>{t.label}</span>; })()}
+              {(() => { const t = tierOf(selected.spent); return <Badge tone={t.tone}>{t.label}</Badge>; })()}
             </Card>
 
             <div className="grid grid-cols-2 gap-3">
@@ -173,7 +181,7 @@ export default function CustomersPage() {
               <p className="mb-2 text-sm font-semibold text-ink-soft">Historique récent</p>
               <div className="grid gap-2">
                 {selected.bookings.slice(0, 8).map((b: any) => {
-                  const bs = b.status === "paid" ? "success" : b.status === "cancelled" || b.status === "refunded" ? "danger" : "warning";
+                  const bs: Tone = b.status === "paid" ? "success" : b.status === "cancelled" || b.status === "refunded" ? "danger" : "warning";
                   return (
                     <div key={b.id} className="flex items-center justify-between rounded-xl border border-ink/8 px-3 py-2.5">
                       <div className="min-w-0">
@@ -182,7 +190,7 @@ export default function CustomersPage() {
                       </div>
                       <div className="flex shrink-0 items-center gap-2">
                         <span className="text-sm font-semibold text-ink">{fmtMoney(b.totalAmount)}</span>
-                        <Badge tone={bs as any}>{b.status}</Badge>
+                        <Badge tone={bs}>{b.status}</Badge>
                       </div>
                     </div>
                   );

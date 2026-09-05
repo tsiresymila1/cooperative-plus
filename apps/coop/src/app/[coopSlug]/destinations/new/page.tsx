@@ -13,7 +13,7 @@ import {
   db,
   id,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   logActivity,
@@ -85,7 +85,7 @@ export default function NewDestinationPage() {
       }
     >
       <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Localisation" description="Les destinations privées ne sont visibles que par votre coopérative.">
+        <ComponentCard title="Localisation" desc="Les destinations privées ne sont visibles que par votre coopérative.">
         <div className="grid gap-4">
           <Field label="Nom" error={errors.name?.message}>
             <Input
@@ -115,7 +115,7 @@ export default function NewDestinationPage() {
             </Field>
           </div>
         </div>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/destinations`}>

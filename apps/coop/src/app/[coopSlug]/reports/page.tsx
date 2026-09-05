@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { ChevronRight, Users, Wallet, Activity } from "lucide-react";
 import {
   DashboardShell, coopNav, useCoop, db,
-  Card, KpiCard, AreaChart, BarList, Donut, PageSkeleton,
+  StatCard, ComponentCard, Badge, AreaChart, BarList, Donut, PageSkeleton,
   fmtMoney, notDeleted,
 } from "@cp/ui";
 
@@ -96,80 +96,83 @@ export default function ReportsPage() {
       {isLoading ? (
         <PageSkeleton />
       ) : (
-        <div className="space-y-5 stagger-children">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <KpiCard label="Passagers" value={String(passengers)} icon={<Users size={18} />} pill={{ text: "réservés", tone: "neutral" }} />
-            <KpiCard label="Revenu total" value={fmtMoney(revenue)} spark={series} trend={`${live.length} résa.`} trendDir="up" />
-            <KpiCard label="Revenu / trajet" value={fmtMoney(revPerTrip)} icon={<Wallet size={18} />} pill={{ text: `${trips.length} trajets`, tone: "neutral" }} />
-            <KpiCard label="Taux d'occupation" value={`${occupancy}%`} progress={occupancy} />
+        <div className="grid grid-cols-12 gap-4 md:gap-6">
+          {/* KPI metric grid */}
+          <div className="col-span-12 grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
+            <StatCard label="Passagers" value={String(passengers)} icon={<Users size={22} />} hint="réservés" />
+            <StatCard label="Revenu total" value={fmtMoney(revenue)} tone="laterite" icon={<Wallet size={22} />} hint={`${live.length} résa.`} trend="up" />
+            <StatCard label="Revenu / trajet" value={fmtMoney(revPerTrip)} icon={<Wallet size={22} />} hint={`${trips.length} trajets`} />
+            <StatCard label="Taux d'occupation" value={`${occupancy}%`} icon={<Activity size={22} />} hint={`${seatsBooked}/${seatsTotal} places`} />
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            <Card className="p-6 lg:col-span-2">
-              <h3 className="font-display text-lg font-bold text-ink">Volume des réservations</h3>
-              <p className="mb-5 text-sm text-ink-soft">30 derniers jours</p>
+          {/* volume + status */}
+          <div className="col-span-12 xl:col-span-8">
+            <ComponentCard title="Volume des réservations" desc="30 derniers jours">
               <AreaChart data={series} labels={labels} height={240} />
-            </Card>
-            <Card className="p-6">
-              <h3 className="mb-5 font-display text-lg font-bold text-ink">Statut des réservations</h3>
+            </ComponentCard>
+          </div>
+          <div className="col-span-12 xl:col-span-4">
+            <ComponentCard title="Statut des réservations">
               {donutSegs.length ? (
                 <Donut segments={donutSegs} centerValue={String(bookings.length)} centerLabel="Total" />
               ) : (
                 <p className="text-sm text-ink-soft/60">Aucune réservation.</p>
               )}
-            </Card>
+            </ComponentCard>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-            <Card className="p-6">
-              <h3 className="mb-5 font-display text-lg font-bold text-ink">Revenu par itinéraire</h3>
+          {/* revenue by route + performance */}
+          <div className="col-span-12 xl:col-span-4">
+            <ComponentCard title="Revenu par itinéraire">
               <BarList items={topRoutes} format={fmtMoney} />
-            </Card>
-
-            <Card className="overflow-hidden lg:col-span-2">
-              <div className="border-b border-ink/8 px-6 py-4">
-                <h3 className="font-display text-lg font-bold text-ink">Performance des itinéraires</h3>
-              </div>
+            </ComponentCard>
+          </div>
+          <div className="col-span-12 xl:col-span-8">
+            <ComponentCard title="Performance des itinéraires" bodyClassName="p-0">
               {perf.length === 0 ? (
                 <p className="px-6 py-10 text-center text-sm text-ink-soft/60">Aucune donnée.</p>
               ) : (
-                <div className="overflow-x-auto"><table className="w-full min-w-[42rem] text-sm">
-                  <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
-                    <tr className="border-b border-ink/8">
-                      <th className="px-6 py-3">Itinéraire</th>
-                      <th className="px-6 py-3 hidden sm:table-cell">Trajets</th>
-                      <th className="px-6 py-3">Occupation</th>
-                      <th className="px-6 py-3">Revenu</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {perf.map((r) => {
-                      const tone = perfTone(r.occ);
-                      return (
-                        <tr key={r.label} className="border-b border-ink/[.06] last:border-0 hover:bg-ink/[.03]">
-                          <td className="px-6 py-3.5">
-                            <span className="inline-flex items-center gap-2.5">
-                              <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink/[.05] text-ink-soft"><Activity size={15} /></span>
-                              <span className="font-medium text-ink">{r.label}</span>
-                            </span>
-                          </td>
-                          <td className="px-6 py-3.5 hidden text-ink-soft sm:table-cell">{r.trips.size}</td>
-                          <td className="px-6 py-3.5">
-                            <div className="flex items-center gap-2">
-                              <div className="h-1.5 w-16 overflow-hidden rounded-full bg-ink/[.08]">
-                                <div className={`h-full rounded-full ${tone.c}`} style={{ width: `${Math.max(4, r.occ)}%` }} />
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[42rem] text-sm">
+                    <thead className="bg-sand text-left text-xs font-medium uppercase tracking-wider text-ink-soft">
+                      <tr className="border-b border-line">
+                        <th className="px-6 py-3.5">Itinéraire</th>
+                        <th className="px-6 py-3.5 hidden sm:table-cell">Trajets</th>
+                        <th className="px-6 py-3.5">Occupation</th>
+                        <th className="px-6 py-3.5">Statut</th>
+                        <th className="px-6 py-3.5">Revenu</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {perf.map((r) => {
+                        const tone = perfTone(r.occ);
+                        return (
+                          <tr key={r.label} className="border-b border-line last:border-0 hover:bg-ink/[.02]">
+                            <td className="px-6 py-3.5">
+                              <span className="inline-flex items-center gap-2.5">
+                                <span className="grid h-8 w-8 place-items-center rounded-lg bg-ink/[.05] text-ink-soft"><Activity size={15} /></span>
+                                <span className="font-medium text-ink">{r.label}</span>
+                              </span>
+                            </td>
+                            <td className="px-6 py-3.5 hidden text-ink-soft sm:table-cell">{r.trips.size}</td>
+                            <td className="px-6 py-3.5">
+                              <div className="flex items-center gap-2">
+                                <div className="h-1.5 w-16 overflow-hidden rounded-full bg-ink/[.08]">
+                                  <div className={`h-full rounded-full ${tone.c}`} style={{ width: `${Math.max(4, r.occ)}%` }} />
+                                </div>
+                                <span className="text-xs font-bold text-ink tabular-nums">{r.occ}%</span>
                               </div>
-                              <span className="text-xs font-bold text-ink tabular-nums">{r.occ}%</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-3.5 font-semibold text-ink tabular-nums">{fmtMoney(r.value)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table></div>
+                            </td>
+                            <td className="px-6 py-3.5"><Badge tone={tone.t}>{tone.l}</Badge></td>
+                            <td className="px-6 py-3.5 font-semibold text-ink tabular-nums">{fmtMoney(r.value)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               )}
-            </Card>
+            </ComponentCard>
           </div>
         </div>
       )}

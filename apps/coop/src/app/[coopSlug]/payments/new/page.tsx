@@ -12,7 +12,7 @@ import {
   db,
   id,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   fmtMoney,
@@ -115,8 +115,8 @@ export default function NewPaymentPage() {
         </Link>
       }
     >
-      <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Paiement" description="Liez le paiement à une réservation et précisez la méthode et le montant.">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <ComponentCard title="Paiement" desc="Liez le paiement à une réservation et précisez la méthode et le montant.">
         <div className="grid gap-4">
           <Field label="Réservation (optionnel)">
             <Select value={bookingId} onValueChange={(v) => setValue("bookingId", v)}>
@@ -162,7 +162,7 @@ export default function NewPaymentPage() {
             <Input {...register("proof")} placeholder="https://…" />
           </Field>
         </div>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/payments`}>

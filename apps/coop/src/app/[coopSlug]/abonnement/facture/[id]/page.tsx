@@ -1,7 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
 import { Printer, ArrowLeft } from "lucide-react";
-import { useCoop, db, FullSpinner, fmtDate, fmtDateTime, fmtMoney } from "@cp/ui";
+import { useCoop, db, Button, FullSpinner, fmtDate, fmtDateTime, fmtMoney } from "@cp/ui";
 
 const STATUS_FR: Record<string, string> = {
   paid: "Payé", pending: "En attente", failed: "Échoué",
@@ -21,7 +21,7 @@ export default function FacturePage() {
   const p = data?.payments?.[0];
 
   if (isLoading) return <FullSpinner />;
-  if (!p) return <div className="grid min-h-dvh place-items-center text-slate-500">Facture introuvable.</div>;
+  if (!p) return <div className="grid min-h-dvh place-items-center bg-sand text-ink-soft">Facture introuvable.</div>;
 
   const plan = (p as any).subscription?.plan;
   const planName = plan?.name ?? (p.meta as any)?.planId ?? "Abonnement";
@@ -29,15 +29,15 @@ export default function FacturePage() {
   const paidDate = p.paidAt ?? p.createdAt;
 
   return (
-    <div className="min-h-dvh bg-slate-200 py-8 print:bg-white print:py-0">
+    <div className="min-h-dvh bg-sand py-8 print:bg-white print:py-0">
       {/* toolbar (screen only) */}
       <div className="no-print mx-auto mb-5 flex max-w-[210mm] items-center justify-between gap-3 px-4">
-        <a href={`/${slug}/abonnement`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900">
+        <a href={`/${slug}/abonnement`} className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink">
           <ArrowLeft size={16} /> Retour à l'abonnement
         </a>
-        <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-md bg-[#0f2d5c] px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
+        <Button size="sm" onClick={() => window.print()}>
           <Printer size={16} /> Imprimer / PDF
-        </button>
+        </Button>
       </div>
 
       {/* A4 sheet */}

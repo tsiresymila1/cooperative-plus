@@ -14,7 +14,7 @@ import {
   db,
   Button,
   Card,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   fmtMoney,
@@ -167,8 +167,8 @@ export default function EditTripPage() {
           </Card>
         </div>
       ) : (
-        <div className="mx-auto max-w-4xl">
-          <FormSection index="01" title="Statut & départ" description={`${trip.originName} → ${trip.destName} · ${trip.vehicleName}`}>
+        <div className="mx-auto max-w-4xl space-y-6">
+          <ComponentCard title="Statut & départ" desc={`${trip.originName} → ${trip.destName} · ${trip.vehicleName}`}>
           <div className="grid gap-4">
             <Field label="Statut">
               <Select value={status} onValueChange={(v) => setValue("status", v, { shouldValidate: true })}>
@@ -220,7 +220,7 @@ export default function EditTripPage() {
               </Select>
             </Field>
           </div>
-          </FormSection>
+          </ComponentCard>
           <div className="flex justify-end gap-2 pt-2">
             <Link href={`/${slug}/trips`}>
               <Button variant="outline" size="sm">
