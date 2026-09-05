@@ -1,0 +1,88 @@
+<!--
+  Coopérative Plus — magic-code email.
+  Paste this HTML into the InstantDB dashboard: Auth → Magic code email → Custom.
+  InstantDB replaces {code} with the 6-digit verification code.
+  Table-based + inline styles for broad email-client support. The brand mark is
+  an inline SVG (renders in Apple Mail / iOS / most modern clients); a styled
+  text wordmark sits beside it so the brand always shows even where SVG is stripped.
+-->
+<div style="margin:0;padding:0;background:#eef1f5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1f5;padding:32px 12px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="width:480px;max-width:480px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 12px 40px -16px rgba(20,49,76,.35);font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+          <!-- Header (navy) -->
+          <tr>
+            <td style="background:#14314C;padding:28px 32px;" align="left">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <svg width="34" height="44" viewBox="0 0 104 136" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+                      <path d="M6 108 C 30 118, 62 112, 92 74 L74 60 C 52 90, 30 96, 12 92 Z" fill="#ffffff"/>
+                      <path d="M40 20 L96 68 L40 116 L40 84 L60 68 L40 52 Z" fill="#D9A441"/>
+                    </svg>
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <span style="font-size:22px;font-weight:800;letter-spacing:.5px;color:#ffffff;">COOP</span>
+                    <span style="font-size:22px;font-weight:800;letter-spacing:.5px;color:#D9A441;">PLUS</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 32px 8px 32px;">
+              <h1 style="margin:0 0 14px 0;font-size:22px;line-height:1.25;font-weight:700;color:#14314C;">
+                Votre code de vérification
+              </h1>
+              <p style="margin:0 0 22px 0;font-size:15px;line-height:1.6;color:#4a5a6a;">
+                Bonjour,<br />
+                Vous avez demandé à rejoindre <strong style="color:#14314C;">Coopérative&nbsp;Plus</strong>.
+                Utilisez le code ci-dessous pour finaliser votre connexion.
+              </p>
+
+              <!-- Code box -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="background:#faf6ee;border:1px solid #efdfc0;border-radius:12px;padding:22px 16px;">
+                    <div style="font-size:38px;font-weight:800;letter-spacing:12px;color:#14314C;font-family:'Courier New',monospace;">{code}</div>
+                    <div style="margin-top:8px;font-size:12px;color:#a98b4e;text-transform:uppercase;letter-spacing:2px;">Code de vérification</div>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:22px 0 0 0;font-size:14px;line-height:1.6;color:#4a5a6a;">
+                Copiez-collez ce code dans le champ de confirmation pour continuer.
+              </p>
+
+              <!-- Notice -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
+                <tr>
+                  <td style="background:#f4f6f8;border-left:3px solid #D9A441;border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.6;color:#6b7885;">
+                    Ce code expire dans <strong>10&nbsp;minutes</strong> et ne peut être utilisé qu'une seule fois.
+                    Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:26px 32px 30px 32px;">
+              <hr style="border:none;border-top:1px solid #eceff2;margin:0 0 18px 0;" />
+              <p style="margin:0;font-size:12px;line-height:1.6;color:#98a4b0;">
+                Coopérative Plus — Réservez votre taxi-brousse partout à Madagascar.<br />
+                Cet e-mail a été envoyé automatiquement, merci de ne pas y répondre.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>
