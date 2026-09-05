@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Search, Ticket, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, Ticket } from "lucide-react";
 import { CoopLogo, TagBadge, useConfirm, toast } from "@cp/ui";
 import { db } from "@cp/ui";
 import { fmtMoney } from "@cp/ui";
@@ -22,9 +22,9 @@ async function cancelOwnBooking(b: any, confirm: ReturnType<typeof useConfirm>) 
 }
 
 const tone: Record<string, string> = {
-  confirmed: "bg-stock/10 text-stock",
-  paid: "bg-stock/10 text-stock",
-  pending: "bg-gold/15 text-gold-hover",
+  confirmed: "bg-stock/12 text-stock",
+  paid: "bg-stock/12 text-stock",
+  pending: "bg-gold/15 text-gold",
   cancelled: "bg-sale/10 text-sale",
   refunded: "bg-sale/10 text-sale",
   expired: "bg-navy/5 text-navy/60",
@@ -104,108 +104,161 @@ export default function Bookings() {
   ];
 
   return (
-    <div className=" space-y-3">
-      <h1 className="font-display text-2xl font-bold uppercase">Mes réservations</h1>
+    <div className="space-y-8">
+      <h1 className="font-display text-[40px] font-semibold uppercase leading-none tracking-[-1.5px] text-navy">
+        Mes réservations
+      </h1>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="inline-flex bg-navy/5 p-1">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        {/* Tab strip — template day-strip look: navy bar, active tab gold. */}
+        <div className="inline-flex bg-navy">
           {TABS.map((t) => (
-            <button key={t.key} onClick={() => { setTab(t.key); setPage(0); }}
-              className={t.key === tab
-                ? "bg-white px-4 py-1.5 text-sm font-display uppercase tracking-wide text-navy shadow-sm"
-                : "px-4 py-1.5 text-sm font-display uppercase tracking-wide text-navy/60 hover:text-navy"}>
-              {t.label} <span className="ml-1 text-xs text-navy/40">{t.n}</span>
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => { setTab(t.key); setPage(0); }}
+              aria-pressed={t.key === tab}
+              className={`flex h-[53px] items-center gap-2 px-6 font-display text-[16px] font-semibold uppercase tracking-[0.5px] transition-colors duration-300 ${
+                t.key === tab ? "bg-gold text-navy" : "text-white hover:bg-white/10"
+              }`}
+            >
+              {t.label}
+              <span className="font-body text-[12px] font-semibold opacity-60">{t.n}</span>
             </button>
           ))}
         </div>
-        <div className="relative sm:w-64">
-          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-navy/40" />
-          <input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="Rechercher…"
-            className="h-11 w-full border border-navy/12 bg-white pl-9 pr-3.5 text-[15px] text-navy outline-none transition-colors placeholder:text-navy/40 focus:border-gold" />
+        <div className="relative lg:w-[300px]">
+          <Search size={17} className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 text-navy/40" />
+          <input
+            value={q}
+            onChange={(e) => { setQ(e.target.value); setPage(0); }}
+            placeholder="Rechercher…"
+            className="h-[53px] w-full border border-navy/15 bg-white pl-12 pr-5 font-body text-navy outline-none transition-colors placeholder:text-navy/40 focus:border-gold"
+          />
         </div>
       </div>
 
       {isLoading ? (
-        [0, 1].map((i) => (
-          <div key={i} className="h-24 animate-pulse bg-navy/5" />
-        ))
+        <ul className="space-y-[14px]">
+          {[0, 1].map((i) => (
+            <li key={i} className="h-[92px] animate-pulse bg-mist" />
+          ))}
+        </ul>
       ) : bookings.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 border border-navy/10 bg-white p-12 text-center">
+        <div className="flex flex-col items-center gap-4 bg-mist px-[26px] py-[60px] text-center">
           <Ticket className="text-navy/40" />
-          <p className="font-display text-lg font-bold uppercase">
+          <p className="font-display text-[24px] font-semibold uppercase text-navy">
             {all.length === 0 ? "Aucune réservation" : q ? "Aucun résultat" : tab === "expired" ? "Aucune réservation expirée" : "Aucune réservation active"}
           </p>
           {all.length === 0 && (
-            <Link href="/search" className="inline-flex h-9 items-center justify-center gap-2 bg-gold px-3 text-sm font-display uppercase tracking-wide text-navy transition-colors hover:bg-navy hover:text-white">
+            <Link
+              href="/search"
+              className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
+            >
               Réserver un trajet
+              <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
           )}
         </div>
       ) : (
-        <div className="gap-2 flex flex-col">
+        <ul className="space-y-[14px]">
           {shown.map((b) => {
             const ti: any = b.tripInstance;
             const tg = Array.isArray(ti?.tag) ? ti.tag[0] : ti?.tag;
+            const seats = (b.tickets ?? []).map((t: any) => t.seatLabel).sort().join(", ");
             return (
-            <Link className="" key={b.id} href={`/bookings/${b.reference}`}>
-              <div className="flex items-center gap-4 border border-navy/10 bg-white p-5 transition-colors hover:bg-navy/[.02]">
-                <CoopLogo url={b.tripInstance?.cooperative?.logoUrl} name={b.tripInstance?.coopName} size={44} className="border border-navy/10" />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="truncate text-sm font-semibold text-navy">
-                      {b.tripInstance?.coopName ?? "Cooperative Plus"}
-                    </span>
-                    {tg && <TagBadge name={tg.name} color={tg.color} />}
-                  </div>
-                  <p className="mt-1 font-display text-lg font-bold">
-                    {b.tripInstance?.originName} → {b.tripInstance?.destName}
-                  </p>
-                  <p className="truncate text-sm text-navy/60">
-                    {b.tripInstance
-                      ? new Date(b.tripInstance.departureAt).toLocaleString("fr", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
-                      : ""}
-                    {" · "}sièges{" "}
-                    {(b.tickets ?? []).map((t) => t.seatLabel).sort().join(", ")}
-                    {" · "}
-                    <span className="font-mono text-gold-hover">{b.reference}</span>
-                  </p>
+              <li
+                key={b.id}
+                className="grid grid-cols-2 items-center gap-x-4 gap-y-4 bg-mist px-[26px] py-[26px] lg:grid-cols-[1fr_1fr_1fr_140px_120px_170px] lg:gap-6"
+              >
+                {/* FROM — origin + departure date/time */}
+                <div>
+                  <span className="block font-display text-[24px] font-semibold uppercase leading-none text-navy">
+                    {ti?.originName ?? "—"}
+                  </span>
+                  <span className="mt-1 block font-body text-[14px] font-light text-navy/60">
+                    {ti ? new Date(ti.departureAt).toLocaleString("fr", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : b.reference}
+                  </span>
                 </div>
 
-                <div className="flex shrink-0 flex-col items-end gap-1.5">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold ${tone[b.status] ?? "bg-navy/5 text-navy/60"}`}>{label[b.status] ?? b.status}</span>
-                  <div className="flex items-center gap-2">
-                    {b.status === "pending" && (
-                      <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); cancelOwnBooking(b, confirm); }}
-                        className="grid h-8 w-8 place-items-center rounded-full text-navy/40 transition-colors hover:bg-sale/10 hover:text-sale"
-                        title="Annuler la réservation"
-                      >
-                        <X size={16} />
-                      </button>
-                    )}
-                    <p className="font-mono text-lg font-bold">{fmtMoney(b.totalAmount)}</p>
-                    <ChevronRight size={18} className="text-navy/40" />
-                  </div>
+                {/* Middle — cooperative identity, centered & muted */}
+                <div className="flex items-center justify-center gap-2 text-center">
+                  <CoopLogo url={ti?.cooperative?.logoUrl} name={ti?.coopName} size={32} className="border border-navy/10" />
+                  <span className="font-body text-[14px] font-light text-navy/60">
+                    {ti?.coopName ?? "Cooperative Plus"}
+                  </span>
+                  {tg && <TagBadge name={tg.name} color={tg.color} />}
                 </div>
-              </div>
-            </Link>
+
+                {/* TO — destination + seats */}
+                <div>
+                  <span className="block font-display text-[24px] font-semibold uppercase leading-none text-navy">
+                    {ti?.destName ?? "—"}
+                  </span>
+                  <span className="mt-1 block font-body text-[14px] font-light text-navy/60">
+                    {seats ? `sièges ${seats}` : b.reference}
+                  </span>
+                </div>
+
+                {/* Price */}
+                <div>
+                  <span className="block font-display text-[24px] font-semibold leading-none text-navy">
+                    {fmtMoney(b.totalAmount)}
+                  </span>
+                  <span className="mt-1 block font-body text-[12px] font-light text-navy/60">
+                    total
+                  </span>
+                </div>
+
+                {/* Status pill */}
+                <div>
+                  <span className={`inline-flex items-center px-3 py-1.5 font-display text-[13px] font-semibold uppercase tracking-[0.5px] ${tone[b.status] ?? "bg-navy/5 text-navy/60"}`}>
+                    {label[b.status] ?? b.status}
+                  </span>
+                </div>
+
+                {/* Action — Voir / Annuler */}
+                <div className="flex flex-col items-start gap-1 lg:items-end">
+                  <Link
+                    href={`/bookings/${b.reference}`}
+                    className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
+                  >
+                    Voir
+                    <ArrowRight className="size-4" strokeWidth={2} />
+                  </Link>
+                  {b.status === "pending" && (
+                    <button
+                      onClick={() => cancelOwnBooking(b, confirm)}
+                      className="font-display text-[14px] font-semibold uppercase tracking-[0.5px] text-navy/40 transition-colors duration-300 hover:text-sale"
+                    >
+                      Annuler
+                    </button>
+                  )}
+                </div>
+              </li>
             );
           })}
 
           {pageCount > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <button disabled={safePage === 0} onClick={() => setPage(safePage - 1)}
-                className="inline-flex h-9 items-center justify-center gap-2 border border-navy/20 px-3 text-sm font-display uppercase tracking-wide text-navy transition-colors hover:border-gold hover:text-gold disabled:opacity-50 disabled:hover:border-navy/20 disabled:hover:text-navy">
+            <li className="flex items-center justify-center gap-6 pt-4">
+              <button
+                disabled={safePage === 0}
+                onClick={() => setPage(safePage - 1)}
+                className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold disabled:opacity-40 disabled:hover:text-navy"
+              >
                 <ChevronLeft size={16} /> Précédent
               </button>
-              <span className="px-2 text-sm text-navy/60">Page {safePage + 1} / {pageCount}</span>
-              <button disabled={safePage >= pageCount - 1} onClick={() => setPage(safePage + 1)}
-                className="inline-flex h-9 items-center justify-center gap-2 border border-navy/20 px-3 text-sm font-display uppercase tracking-wide text-navy transition-colors hover:border-gold hover:text-gold disabled:opacity-50 disabled:hover:border-navy/20 disabled:hover:text-navy">
+              <span className="font-body text-[14px] text-navy/60">Page {safePage + 1} / {pageCount}</span>
+              <button
+                disabled={safePage >= pageCount - 1}
+                onClick={() => setPage(safePage + 1)}
+                className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold disabled:opacity-40 disabled:hover:text-navy"
+              >
                 Suivant <ChevronRight size={16} />
               </button>
-            </div>
+            </li>
           )}
-        </div>
+        </ul>
       )}
     </div>
   );

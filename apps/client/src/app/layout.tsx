@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Barlow_Condensed, Outfit } from "next/font/google";
 import "./globals.css";
 import { Providers, Toaster } from "@cp/ui";
+import { Progress } from "@/components/progress";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +21,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={cn(plusJakarta.variable, barlowCondensed.variable, outfit.variable)}>
       <body className="antialiased">
         <ScrollReveal />
-        <Providers>{children}</Providers>
+        <Progress>
+          <Providers>{children}</Providers>
+        </Progress>
         <Toaster />
       </body>
     </html>

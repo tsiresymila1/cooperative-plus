@@ -38,7 +38,7 @@ export default function Hero() {
               Madagascar
             </h1>
 
-            <p className="max-w-[260px] font-body text-[16px] font-light uppercase leading-[25.6px] tracking-[1px] text-white/80 lg:mb-[30px] lg:max-w-[190px]">
+            <p className="max-w-[260px] font-body text-[16px] font-bold uppercase leading-[25.6px] tracking-[1px] text-white/80 lg:mb-[30px] lg:max-w-[190px]">
               Réservez et payez vos trajets en ligne, en toute simplicité
             </p>
           </div>

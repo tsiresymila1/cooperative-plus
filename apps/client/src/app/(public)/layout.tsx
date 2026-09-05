@@ -4,11 +4,11 @@ import GoTop from "@/components/site/GoTop";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <div className="flex min-h-dvh flex-col">
       <Header />
-      {children}
+      <div className="flex-1">{children}</div>
       <Footer />
       <GoTop />
-    </>
+    </div>
   );
 }

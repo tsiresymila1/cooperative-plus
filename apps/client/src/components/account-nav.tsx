@@ -16,21 +16,33 @@ export function AccountNav() {
   const path = usePathname();
   const router = useRouter();
   return (
-    <div className="flex items-center gap-1 overflow-x-auto border border-navy/10 bg-white p-1">
+    <div className="flex items-stretch gap-x-8 overflow-x-auto border-b border-navy/10 bg-white">
       {tabs.map((t) => {
         const active = path === t.href;
         const Icon = t.icon;
         return (
-          <Link key={t.href} href={t.href}
-            className={cn("flex items-center gap-2 px-4 py-2 text-sm font-display uppercase tracking-wide transition-colors",
-              active ? "bg-gold text-navy" : "text-navy/60 hover:bg-navy/5 hover:text-navy")}>
-            <Icon size={16} /> {t.label}
+          <Link
+            key={t.href}
+            href={t.href}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-2 border-b-2 py-4 font-display text-[16px] font-semibold uppercase tracking-[0.5px] transition-colors duration-300",
+              active
+                ? "border-gold text-navy"
+                : "border-transparent text-navy/50 hover:text-navy",
+            )}
+          >
+            <Icon size={17} strokeWidth={2} /> {t.label}
           </Link>
         );
       })}
-      <button onClick={async () => { await db.auth.signOut(); router.push("/"); }}
-        className="ml-auto flex items-center gap-2 px-4 py-2 text-sm font-display uppercase tracking-wide text-navy/60 transition-colors hover:bg-navy/5 hover:text-navy">
-        <LogOut size={16} /> Déconnexion
+      <button
+        onClick={async () => {
+          await db.auth.signOut();
+          router.push("/");
+        }}
+        className="ml-auto inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent py-4 font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-navy/50 transition-colors duration-300 hover:text-sale"
+      >
+        <LogOut size={17} strokeWidth={2} /> Déconnexion
       </button>
     </div>
   );
