@@ -44,16 +44,18 @@ export default function FieldCombobox({
       {/* real value for the surrounding form */}
       <input type="hidden" name={name} value={value} />
 
-      {Icon ? (
-        <Icon className="pointer-events-none absolute left-[20px] top-[27px] z-10 size-[13px] text-gold" />
-      ) : null}
-      <span
-        className={`pointer-events-none absolute top-[25px] z-10 font-body text-[14px] font-light text-black/40 ${
-          Icon ? "left-[40px]" : "left-[20px]"
-        }`}
-      >
-        {label}
-      </span>
+      <div className="flex  items-center bg-red-100">
+        {Icon ? (
+          <Icon className="pointer-events-none absolute left-[20px] top-[27px] z-10 size-[18px] text-gold" />
+        ) : null}
+        <span
+          className={`pointer-events-none absolute top-[25px] z-10 font-body text-[14px] font-bold text-black/40  ${
+            Icon ? "left-[50px]" : "left-[20px]"
+          }`}
+        >
+          {label}
+        </span>
+      </div>
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -64,7 +66,12 @@ export default function FieldCombobox({
             aria-label={label}
             className="flex h-[104px] w-full items-end justify-between gap-2 rounded-none border-0 bg-white px-6 pb-[22px] text-left font-body text-[18px] font-normal text-navy outline-none focus-visible:ring-2 focus-visible:ring-gold"
           >
-            <span className={cn("truncate", !value && "text-navy/40")}>
+            <span
+              className={cn(
+                "truncate text-[16px]",
+                !value && "text-navy/40 text-[16px]",
+              )}
+            >
               {value || placeholder}
             </span>
             <ChevronDown

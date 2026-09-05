@@ -224,18 +224,18 @@ export default function Confirmation({
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
           {/* ── Left: ticket + seat preview ── */}
-          <div className="space-y-6">
+          <div className="min-w-0 space-y-6">
             <motion.div
               id="ticket"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.15 }}
-              className="-mx-[15px] overflow-x-auto px-[15px] pb-1 sm:mx-0 sm:overflow-visible sm:px-0 print:overflow-visible"
+              className="min-w-0 max-w-full overflow-x-auto print:overflow-visible"
             >
               {/* Boarding pass — Tourix "bus ticket" artwork, rebuilt as a real card:
               gold top bar · white world-map body · navy tear-off stub at right.
-              Keeps a fixed min width and scrolls horizontally on small screens. */}
-              <div className="relative flex min-w-[520px] overflow-hidden rounded-xl bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)] sm:min-w-0">
+              Fixed width; only this container scrolls horizontally on small screens. */}
+              <div className="relative flex w-[840px] shrink-0 overflow-hidden rounded-xl bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
                 {/* ── Main pass ── */}
                 <div className="min-w-0 flex-1">
                   {/* Gold header bar */}
@@ -271,7 +271,7 @@ export default function Confirmation({
                       backgroundSize: "13px 13px",
                     }}
                   >
-                    <div className="grid grid-cols-1 gap-5 sm:grid-cols-[minmax(0,1.3fr)_1fr]">
+                    <div className="grid grid-cols-1 gap-5 ">
                       {/* Route with pin markers + dashed connector */}
                       <div className="relative pl-7">
                         <span
@@ -352,7 +352,7 @@ export default function Confirmation({
 
                     {/* Secondary details + QR */}
                     <div className="mt-6 flex items-end justify-between gap-4 border-t border-dashed border-navy/15 pt-4">
-                      <div className="flex flex-wrap gap-x-6 gap-y-1.5 font-body text-sm">
+                      <div className="flex gap-x-6 gap-y-1.5 font-body text-sm">
                         <Row
                           label="Véhicule"
                           value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel}

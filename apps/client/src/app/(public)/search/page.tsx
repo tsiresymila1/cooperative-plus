@@ -69,7 +69,7 @@ function SearchInner() {
       {/* Filter — template booking form, wired to /search */}
       <section className="pt-[60px]">
         <div className="mx-auto max-w-shell px-[15px]">
-          <BookingForm className="bg-navy/10" />
+          <BookingForm className="bg-gold/10 shadow-sm" />
         </div>
       </section>
 
