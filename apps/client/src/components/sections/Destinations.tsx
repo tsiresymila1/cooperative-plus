@@ -15,22 +15,21 @@ function DestIcon({ className, chevronFill = "#14314C" }: { className?: string; 
   );
 }
 
-// Real, representative city photos from Wikimedia Commons (stable, scaled via
-// Special:FilePath). Keyed by city; falls back to the destination's own
-// imageUrl or a plain navy card for anything unmapped.
-const COMMONS: Record<string, string> = {
-  antananarivo: "Lake Anosy, Central Antananarivo, Capital of Madagascar, Photo by Sascha Grabow.jpg",
-  antsirabe: "Antsirabe - rue principale02.JPG",
-  fianarantsoa: "Vue globale de la ville Fianarantsoa 2.jpg",
-  mahajanga: "Mahajanga cathedrale.jpg",
-  morondava: "Strada di Morondava.jpg",
-  toamasina: "Tamatave - panoramio.jpg",
-  toliara: "MADAGASCAR TOLIARA (1).jpg",
+// Local Madagascar city photos (self-hosted — no external dependency, works on
+// prod). Keyed by city; falls back to the destination's own imageUrl or a plain
+// navy card for anything unmapped.
+const CITY_PHOTOS: Record<string, string> = {
+  antananarivo: "/wp-content/uploads/dest/antananarivo.jpg",
+  antsirabe: "/wp-content/uploads/dest/antsirabe.jpg",
+  fianarantsoa: "/wp-content/uploads/dest/fianarantsoa.jpg",
+  mahajanga: "/wp-content/uploads/dest/mahajanga.jpg",
+  morondava: "/wp-content/uploads/dest/morondava.jpg",
+  toamasina: "/wp-content/uploads/dest/toamasina.jpg",
+  toliara: "/wp-content/uploads/dest/toliara.jpg",
 };
 function cityImg(imageUrl: string | undefined, name: string) {
   if (imageUrl) return imageUrl;
-  const file = COMMONS[name.trim().toLowerCase()];
-  return file ? `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=800` : "";
+  return CITY_PHOTOS[name.trim().toLowerCase()] ?? "";
 }
 
 /* Template "Popular destinations" band — same layout; real Coopérative Plus
