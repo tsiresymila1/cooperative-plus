@@ -230,10 +230,12 @@ export default function Confirmation({
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.15 }}
+              className="-mx-[15px] overflow-x-auto px-[15px] pb-1 sm:mx-0 sm:overflow-visible sm:px-0 print:overflow-visible"
             >
               {/* Boarding pass — Tourix "bus ticket" artwork, rebuilt as a real card:
-              gold top bar · white world-map body · navy tear-off stub at right. */}
-              <div className="relative flex overflow-hidden rounded-xl bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
+              gold top bar · white world-map body · navy tear-off stub at right.
+              Keeps a fixed min width and scrolls horizontally on small screens. */}
+              <div className="relative flex min-w-[520px] overflow-hidden rounded-xl bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)] sm:min-w-0">
                 {/* ── Main pass ── */}
                 <div className="min-w-0 flex-1">
                   {/* Gold header bar */}

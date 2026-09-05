@@ -54,17 +54,19 @@ export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { p
             <Link
               key={d.id ?? d.name}
               href={`/search?to=${encodeURIComponent(d.name)}&pax=1`}
-              className="group relative block h-[357px] overflow-hidden bg-navy lg:h-[490px]"
+              className="group relative block h-[357px] overflow-hidden bg-navy ring-1 ring-navy/10 transition-shadow duration-500 hover:ring-2 hover:ring-gold/70 hover:shadow-[0_24px_50px_-24px_rgba(20,49,76,.55)] lg:h-[490px]"
             >
-              {/* Real city photo (deterministic) with a slow zoom on hover */}
+              {/* Real city photo with a slow zoom on hover, lightly warmed */}
               <span
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-[900ms] ease-out group-hover:scale-110"
+                className="absolute inset-0 bg-cover bg-center transition-transform duration-[1200ms] ease-out group-hover:scale-[1.12]"
                 style={{
                   backgroundImage: `url('${cityImg(d.imageUrl, d.name)}')`,
                 }}
               />
-              {/* Navy legibility wash + brand tint */}
-              <span className="absolute inset-0 bg-gradient-to-t from-navy/70 via-navy/30 to-navy/10" />
+              {/* Warm gold tint for cohesion + navy bottom for legibility */}
+              <span className="absolute inset-0 bg-gold/10 mix-blend-multiply" />
+              <span className="absolute inset-0 bg-gradient-to-t from-navy via-navy/35 to-transparent opacity-90" />
+              <span className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 bg-gradient-to-t from-navy/60 to-transparent" />
               {/* Gold brand watermark (was navy — now gold) */}
               <span className="absolute left-[26px] top-[26px] inline-flex h-11 w-11 items-center justify-center rounded-full bg-gold/20 text-gold ring-1 ring-gold/40 backdrop-blur-sm">
                 <DestIcon className="h-5 w-5" />

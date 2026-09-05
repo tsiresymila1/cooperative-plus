@@ -14,10 +14,10 @@ export default function AboutPage() {
     <main>
       <PageBanner
         title="À propos"
-        image="/wp-content/uploads/2025/02/SLIDE_01.jpg"
+        image="/wp-content/uploads/2025/02/SLIDE_01.jpg?v=2"
       />
       <WhatYouGet
-        image="/wp-content/uploads/2025/05/about_img-808x1024.jpg"
+        image="/wp-content/uploads/2025/05/about_img-808x1024.jpg?v=2"
         padding="py-[100px] lg:py-[68px]"
       />
       <Counters />
