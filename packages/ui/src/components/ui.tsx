@@ -123,7 +123,15 @@ export function CoopLogo({ url, name, size = 40, className }: { url?: string | n
     <span className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl", className)}
       style={{ width: size, height: size }}>
       {url
-        ? <img src={url} alt={name ?? "logo"} className="h-full w-full object-cover" />
+        // eslint-disable-next-line @next/next/no-img-element
+        ? <img src={url} alt={name ?? "logo"} className="h-full w-full object-cover"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.dataset.fb) { img.style.display = "none"; return; } // fallback also failed
+              img.dataset.fb = "1";
+              img.src = "/logo.svg";
+              img.className = "h-full w-full object-contain p-1";
+            }} />
         // eslint-disable-next-line @next/next/no-img-element
         : <img src="/logo.svg" alt="Cooperative Plus" className="h-full w-full object-contain p-1" onError={(e) => { (e.currentTarget.style.display = "none"); }} />}
     </span>
