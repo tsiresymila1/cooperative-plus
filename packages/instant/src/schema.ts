@@ -309,6 +309,24 @@ const schema = i.schema({
       papiApiKey: i.string().optional(),
       updatedAt: i.date().optional(),
     }),
+
+    // Platform analytics — one row per user, upserted on app load (IP + geo).
+    // Perms: view = platform admin only; create/update = the user themselves.
+    visits: i.entity({
+      userId: i.string().unique().indexed(),
+      email: i.string().optional(),
+      ip: i.string().optional(),
+      city: i.string().optional(),
+      region: i.string().optional(),
+      country: i.string().optional(),
+      lat: i.number().optional(),
+      lng: i.number().optional(),
+      userAgent: i.string().optional(),
+      app: i.string().optional(),
+      visitCount: i.number().optional(),
+      createdAt: i.date().indexed(),
+      lastSeenAt: i.date().indexed(),
+    }),
   },
 
   links: {
@@ -317,6 +335,8 @@ const schema = i.schema({
 
     membershipCoop: { forward: { on: "memberships", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "members" } },
     membershipUser: { forward: { on: "memberships", has: "one", label: "user" }, reverse: { on: "$users", has: "many", label: "memberships" } },
+
+    visitUser: { forward: { on: "visits", has: "one", label: "user" }, reverse: { on: "$users", has: "many", label: "visits" } },
 
     subPlan: { forward: { on: "subscriptions", has: "one", label: "plan" }, reverse: { on: "plans", has: "many", label: "subscriptions" } },
     subCoop: { forward: { on: "subscriptions", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "subscriptions" } },

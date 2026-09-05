@@ -11,8 +11,8 @@ const barlowCondensed = Barlow_Condensed({ subsets: ["latin"], weight: ["300","4
 const outfit = Outfit({ subsets: ["latin"], weight: ["300","400","500","600","700"], variable: "--font-outfit", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Coopérative Plus — Réservez votre taxi-brousse",
-  description: "Recherchez, réservez et payez vos trajets taxi-brousse à travers Madagascar.",
+  title: "Coopérative Plus — Réservez votre trajet",
+  description: "Recherchez, réservez et payez vos trajets à travers Madagascar.",
 };
 export const viewport: Viewport = { themeColor: "#14314C" };
 

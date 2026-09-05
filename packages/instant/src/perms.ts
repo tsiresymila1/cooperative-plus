@@ -99,6 +99,9 @@ const rules = {
   },
   auditLogs: { allow: { view: memberOrAdmin, create: authed, update: "false", delete: "false" } },
 
+  // Platform analytics — admins read everyone; a user writes only their own row.
+  visits: { allow: { view: admin, create: authed, update: `(${admin} || auth.id == data.userId)`, delete: admin } },
+
   // Payment provider secrets — never public, coop members + admins only.
   coopSecrets: { allow: { view: memberOrAdmin, create: memberOrAdmin, update: memberOrAdmin, delete: admin } },
 } satisfies InstantRules;

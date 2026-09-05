@@ -11,6 +11,7 @@ export * from "./components/dashboard-shell";
 export * from "./components/sidebar-context";
 export * from "./components/seat-map";
 export * from "./components/providers";
+export * from "./components/visit-tracker";
 export * from "./components/auth-gate";
 export * from "./components/sign-in";
 export * from "./components/confirm";
