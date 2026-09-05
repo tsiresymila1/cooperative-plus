@@ -14,7 +14,7 @@ export default function Hero() {
       <section className="relative h-[624px] overflow-hidden bg-navy lg:h-[90vh]">
         <div className="absolute inset-0 animate-[heroZoom_1500ms_ease-out_forwards]">
           <Image
-            src="/wp-content/uploads/2025/02/SLIDE_01.jpg?v=5"
+            src="/wp-content/uploads/2025/02/SLIDE_01.jpg?v=6"
             alt=""
             fill
             priority
