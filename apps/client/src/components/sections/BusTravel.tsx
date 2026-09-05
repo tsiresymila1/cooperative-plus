@@ -38,7 +38,7 @@ export default function BusTravel() {
             </h4>
 
             <Link
-              href="/about-us"
+              href="/about"
               className="mt-[50px] inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
             >
               En savoir plus
@@ -60,19 +60,15 @@ export default function BusTravel() {
               ))}
             </div>
 
-            <CtaButton href="/tours" className="mt-[75px]">
+            <CtaButton href="/search" className="mt-[75px]">
               Voir les horaires
             </CtaButton>
           </div>
         </div>
 
-        {/* Measured 564x593 at 1440 and fully opaque — an earlier pass rendered
-            it as a pale watermark, which washed the section out. At 390 the
-            source carries it as a real in-flow block (~378 tall) under the
-            trust column; from lg it sits at x=540 (525 inside the 15px gutter),
-            564x593, ending just before the right column at x=1110. */}
+        {/* Boarding-pass artwork (Antananarivo → Mahajanga). */}
         <Image
-          src="/wp-content/uploads/2025/02/tickets_img.png"
+          src="/wp-content/uploads/2025/02/tickets_img.png?v=2"
           alt=""
           width={564}
           height={593}

@@ -36,7 +36,7 @@ export default function Benefits({
   title = DEFAULT_TITLE,
   showVideo = true,
   layout = "full",
-  image = "/wp-content/uploads/2025/03/benefits_img.jpg",
+  image = "/wp-content/uploads/2025/03/benefits_img.jpg?v=2",
 }: {
   title?: React.ReactNode;
   showVideo?: boolean;
@@ -46,7 +46,7 @@ export default function Benefits({
   if (layout === "split") {
     return (
       <section className="grid lg:grid-cols-2">
-        <div className="bg-navy px-[20px] py-[70px] lg:py-[90px] lg:min-pl-[calc((100vw-1410px)/2+15px)] lg:pr-[60px]">
+        <div className="bg-navy px-[20px] py-[70px] lg:py-[90px]  lg:px-[60px]">
           <SectionHeading
             eyebrow="Nos avantages"
             tone="dark"
@@ -124,7 +124,7 @@ export default function Benefits({
         {showVideo ? (
         <div className="relative h-[550px] overflow-hidden md:h-[560px] lg:h-[810px]">
           <Image
-            src="/wp-content/uploads/2025/02/video-bg.jpg"
+            src="/wp-content/uploads/2025/02/video-bg.jpg?v=2"
             alt=""
             fill
             sizes="100vw"

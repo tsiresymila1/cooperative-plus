@@ -26,7 +26,7 @@ const POINTS = [
 /* The image differs per route: the homepage ships about_img-1, /about-us ships
    about_img. Measured 565x716 on about-us. */
 export default function WhatYouGet({
-  image = "/wp-content/uploads/2025/02/about_img-1-808x1024.jpg",
+  image = "/wp-content/uploads/2025/02/about_img-1-808x1024.jpg?v=2",
   padding = "py-[128px] lg:py-[140px]",
 }: {
   image?: string;

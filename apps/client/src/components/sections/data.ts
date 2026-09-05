@@ -143,25 +143,25 @@ export const FAQS = [
 export const TESTIMONIALS = [
   {
     author: "Hanta Rakotonirina",
-    avatar: "/wp-content/uploads/2024/12/testimonials_01-140x140.jpg",
+    avatar: "/wp-content/uploads/2024/12/testimonials_01-140x140.jpg?v=2",
     quote:
       "Réservation en ligne très simple et j'ai pu choisir ma place à l'avance. Le taxi-brousse est parti à l'heure et le trajet Antananarivo–Toamasina s'est très bien passé.",
   },
   {
     author: "Tiana Andrianina",
-    avatar: "/wp-content/uploads/2024/12/testimonials_02-140x140.jpg",
+    avatar: "/wp-content/uploads/2024/12/testimonials_02-140x140.jpg?v=2",
     quote:
       "Enfin une façon fiable de réserver un taxi-brousse ! Plus besoin de faire la queue à la gare. J'ai payé par Mobile Money et reçu mon billet avec QR code aussitôt.",
   },
   {
     author: "Miora Razafy",
-    avatar: "/wp-content/uploads/2024/12/testimonials_03-140x140.jpg",
+    avatar: "/wp-content/uploads/2024/12/testimonials_03-140x140.jpg?v=2",
     quote:
       "Chauffeur expérimenté, véhicule propre et confortable pour aller à Fianarantsoa. Les tarifs sont clairs, affichés à l'avance. Je recommande Coopérative Plus.",
   },
   {
     author: "Fanja Ratsimba",
-    avatar: "/wp-content/uploads/2024/12/testimonials_04-480x480.jpg",
+    avatar: "/wp-content/uploads/2024/12/testimonials_04-480x480.jpg?v=2",
     quote:
       "Service au top pour mon trajet vers Mahajanga. Départs réguliers et personnel à l'écoute. La réservation depuis le téléphone m'a fait gagner beaucoup de temps.",
   },

@@ -76,7 +76,7 @@ export default function Faq() {
 
           <div className="relative aspect-[4/5] w-full overflow-hidden">
             <Image
-              src="/wp-content/uploads/2025/02/faq.jpg"
+              src="/wp-content/uploads/2025/02/faq.jpg?v=2"
               alt=""
               fill
               sizes="(max-width: 1024px) 100vw, 600px"
