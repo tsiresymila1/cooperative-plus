@@ -25,7 +25,7 @@ export default function BusTravel() {
           <div className="lg:pt-[40px]">
             <h2 className="font-display font-semibold uppercase">
               <span className="block text-[70px] leading-[70px] tracking-[-2px] text-gold lg:text-display lg:leading-[120px] lg:tracking-[-2.5px]">
-                Le taxi-brousse
+                Le voyage
               </span>
               <span className="block text-[70px] leading-[70px] tracking-[-2px] text-navy lg:text-display lg:leading-[120px] lg:tracking-[-2.5px]">
                 en toute simplicité
