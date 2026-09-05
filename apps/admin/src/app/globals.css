@@ -51,6 +51,11 @@
   --radius-3xl: 1.5rem;
   --shadow-card: 0 1px 3px rgba(16,24,40,.1), 0 1px 2px rgba(16,24,40,.06);
   --shadow-lift: 0 12px 16px -4px rgba(16,24,40,.08), 0 4px 6px -2px rgba(16,24,40,.03);
+
+  /* TailAdmin shell shadows */
+  --shadow-theme-xs: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  --shadow-theme-sm: 0px 1px 3px 0px rgba(16, 24, 40, 0.1), 0px 1px 2px 0px rgba(16, 24, 40, 0.06);
+  --shadow-theme-md: 0px 4px 8px -2px rgba(16, 24, 40, 0.1), 0px 2px 4px -2px rgba(16, 24, 40, 0.06);
 }
 
 /* ── Dark theme overrides ─────────────────────────────────── */
@@ -79,6 +84,64 @@
 
   --grid-line: rgba(255,255,255,.025);
   color-scheme: dark;
+}
+
+/* ── TailAdmin sidebar menu utilities ──────────────────────────────
+   Ported from TailAdmin globals.css. brand-500 → var(--color-laterite)
+   (our gold) for active states; grays mapped to our ink/line tokens so
+   dark mode follows automatically. */
+@utility menu-item {
+  @apply relative flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium;
+}
+@utility menu-item-active {
+  @apply bg-laterite/10 text-laterite dark:bg-laterite/[0.15];
+}
+@utility menu-item-inactive {
+  @apply text-ink-soft hover:bg-ink/5 group-hover:text-ink dark:hover:bg-white/5;
+}
+@utility menu-item-icon {
+  @apply text-ink-soft/70 group-hover:text-ink;
+}
+@utility menu-item-icon-active {
+  @apply text-laterite;
+}
+@utility menu-item-icon-inactive {
+  @apply text-ink-soft/70 group-hover:text-ink;
+}
+@utility menu-item-text {
+  @apply truncate;
+}
+@utility menu-item-arrow {
+  @apply relative;
+}
+@utility menu-item-arrow-active {
+  @apply rotate-180 text-laterite;
+}
+@utility menu-item-arrow-inactive {
+  @apply text-ink-soft/70 group-hover:text-ink;
+}
+@utility menu-dropdown-item {
+  @apply relative flex items-center gap-3 rounded-lg px-3 py-2 text-[12.5px] font-medium;
+}
+@utility menu-dropdown-item-active {
+  @apply bg-laterite/10 text-laterite dark:bg-laterite/[0.15];
+}
+@utility menu-dropdown-item-inactive {
+  @apply text-ink-soft hover:bg-ink/5 hover:text-ink dark:hover:bg-white/5;
+}
+@utility menu-dropdown-badge {
+  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-laterite;
+}
+@utility menu-dropdown-badge-active {
+  @apply bg-laterite/15;
+}
+@utility menu-dropdown-badge-inactive {
+  @apply bg-laterite/10 group-hover:bg-laterite/15;
+}
+@utility no-scrollbar {
+  &::-webkit-scrollbar { display: none; }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @layer base {
