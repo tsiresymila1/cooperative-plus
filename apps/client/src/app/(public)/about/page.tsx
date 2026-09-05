@@ -14,7 +14,7 @@ export default function AboutPage() {
     <main>
       <PageBanner
         title="À propos"
-        image="/wp-content/uploads/2025/04/inner_HEADER_about.jpg"
+        image="/wp-content/uploads/2025/02/SLIDE_01.jpg"
       />
       <WhatYouGet
         image="/wp-content/uploads/2025/05/about_img-808x1024.jpg"
@@ -25,7 +25,9 @@ export default function AboutPage() {
         layout="split"
         title={
           <>
-            <span className="text-gold">Des sièges confortables et des services</span>{" "}
+            <span className="text-gold">
+              Des sièges confortables et des services
+            </span>{" "}
             pour un voyage agréable à travers Madagascar
           </>
         }
