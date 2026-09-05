@@ -35,8 +35,8 @@ export default function FieldDatePicker({
         value={date ? format(date, "yyyy-MM-dd") : ""}
       />
 
-      <CalendarDays className="pointer-events-none absolute left-[20px] top-[27px] z-10 size-[13px] text-gold" />
-      <span className="pointer-events-none absolute left-[40px] top-[25px] z-10 font-body text-[14px] font-light text-black/40">
+      <CalendarDays className="pointer-events-none absolute left-[20px] top-[27px] z-10 size-[18px] text-gold" />
+      <span className="pointer-events-none absolute left-[50px] top-[25px] z-10 font-body text-[14px] font-bold text-black/40">
         {label}
       </span>
 
@@ -47,7 +47,7 @@ export default function FieldDatePicker({
             aria-label={label}
             className="flex h-[104px] w-full items-end justify-between gap-2 rounded-none border-0 bg-white px-6 pb-[22px] text-left font-body text-[18px] font-normal text-navy outline-none focus-visible:ring-2 focus-visible:ring-gold"
           >
-            <span className={cn("truncate", !date && "text-navy/40")}>
+            <span className={cn("truncate text-[16px]", !date && "text-navy/40")}>
               {date ? format(date, "dd MMM yyyy") : placeholder}
             </span>
             <CalendarDays className="size-5 shrink-0 text-navy/50" />
