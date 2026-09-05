@@ -350,7 +350,7 @@ export default function Confirmation({
 
                     {/* Secondary details + QR */}
                     <div className="mt-6 flex items-end justify-between gap-4 border-t border-dashed border-navy/15 pt-4">
-                      <div className="grid grid-cols-1 gap-x-6 gap-y-1.5 font-body text-sm sm:grid-cols-2">
+                      <div className="flex flex-wrap gap-x-6 gap-y-1.5 font-body text-sm">
                         <Row
                           label="Véhicule"
                           value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel}
@@ -466,8 +466,8 @@ export default function Confirmation({
 }
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="font-light text-navy/60">{label}</span>
+    <div className="flex items-center justify-between gap-2">
+      <span className="font-light text-navy/60">{label}:</span>
       <span className="font-medium text-navy">{value}</span>
     </div>
   );
