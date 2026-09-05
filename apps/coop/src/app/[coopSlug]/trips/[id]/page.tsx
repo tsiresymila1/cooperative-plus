@@ -19,7 +19,6 @@ import {
   Wallet,
   Check,
   CheckCircle2,
-  Armchair,
   Phone,
   User,
   Activity,
@@ -41,6 +40,7 @@ import {
   id,
   Button,
   Card,
+  ComponentCard,
   Badge,
   TagBadge,
   Field,
@@ -624,14 +624,10 @@ export default function TripViewPage() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             {/* ---- Seat map view ---- */}
-            <Card className="p-6">
-              <div className="mb-4 flex items-center justify-between gap-2 text-ink">
-                <div className="flex items-center gap-2">
-                  <Armchair size={18} className="text-laterite" />
-                  <h3 className="font-display text-lg font-bold">Places occupées</h3>
-                </div>
-                {slot?.seatsTotal ? <Badge tone="neutral">{new Set(takenSeats).size}/{slot.seatsTotal}</Badge> : null}
-              </div>
+            <ComponentCard
+              title="Places occupées"
+              action={slot?.seatsTotal ? <Badge tone="neutral">{new Set(takenSeats).size}/{slot.seatsTotal}</Badge> : null}
+            >
               {(slots.length > 1 || hasRealSlots) && (
                 <div className="mb-4 flex flex-wrap items-center gap-1.5">
                   {slots.map((s) => (
@@ -702,14 +698,10 @@ export default function TripViewPage() {
                   </div>
                 </div>
               )}
-            </Card>
+            </ComponentCard>
 
             {/* ---- Anonymous reservation ---- */}
-            <Card className="p-6">
-              <div className="mb-4 flex items-center gap-2 text-ink">
-                <Ticket size={18} className="text-laterite" />
-                <h3 className="font-display text-lg font-bold">Réserver (passager au guichet)</h3>
-              </div>
+            <ComponentCard title="Réserver (passager au guichet)">
               {trip.status === "cancelled" ? (
                 <p className="text-sm text-ink-soft">Ce trajet est annulé.</p>
               ) : (
@@ -762,18 +754,13 @@ export default function TripViewPage() {
                   </Button>
                 </div>
               )}
-            </Card>
+            </ComponentCard>
           </div>
 
           {/* ---- Manifest ---- */}
-          <Card className="p-6">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3 text-ink">
-              <div className="flex items-center gap-2">
-                <Users size={18} className="text-laterite" />
-                <h3 className="font-display text-lg font-bold">
-                  Manifeste des réservations ({visibleBookings.length}/{bookings.length})
-                </h3>
-              </div>
+          <ComponentCard
+            title={`Manifeste des réservations (${visibleBookings.length}/${bookings.length})`}
+            action={
               <div className="relative">
                 <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
                 <Input
@@ -783,7 +770,8 @@ export default function TripViewPage() {
                   className="h-9 w-72 pl-9"
                 />
               </div>
-            </div>
+            }
+          >
             {bookings.length === 0 ? (
               <p className="text-sm text-ink-soft">Aucune réservation pour ce trajet.</p>
             ) : visibleBookings.length === 0 ? (
@@ -805,7 +793,7 @@ export default function TripViewPage() {
             ) : (
               <div className="grid gap-4">{visibleBookings.map(renderBooking)}</div>
             )}
-          </Card>
+          </ComponentCard>
         </div>
       )}
 

@@ -54,6 +54,26 @@ export function Card({ className, children }: { className?: string; children: Re
   return <div className={cn("rounded-2xl border border-line bg-paper shadow-[var(--shadow-card)]", className)}>{children}</div>;
 }
 
+/** TailAdmin content card: title/desc header + bordered body. */
+export function ComponentCard({ title, desc, action, className, bodyClassName, children }: {
+  title?: string; desc?: string; action?: React.ReactNode; className?: string; bodyClassName?: string; children: React.ReactNode;
+}) {
+  return (
+    <div className={cn("rounded-2xl border border-line bg-paper", className)}>
+      {(title || action) && (
+        <div className="flex items-start justify-between gap-3 px-6 py-5">
+          <div>
+            {title && <h3 className="text-base font-medium text-ink">{title}</h3>}
+            {desc && <p className="mt-1 text-sm text-ink-soft">{desc}</p>}
+          </div>
+          {action}
+        </div>
+      )}
+      <div className={cn("border-t border-line p-4 sm:p-6", bodyClassName)}>{children}</div>
+    </div>
+  );
+}
+
 export function StatCard({ label, value, hint, trend, tone = "ink", icon }: {
   label: string; value: string; hint?: string; trend?: "up" | "down";
   tone?: "ink" | "laterite" | "baobab"; icon?: React.ReactNode;

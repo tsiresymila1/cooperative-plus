@@ -10,7 +10,8 @@ import {
   Button,
   Card,
   Badge,
-  FormSection,
+  StatCard,
+  ComponentCard,
   toast,
   fmtMoney,
   fmtDate,
@@ -96,71 +97,65 @@ export default function AbonnementPage() {
     >
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Current plan + status */}
-        <Card className="p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <ComponentCard
+          title="Plan actuel"
+          action={<Badge tone={st.tone}>{st.label}</Badge>}
+        >
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft/55">Plan actuel</p>
-              <p className="mt-1 font-display text-2xl font-bold">{plan?.name ?? "—"}</p>
+              <p className="font-display text-2xl font-bold text-ink">{plan?.name ?? "—"}</p>
               <p className="mt-1 text-sm text-ink-soft">
                 {plan ? (plan.priceAmount > 0 ? `${fmtMoney(plan.priceAmount)} / mois` : "Gratuit") : "Aucun abonnement"}
               </p>
-            </div>
-            <div className="text-right">
-              <Badge tone={st.tone}>{st.label}</Badge>
               {periodEnd && (
-                <p className="mt-2 flex items-center justify-end gap-1.5 text-sm text-ink-soft">
+                <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-soft">
                   <Clock size={14} />
                   {status === "trialing" ? "Essai jusqu'au" : "Échéance"} {fmtDate(periodEnd)}
                 </p>
               )}
             </div>
-          </div>
-          {plan?.priceAmount > 0 && (
-            <div className="mt-5 flex justify-end">
+            {plan?.priceAmount > 0 && (
               <Button size="sm" onClick={() => pay()} disabled={paying}>
                 <CreditCard size={16} /> {paying ? "…" : "Payer / Renouveler"}
               </Button>
-            </div>
-          )}
-        </Card>
+            )}
+          </div>
+        </ComponentCard>
 
-        {/* Usage vs limits */}
-        <FormSection index="01" title="Utilisation" description="Consommation par rapport aux limites de votre plan.">
-          <div className="grid gap-4">
+        {/* Usage vs limits — StatCard metric grid */}
+        <div>
+          <h3 className="mb-4 text-base font-medium text-ink">Utilisation</h3>
+          <div className="grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
             {ROWS.map((r) => {
               const used = usage[r.key];
               const cap = max[r.key];
-              const pct = cap && cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
               const full = typeof cap === "number" && cap > 0 && used >= cap;
               return (
-                <div key={r.key}>
-                  <div className="mb-1 flex items-center justify-between text-sm">
-                    <span className="font-medium text-ink">{r.label}</span>
-                    <span className={full ? "font-semibold text-danger" : "text-ink-soft"}>
-                      {used}{cap && cap > 0 ? ` / ${cap}` : ""}
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-ink/8">
-                    <div className={`h-full rounded-full ${full ? "bg-danger" : "bg-laterite"}`} style={{ width: `${cap && cap > 0 ? pct : 4}%` }} />
-                  </div>
-                </div>
+                <StatCard
+                  key={r.key}
+                  label={r.label}
+                  value={cap && cap > 0 ? `${used} / ${cap}` : String(used)}
+                  tone={full ? "laterite" : "ink"}
+                  hint={full ? "Limite atteinte" : cap && cap > 0 ? "disponible" : undefined}
+                  trend={full ? "down" : undefined}
+                />
               );
             })}
           </div>
-        </FormSection>
+        </div>
 
         {/* Plan comparison */}
-        <FormSection index="02" title="Plans" description="Changez de plan selon vos besoins.">
+        <ComponentCard title="Plans" desc="Changez de plan selon vos besoins.">
           <div className="grid gap-4 sm:grid-cols-3">
             {plans.map((p: any) => {
               const current = p.id === plan?.id;
               return (
                 <Card key={p.id} className={`p-5 ${current ? "border-laterite ring-1 ring-laterite/40" : ""}`}>
                   <div className="flex items-center justify-between">
-                    <p className="font-display text-lg font-bold">{p.name}</p>
+                    <p className="font-display text-lg font-bold text-ink">{p.name}</p>
                     {current && <Badge tone="success">Actuel</Badge>}
                   </div>
-                  <p className="mt-1 font-mono text-xl font-bold">{p.priceAmount > 0 ? fmtMoney(p.priceAmount) : "Gratuit"}<span className="text-xs font-normal text-ink-soft">{p.priceAmount > 0 ? " /mois" : ""}</span></p>
+                  <p className="mt-1 font-mono text-xl font-bold text-ink">{p.priceAmount > 0 ? fmtMoney(p.priceAmount) : "Gratuit"}<span className="text-xs font-normal text-ink-soft">{p.priceAmount > 0 ? " /mois" : ""}</span></p>
                   <ul className="mt-4 space-y-1.5 text-sm text-ink-soft">
                     <li className="flex items-center gap-2"><Check size={14} className="text-baobab" /> {p.maxVehicles} véhicules</li>
                     <li className="flex items-center gap-2"><Check size={14} className="text-baobab" /> {p.maxRoutes} itinéraires</li>
@@ -174,19 +169,23 @@ export default function AbonnementPage() {
               );
             })}
           </div>
-        </FormSection>
+        </ComponentCard>
 
         {/* Payment history */}
-        <FormSection index="03" title="Historique des paiements" description="Vos paiements d'abonnement et leurs factures.">
+        <ComponentCard
+          title="Historique des paiements"
+          desc="Vos paiements d'abonnement et leurs factures."
+          bodyClassName={subPayments.length ? "p-0" : undefined}
+        >
           {subPayments.length === 0 ? (
             <p className="text-sm text-ink-soft">Aucun paiement pour le moment.</p>
           ) : (
-            <Card className="divide-y divide-ink/8">
+            <div className="divide-y divide-line">
               {subPayments.map((p: any) => {
                 const s = PAY_STATUS[p.status] ?? { label: p.status, tone: "neutral" as const };
                 const planName = p.subscription?.plan?.name ?? "Abonnement";
                 return (
-                  <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 p-3.5">
+                  <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-ink">{planName} · {fmtMoney(p.amount)}</p>
                       <p className="mt-0.5 text-xs text-ink-soft">{fmtDateTime(p.paidAt ?? p.createdAt)}</p>
@@ -194,7 +193,7 @@ export default function AbonnementPage() {
                     <div className="flex items-center gap-2">
                       <Badge tone={s.tone as any}>{s.label}</Badge>
                       {p.status === "paid" && (
-                        <Link href={`/${slug}/abonnement/facture/${p.id}`} className="inline-flex items-center gap-1.5 rounded-md border border-ink/12 px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-ink/5">
+                        <Link href={`/${slug}/abonnement/facture/${p.id}`} className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 text-xs font-medium text-ink hover:bg-ink/5">
                           <FileText size={13} /> Facture
                         </Link>
                       )}
@@ -202,9 +201,9 @@ export default function AbonnementPage() {
                   </div>
                 );
               })}
-            </Card>
+            </div>
           )}
-        </FormSection>
+        </ComponentCard>
       </div>
     </DashboardShell>
   );

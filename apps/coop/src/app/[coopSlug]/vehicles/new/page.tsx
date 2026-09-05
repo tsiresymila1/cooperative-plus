@@ -12,7 +12,7 @@ import {
   db,
   id,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   Textarea,
   Badge,
@@ -111,8 +111,8 @@ export default function NewVehiclePage() {
         </Link>
       }
     >
-      <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Identité" description="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <ComponentCard title="Identité" desc="Nom, immatriculation et modèle. Le plan de sièges vient du modèle.">
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Nom" error={errors.name?.message}>
@@ -145,13 +145,13 @@ export default function NewVehiclePage() {
             </Field>
             {model && <div><Badge tone="neutral">{seatsOf(model)} places · {model.name}</Badge></div>}
           </div>
-        </FormSection>
+        </ComponentCard>
 
-        <FormSection index="02" title="Notes" description="Informations internes.">
+        <ComponentCard title="Notes" desc="Informations internes.">
           <Field label="Notes">
             <Textarea rows={2} {...register("notes")} />
           </Field>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/vehicles`}>

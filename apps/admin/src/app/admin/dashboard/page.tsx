@@ -1,8 +1,21 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AdminShell } from "@/components/admin-shell";
 import { Building2, Wallet, CalendarCheck, Users, ArrowRight } from "lucide-react";
-import { adminNav, db, Badge, Spinner, fmtMoney, fmtDate, notDeleted, subStatus } from "@cp/ui";
+import {
+  adminNav,
+  db,
+  Badge,
+  Button,
+  StatCard,
+  DataTable,
+  fmtMoney,
+  fmtDate,
+  notDeleted,
+  subStatus,
+  type Column,
+} from "@cp/ui";
 
 function startOfTodayMs() {
   const d = new Date();
@@ -11,7 +24,11 @@ function startOfTodayMs() {
 }
 const ts = (x: any) => new Date(x).getTime();
 
+type CoopRow = { id: string; displayName: string; region?: string; subscriptionStatus: string; createdAt: number | string };
+type BookingRow = { id: string; contactName?: string; reference?: string; totalAmount?: number; createdAt: number | string };
+
 export default function DashboardPage() {
+  const router = useRouter();
   const { data, isLoading } = db.useQuery({
     cooperatives: {},
     $users: {},
@@ -31,105 +48,108 @@ export default function DashboardPage() {
   const adminCount = users.filter((u: any) => u.isPlatformAdmin).length;
 
   const v = (x: string) => (isLoading ? "—" : x);
-  const recentCoops = [...coops].sort((a: any, b: any) => ts(b.createdAt) - ts(a.createdAt)).slice(0, 5);
-  const recentBookings = [...bookings].sort((a: any, b: any) => ts(b.createdAt) - ts(a.createdAt)).slice(0, 5);
+  const recentCoops = [...coops].sort((a: any, b: any) => ts(b.createdAt) - ts(a.createdAt)).slice(0, 5) as CoopRow[];
+  const recentBookings = [...bookings].sort((a: any, b: any) => ts(b.createdAt) - ts(a.createdAt)).slice(0, 5) as BookingRow[];
 
   const stats = [
-    { id: "coops", icon: Building2, label: "Coopératives", value: v(String(coops.length)), hint: `${activeCount} active${activeCount > 1 ? "s" : ""}` },
-    { id: "rev", icon: Wallet, label: "Revenu encaissé", value: v(fmtMoney(totalRevenue)), hint: "Tous paiements" },
-    { id: "book", icon: CalendarCheck, label: "Réservations aujourd'hui", value: v(String(bookingsToday)), hint: "Depuis minuit" },
-    { id: "users", icon: Users, label: "Utilisateurs", value: v(String(users.length)), hint: `${adminCount} admin(s)` },
+    { id: "coops", icon: <Building2 size={22} />, label: "Coopératives", value: v(String(coops.length)), hint: `${activeCount} active${activeCount > 1 ? "s" : ""}`, tone: "ink" as const },
+    { id: "rev", icon: <Wallet size={22} />, label: "Revenu encaissé", value: v(fmtMoney(totalRevenue)), hint: "Tous paiements", tone: "laterite" as const },
+    { id: "book", icon: <CalendarCheck size={22} />, label: "Réservations aujourd'hui", value: v(String(bookingsToday)), hint: "Depuis minuit", tone: "baobab" as const },
+    { id: "users", icon: <Users size={22} />, label: "Utilisateurs", value: v(String(users.length)), hint: `${adminCount} admin(s)`, tone: "ink" as const },
+  ];
+
+  const coopColumns: Column<CoopRow>[] = [
+    {
+      key: "name",
+      header: "Coopérative",
+      render: (c) => (
+        <div className="flex items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-laterite/10 text-laterite">
+            <Building2 size={16} />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-ink">{c.displayName}</p>
+            <p className="truncate text-xs text-ink-soft/60">{c.region ?? "—"} · {fmtDate(c.createdAt)}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Statut",
+      className: "text-right",
+      render: (c) => {
+        const meta = subStatus[c.subscriptionStatus];
+        return <Badge tone={meta?.tone ?? "neutral"}>{meta?.label ?? c.subscriptionStatus}</Badge>;
+      },
+    },
+  ];
+
+  const bookingColumns: Column<BookingRow>[] = [
+    {
+      key: "booking",
+      header: "Réservation",
+      render: (b) => (
+        <div className="flex items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-baobab/10 text-baobab">
+            <CalendarCheck size={16} />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate font-medium text-ink">{b.contactName ?? b.reference ?? "Réservation"}</p>
+            <p className="truncate text-xs text-ink-soft/60">{fmtDate(b.createdAt)}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "amount",
+      header: "Montant",
+      className: "text-right",
+      render: (b) => <span className="font-mono tabular-nums text-ink">{fmtMoney(b.totalAmount ?? 0)}</span>,
+    },
   ];
 
   return (
     <AdminShell nav={adminNav("dashboard")} title="Vue d'ensemble">
-      {/* KPI */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map(({ id, icon: Icon, label, value, hint }) => (
-          <div key={id} className="rounded-xl border border-ink/8 bg-paper p-5 shadow-[--shadow-card]">
-            <div className="flex items-center gap-2 text-ink-soft">
-              <Icon size={16} />
-              <span className="text-[13px] font-medium">{label}</span>
-            </div>
-            <p className="mt-3 font-display text-3xl font-extrabold tabular-nums text-ink">{value}</p>
-            <p className="mt-1 text-xs text-ink-soft/70">{hint}</p>
-          </div>
+      {/* KPI metric grid */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 md:gap-6">
+        {stats.map((s) => (
+          <StatCard key={s.id} icon={s.icon} label={s.label} value={s.value} hint={s.hint} tone={s.tone} />
         ))}
       </div>
 
       {/* Recent activity */}
-      <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        <Panel title="Dernières coopératives" href="/admin/cooperatives" empty={!recentCoops.length} loading={isLoading}>
-          {recentCoops.map((c: any) => {
-            const meta = subStatus[c.subscriptionStatus];
-            return (
-              <Link
-                key={c.id}
-                href={`/admin/cooperatives/${c.id}/edit`}
-                className="flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-ink/[.03]"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-laterite/10 text-laterite">
-                  <Building2 size={16} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink">{c.displayName}</p>
-                  <p className="truncate text-xs text-ink-soft/60">{c.region ?? "—"} · {fmtDate(c.createdAt)}</p>
-                </div>
-                <Badge tone={meta?.tone ?? "neutral"}>{meta?.label ?? c.subscriptionStatus}</Badge>
-              </Link>
-            );
-          })}
-        </Panel>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2 md:mt-6 md:gap-6">
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-base font-medium text-ink">Dernières coopératives</h3>
+            <Link href="/admin/cooperatives">
+              <Button variant="ghost" size="sm">Tout voir <ArrowRight size={14} /></Button>
+            </Link>
+          </div>
+          <DataTable
+            columns={coopColumns}
+            rows={recentCoops}
+            loading={isLoading}
+            pageSize={5}
+            empty="Aucune coopérative."
+            onRowClick={(c) => router.push(`/admin/cooperatives/${c.id}/edit`)}
+          />
+        </section>
 
-        <Panel title="Dernières réservations" empty={!recentBookings.length} loading={isLoading}>
-          {recentBookings.map((b: any) => (
-            <div key={b.id} className="flex items-center gap-3 rounded-lg px-2.5 py-2.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-baobab/10 text-baobab">
-                <CalendarCheck size={16} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium text-ink">{b.contactName ?? b.reference ?? "Réservation"}</p>
-                <p className="truncate text-xs text-ink-soft/60">{fmtDate(b.createdAt)}</p>
-              </div>
-              <span className="shrink-0 font-mono text-sm tabular-nums text-ink">{fmtMoney(b.totalAmount ?? 0)}</span>
-            </div>
-          ))}
-        </Panel>
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-base font-medium text-ink">Dernières réservations</h3>
+          </div>
+          <DataTable
+            columns={bookingColumns}
+            rows={recentBookings}
+            loading={isLoading}
+            pageSize={5}
+            empty="Aucune réservation."
+          />
+        </section>
       </div>
     </AdminShell>
-  );
-}
-
-function Panel({
-  title,
-  href,
-  empty,
-  loading,
-  children,
-}: {
-  title: string;
-  href?: string;
-  empty: boolean;
-  loading?: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-ink/8 bg-paper p-4 shadow-[--shadow-card]">
-      <div className="mb-2 flex items-center justify-between px-1">
-        <h2 className="font-display text-base font-bold text-ink">{title}</h2>
-        {href && (
-          <Link href={href} className="flex items-center gap-1 text-xs font-medium text-ink-soft transition-colors hover:text-laterite">
-            Tout voir <ArrowRight size={13} />
-          </Link>
-        )}
-      </div>
-      {loading ? (
-        <div className="flex justify-center py-8"><Spinner size={18} /></div>
-      ) : empty ? (
-        <p className="px-2.5 py-8 text-center text-sm text-ink-soft/50">Aucune donnée.</p>
-      ) : (
-        <div className="flex flex-col">{children}</div>
-      )}
-    </section>
   );
 }

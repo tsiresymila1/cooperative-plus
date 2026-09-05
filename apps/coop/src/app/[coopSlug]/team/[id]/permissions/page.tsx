@@ -10,7 +10,7 @@ import {
   useCoop,
   db,
   Button,
-  FormSection,
+  ComponentCard,
   toast,
   COOP_PERMISSIONS,
   logActivity,
@@ -82,8 +82,8 @@ export default function MemberPermissionsPage() {
       ) : !member ? (
         <p className="text-ink-soft">Membre introuvable.</p>
       ) : (
-        <div className="mx-auto max-w-4xl">
-          <FormSection index="01" title="Permissions" description={member.user?.email ?? "Actions autorisées pour ce membre."}>
+        <div className="mx-auto max-w-4xl space-y-6">
+          <ComponentCard title="Permissions" desc={member.user?.email ?? "Actions autorisées pour ce membre."}>
           <div className="grid grid-cols-2 gap-2">
             {COOP_PERMISSIONS.map((p) => (
               <label key={p.key} className="flex items-center gap-2 text-sm text-ink">
@@ -97,7 +97,7 @@ export default function MemberPermissionsPage() {
               </label>
             ))}
           </div>
-          </FormSection>
+          </ComponentCard>
 
           <div className="flex justify-end gap-2 pt-2">
             <Link href={`/${slug}/team`}>

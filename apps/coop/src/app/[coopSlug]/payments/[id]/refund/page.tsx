@@ -14,7 +14,7 @@ import {
   db,
   id,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   fmtMoney,
@@ -122,8 +122,8 @@ export default function RefundPaymentPage() {
       ) : !payment ? (
         <p className="text-ink-soft">Paiement introuvable.</p>
       ) : (
-        <div className="mx-auto max-w-4xl">
-          <FormSection index="01" title="Remboursement" description={`Paiement de ${fmtMoney(payment.amount)}. Laissez le montant vide pour rembourser la totalité.`}>
+        <div className="mx-auto max-w-4xl space-y-6">
+          <ComponentCard title="Remboursement" desc={`Paiement de ${fmtMoney(payment.amount)}. Laissez le montant vide pour rembourser la totalité.`}>
           <div className="grid gap-4">
             <Field
               label="Montant (MGA)"
@@ -140,7 +140,7 @@ export default function RefundPaymentPage() {
               <Input {...register("reason")} />
             </Field>
           </div>
-          </FormSection>
+          </ComponentCard>
 
           <div className="flex justify-end gap-2 pt-2">
             <Link href={`/${slug}/payments`}>

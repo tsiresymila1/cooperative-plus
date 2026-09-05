@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { ChevronRight } from "lucide-react";
-import { DashboardShell, coopNav, useCoop, db } from "@cp/ui";
+import { DashboardShell, coopNav, useCoop, db, ComponentCard } from "@cp/ui";
 import { BoardingScanner } from "@/components/boarding-scanner";
 
 export default function ScanPage() {
@@ -22,10 +22,17 @@ export default function ScanPage() {
       breadcrumb={<><span>{coop.displayName}</span><ChevronRight size={12} /><span className="text-ink">Embarquement</span></>}
     >
       <div className="mx-auto max-w-4xl">
-        <BoardingScanner coopId={coopId} tripId={tripId} />
-        <p className="mt-4 text-center text-xs text-ink-soft/50">
-          Le pointage est aussi modifiable depuis chaque réservation.
-        </p>
+        <ComponentCard
+          title="Scanner de billets"
+          desc={scopedTrip
+            ? `Trajet ${scopedTrip.originName} → ${scopedTrip.destName} · seuls ses billets sont acceptés.`
+            : "Pointez la caméra sur le QR code du billet."}
+        >
+          <BoardingScanner coopId={coopId} tripId={tripId} />
+          <p className="mt-4 text-center text-xs text-ink-soft/50">
+            Le pointage est aussi modifiable depuis chaque réservation.
+          </p>
+        </ComponentCard>
       </div>
     </DashboardShell>
   );

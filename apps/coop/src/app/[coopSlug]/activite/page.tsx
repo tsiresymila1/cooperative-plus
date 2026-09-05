@@ -6,6 +6,7 @@ import {
   useCoop,
   db,
   Card,
+  ComponentCard,
   Badge,
   fmtDate,
   fmtDateTime,

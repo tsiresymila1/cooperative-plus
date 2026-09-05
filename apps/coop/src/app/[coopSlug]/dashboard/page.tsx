@@ -3,12 +3,12 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  CalendarClock, Ticket, Activity, Wallet, Bus, Plus, CalendarPlus, ChevronRight,
+  Ticket, Activity, Wallet, Bus, Plus, CalendarPlus, ChevronRight,
   ArrowRight, History, ArrowUpRight,
 } from "lucide-react";
 import {
   DashboardShell, coopNav, useCoop, db,
-  Card, KpiCard, AreaChart, PageSkeleton,
+  StatCard, ComponentCard, Button, AreaChart, PageSkeleton,
   fmtMoney, fmtTime, fmtDateTime, todayISO, notDeleted, TagBadge,
 } from "@cp/ui";
 
@@ -75,7 +75,6 @@ export default function DashboardPage() {
     return out;
   }, [range]);
   const resSeries = useMemo(() => days.map((d) => bookings.filter((b: any) => dk(b.createdAt) === d.key).length), [days, bookings]);
-  const revSeries = useMemo(() => days.map((d) => payments.filter((p: any) => dk(p.paidAt ?? p.createdAt) === d.key).reduce((s: number, p: any) => s + (p.amount ?? 0), 0)), [days, payments]);
   const chartLabels = range === 7 ? days.map((d) => d.label) : days.filter((_, i) => i % 6 === 0).map((d) => d.label);
 
   // r = occupancy ratio (booked/total). Green = seats available, red = full.
@@ -99,65 +98,83 @@ export default function DashboardPage() {
       {isLoading ? (
         <PageSkeleton />
       ) : (
-        <div className="space-y-5 stagger-children">
-          {/* KPI row */}
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <KpiCard
-              label="Revenus du jour" value={fmtMoney(revenueToday)} spark={revSeries}
-              trend={revenueYday > 0 ? `${Math.round(((revenueToday - revenueYday) / revenueYday) * 100)}%` : undefined}
-              trendDir={revenueToday >= revenueYday ? "up" : "down"}
+        <div className="grid grid-cols-12 gap-4 md:gap-6">
+          {/* KPI metric grid */}
+          <div className="col-span-12 grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
+            <StatCard
+              label="Revenus du jour"
+              value={fmtMoney(revenueToday)}
+              tone="laterite"
+              icon={<Wallet size={22} />}
+              hint={revenueYday > 0 ? `${Math.abs(Math.round(((revenueToday - revenueYday) / revenueYday) * 100))}%` : undefined}
+              trend={revenueToday >= revenueYday ? "up" : "down"}
             />
-            <KpiCard label="Réservations du jour" value={String(resToday)} spark={resSeries} trend={`${upcoming.length} à venir`} trendDir="up" />
-            <KpiCard label="Taux d'occupation" value={`${occupancy}%`} progress={occupancy} />
-            <KpiCard
-              label="Véhicules actifs" value={String(activeVehicles)} valueSub={`/ ${vehicles.length}`}
-              pill={maintenance > 0 ? { text: `${maintenance} en maintenance`, tone: "warning" } : { text: "Tous opérationnels", tone: "neutral" }}
-              icon={<Bus size={18} />}
+            <StatCard
+              label="Réservations du jour"
+              value={String(resToday)}
+              icon={<Ticket size={22} />}
+              hint={`${upcoming.length} à venir`}
+              trend="up"
+            />
+            <StatCard
+              label="Taux d'occupation"
+              value={`${occupancy}%`}
+              icon={<Activity size={22} />}
+              hint={`${seatsBooked}/${seatsTotal} places`}
+            />
+            <StatCard
+              label="Véhicules actifs"
+              value={`${activeVehicles} / ${vehicles.length}`}
+              icon={<Bus size={22} />}
+              hint={maintenance > 0 ? `${maintenance} en maintenance` : "Tous opérationnels"}
             />
           </div>
 
-          {/* main grid */}
-          <div className="grid grid-cols-12 gap-5">
-            {/* left */}
-            <div className="col-span-12 space-y-5 lg:col-span-8">
-              {/* chart */}
-              <Card className="p-6">
-                <div className="mb-6 flex items-center justify-between gap-3">
-                  <div>
-                    <h3 className="font-display text-lg font-bold text-ink">Aperçu des réservations</h3>
-                    <p className="text-sm text-ink-soft">Volume {range === 7 ? "des 7 derniers jours" : "des 30 derniers jours"}</p>
-                  </div>
-                  <div className="flex gap-1 rounded-xl bg-ink/[.04] p-1">
-                    {([7, 30] as const).map((r) => (
-                      <button key={r} onClick={() => setRange(r)}
-                        className={`rounded-lg px-3 py-1 text-xs font-bold transition-all ${range === r ? "bg-paper text-ink shadow-sm" : "text-ink-soft/70 hover:text-ink"}`}>
-                        {r}J
-                      </button>
-                    ))}
-                  </div>
+          {/* left column */}
+          <div className="col-span-12 space-y-4 md:space-y-6 xl:col-span-8">
+            {/* chart */}
+            <ComponentCard
+              title="Aperçu des réservations"
+              desc={`Volume ${range === 7 ? "des 7 derniers jours" : "des 30 derniers jours"}`}
+              action={
+                <div className="flex gap-1 rounded-lg bg-ink/[.04] p-1">
+                  {([7, 30] as const).map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setRange(r)}
+                      className={`rounded-md px-3 py-1 text-xs font-semibold transition-all ${range === r ? "bg-paper text-ink shadow-sm" : "text-ink-soft/70 hover:text-ink"}`}
+                    >
+                      {r}J
+                    </button>
+                  ))}
                 </div>
-                <AreaChart data={resSeries} labels={chartLabels} height={240} />
-              </Card>
+              }
+            >
+              <AreaChart data={resSeries} labels={chartLabels} height={240} />
+            </ComponentCard>
 
-              {/* upcoming departures */}
-              <Card className="overflow-hidden">
-                <div className="flex items-center justify-between border-b border-ink/8 px-6 py-4">
-                  <h3 className="font-display text-lg font-bold text-ink">Prochains départs</h3>
-                  <Link href={`/${slug}/trips`} className="inline-flex items-center gap-1 text-sm font-semibold text-laterite hover:underline">
-                    Voir le planning <ArrowRight size={15} />
-                  </Link>
-                </div>
-                {todayDepartures.length === 0 ? (
-                  <p className="px-6 py-10 text-center text-sm text-ink-soft/60">Aucun départ à venir.</p>
-                ) : (
-                  <div className="overflow-x-auto"><table className="w-full min-w-[42rem] text-sm">
-                    <thead className="bg-ink/[.02] text-left text-[11px] font-bold uppercase tracking-[0.08em] text-ink-soft/55">
-                      <tr className="border-b border-ink/8">
-                        <th className="px-6 py-3">Trajet</th>
-                        <th className="px-6 py-3">Heure</th>
-                        <th className="px-6 py-3 hidden sm:table-cell">Véhicule</th>
-                        <th className="px-6 py-3">Places libres</th>
-                        <th className="px-6 py-3" />
+            {/* upcoming departures */}
+            <ComponentCard
+              title="Prochains départs"
+              action={
+                <Link href={`/${slug}/trips`} className="inline-flex items-center gap-1 text-sm font-medium text-laterite hover:underline">
+                  Voir le planning <ArrowRight size={15} />
+                </Link>
+              }
+              bodyClassName="p-0"
+            >
+              {todayDepartures.length === 0 ? (
+                <p className="px-6 py-10 text-center text-sm text-ink-soft/60">Aucun départ à venir.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[42rem] text-sm">
+                    <thead className="bg-sand text-left text-xs font-medium uppercase tracking-wider text-ink-soft">
+                      <tr className="border-b border-line">
+                        <th className="px-6 py-3.5">Trajet</th>
+                        <th className="px-6 py-3.5">Heure</th>
+                        <th className="px-6 py-3.5 hidden sm:table-cell">Véhicule</th>
+                        <th className="px-6 py-3.5">Places libres</th>
+                        <th className="px-6 py-3.5" />
                       </tr>
                     </thead>
                     <tbody>
@@ -165,8 +182,11 @@ export default function DashboardPage() {
                         const booked = t.tickets?.length ?? 0;
                         const ratio = t.seatsTotal ? booked / t.seatsTotal : 0;
                         return (
-                          <tr key={t.id} onClick={() => router.push(`/${slug}/trips/${t.id}`)}
-                            className="group cursor-pointer border-b border-ink/[.06] transition-colors last:border-0 hover:bg-ink/[.03]">
+                          <tr
+                            key={t.id}
+                            onClick={() => router.push(`/${slug}/trips/${t.id}`)}
+                            className="group cursor-pointer border-b border-line transition-colors last:border-0 hover:bg-ink/[.02]"
+                          >
                             <td className="px-6 py-3.5">
                               <div className="flex items-center gap-3">
                                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-strong text-[11px] font-bold text-white">
@@ -193,68 +213,64 @@ export default function DashboardPage() {
                         );
                       })}
                     </tbody>
-                  </table></div>
-                )}
-              </Card>
-            </div>
+                  </table>
+                </div>
+              )}
+            </ComponentCard>
+          </div>
 
-            {/* right rail */}
-            <div className="col-span-12 space-y-5 lg:col-span-4">
-              {/* quick actions */}
-              <Card className="relative overflow-hidden border-0 bg-strong p-6 text-white">
-                <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/5 blur-3xl" />
-                <h3 className="relative font-display text-lg font-bold">Actions rapides</h3>
-                <p className="relative mt-1 text-sm text-white/60">Créez et gérez en un clic.</p>
-                <div className="relative mt-5 flex flex-col gap-2.5">
-                  {quickActions.map((a) => (
-                    <Link key={a.href} href={a.href}
-                      className={`flex items-center justify-between rounded-xl px-4 py-3 text-[13.5px] font-semibold transition-all active:scale-[.98] ${
-                        a.primary
-                          ? "bg-laterite text-white hover:brightness-105"
-                          : "border border-white/15 bg-white/[.08] text-white hover:bg-white/[.16]"}`}>
-                      <span className="inline-flex items-center gap-2.5">{a.icon} {a.label}</span>
-                      <ChevronRight size={16} className="opacity-60" />
+          {/* right rail */}
+          <div className="col-span-12 space-y-4 md:space-y-6 xl:col-span-4">
+            {/* quick actions */}
+            <ComponentCard title="Actions rapides" desc="Créez et gérez en un clic.">
+              <div className="flex flex-col gap-2.5">
+                {quickActions.map((a) => (
+                  <Button
+                    key={a.href}
+                    variant={a.primary ? "primary" : "outline"}
+                    className="w-full justify-between"
+                    onClick={() => router.push(a.href)}
+                  >
+                    <span className="inline-flex items-center gap-2.5">{a.icon} {a.label}</span>
+                    <ChevronRight size={16} className="opacity-60" />
+                  </Button>
+                ))}
+              </div>
+            </ComponentCard>
+
+            {/* recent activity */}
+            <ComponentCard
+              title="Activité récente"
+              action={<History size={16} className="text-ink-soft/50" />}
+            >
+              {recent.length === 0 ? (
+                <p className="text-sm text-ink-soft/60">Aucune activité.</p>
+              ) : (
+                <div className="space-y-5">
+                  {recent.map((b: any) => (
+                    <Link key={b.id} href={`/${slug}/bookings/${b.id}`} className="flex gap-3.5">
+                      <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor(b.status)}`} />
+                      <div className="min-w-0">
+                        <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
+                          {b.contactName ?? "Réservation"}
+                          {b.tripInstance?.tag && <TagBadge name={b.tripInstance.tag.name} color={b.tripInstance.tag.color} />}
+                        </p>
+                        <p className="truncate text-xs text-ink-soft">
+                          {b.tripInstance ? `${b.tripInstance.originName} → ${b.tripInstance.destName}` : `Réservation #${b.reference}`}
+                          {" · "}{b.seatCount} place(s) · {fmtMoney(b.totalAmount)}
+                        </p>
+                        <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-ink-soft/55">
+                          {b.tripInstance ? `Départ ${fmtDateTime(b.tripInstance.departureAt)}` : relTime(b.createdAt)}
+                        </p>
+                      </div>
                     </Link>
                   ))}
                 </div>
-              </Card>
-
-              {/* recent activity */}
-              <Card className="p-6">
-                <div className="mb-5 flex items-center justify-between">
-                  <h3 className="font-display text-lg font-bold text-ink">Activité récente</h3>
-                  <History size={16} className="text-ink-soft/50" />
-                </div>
-                {recent.length === 0 ? (
-                  <p className="text-sm text-ink-soft/60">Aucune activité.</p>
-                ) : (
-                  <div className="space-y-5">
-                    {recent.map((b: any) => (
-                      <Link key={b.id} href={`/${slug}/bookings/${b.id}`} className="flex gap-3.5">
-                        <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dotColor(b.status)}`} />
-                        <div className="min-w-0">
-                          <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
-                            {b.contactName ?? "Réservation"}
-                            {b.tripInstance?.tag && <TagBadge name={b.tripInstance.tag.name} color={b.tripInstance.tag.color} />}
-                          </p>
-                          <p className="truncate text-xs text-ink-soft">
-                            {b.tripInstance ? `${b.tripInstance.originName} → ${b.tripInstance.destName}` : `Réservation #${b.reference}`}
-                            {" · "}{b.seatCount} place(s) · {fmtMoney(b.totalAmount)}
-                          </p>
-                          <p className="mt-1 font-mono text-[10px] uppercase tracking-wide text-ink-soft/55">
-                            {b.tripInstance ? `Départ ${fmtDateTime(b.tripInstance.departureAt)}` : relTime(b.createdAt)}
-                          </p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-                <Link href={`/${slug}/bookings`}
-                  className="mt-6 flex items-center justify-center gap-1.5 rounded-xl border border-ink/12 py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-ink/[.04]">
-                  Toutes les réservations <ArrowUpRight size={15} />
-                </Link>
-              </Card>
-            </div>
+              )}
+              <Button variant="outline" className="mt-6 w-full" onClick={() => router.push(`/${slug}/bookings`)}>
+                Toutes les réservations <ArrowUpRight size={15} />
+              </Button>
+            </ComponentCard>
           </div>
         </div>
       )}

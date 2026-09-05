@@ -11,7 +11,7 @@ import {
   db,
   Button,
   Badge,
-  FormSection,
+  ComponentCard,
   Field,
   ImageUpload,
   toast,
@@ -76,7 +76,7 @@ export default function SettingsPage() {
         </>
       }
     >
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-4xl space-y-6">
         <ProfileSections coop={coop} coopId={coopId} userId={userId} />
         <PaymentMethodsSection coop={coop} coopId={coopId} />
         <PapiSection coopId={coopId} secrets={secrets} />
@@ -149,7 +149,7 @@ function ProfileSections({ coop, coopId, userId }: { coop: any; coopId: string; 
 
   return (
     <>
-      <FormSection index="01" title="Identité" description="Nom, logo et coordonnées affichés aux clients.">
+      <ComponentCard title="Identité" desc="Nom, logo et coordonnées affichés aux clients.">
         <div className="grid gap-4">
           <ImageUpload value={coop.logoUrl} onFile={onLogo} />
           <Field label="Nom affiché" error={errors.displayName?.message}>
@@ -175,9 +175,9 @@ function ProfileSections({ coop, coopId, userId }: { coop: any; coopId: string; 
             <Input {...register("address")} />
           </Field>
         </div>
-      </FormSection>
+      </ComponentCard>
 
-      <FormSection index="02" title="Réservation" description="Délai limite avant départ et politique de remboursement.">
+      <ComponentCard title="Réservation" desc="Délai limite avant départ et politique de remboursement.">
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Minutes limite avant départ" hint="Cutoff pour la réservation (en minutes)" error={errors.cutoffMinutes?.message}>
@@ -193,7 +193,7 @@ function ProfileSections({ coop, coopId, userId }: { coop: any; coopId: string; 
             </Button>
           </div>
         </div>
-      </FormSection>
+      </ComponentCard>
     </>
   );
 }
@@ -247,10 +247,9 @@ function PaymentMethodsSection({ coop, coopId }: { coop: any; coopId: string }) 
   const customMethods = methods.filter((m) => !STANDARD_METHODS.some((s) => s.key === m));
 
   return (
-    <FormSection
-      index="03"
+    <ComponentCard
       title="Moyens de paiement"
-      description="Méthodes acceptées au guichet et lors des réservations en ligne."
+      desc="Méthodes acceptées au guichet et lors des réservations en ligne."
     >
       <div className="grid gap-4">
         <div className="grid gap-2">
@@ -306,7 +305,7 @@ function PaymentMethodsSection({ coop, coopId }: { coop: any; coopId: string }) 
           </Button>
         </div>
       </div>
-    </FormSection>
+    </ComponentCard>
   );
 }
 
@@ -342,10 +341,9 @@ function PapiSection({ coopId, secrets }: { coopId: string; secrets: any }) {
   };
 
   return (
-    <FormSection
-      index="04"
+    <ComponentCard
       title="Paiement en ligne (PAPI)"
-      description="Clé API PAPI pour activer le paiement en ligne. Obtenez-la depuis votre tableau de bord PAPI → Développeur."
+      desc="Clé API PAPI pour activer le paiement en ligne. Obtenez-la depuis votre tableau de bord PAPI → Développeur."
     >
       <div className="grid gap-4">
         <Field label="Clé API PAPI" hint="Gardez cette clé secrète. Visible uniquement par les membres de la coopérative.">
@@ -375,14 +373,14 @@ function PapiSection({ coopId, secrets }: { coopId: string; secrets: any }) {
           </Button>
         </div>
       </div>
-    </FormSection>
+    </ComponentCard>
   );
 }
 
 function SubscriptionSection({ sub, plan }: { sub: any; plan: any }) {
   const s = sub ? subStatus[sub.status] ?? { label: sub.status, tone: "neutral" as const } : null;
   return (
-    <FormSection index="05" title="Abonnement" description="Votre formule et son statut de facturation.">
+    <ComponentCard title="Abonnement" desc="Votre formule et son statut de facturation.">
       {plan ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -401,7 +399,7 @@ function SubscriptionSection({ sub, plan }: { sub: any; plan: any }) {
       ) : (
         <p className="text-sm text-ink-soft">Aucun abonnement actif.</p>
       )}
-    </FormSection>
+    </ComponentCard>
   );
 }
 
@@ -420,7 +418,7 @@ function QuotaSection({
     { label: "Trajets / mois", used: usage.trips, max: plan.maxTripsMonth },
   ];
   return (
-    <FormSection index="06" title="Quotas" description="Utilisation par rapport aux limites de votre formule.">
+    <ComponentCard title="Quotas" desc="Utilisation par rapport aux limites de votre formule.">
       <div className="space-y-4">
         {bars.map((b) => {
           const pct = b.max > 0 ? Math.min(100, Math.round((b.used / b.max) * 100)) : 0;
@@ -443,6 +441,6 @@ function QuotaSection({
           );
         })}
       </div>
-    </FormSection>
+    </ComponentCard>
   );
 }

@@ -13,7 +13,7 @@ import {
   db,
   id,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   routeStatus,
@@ -133,8 +133,8 @@ export default function NewRoutePage() {
         </Link>
       }
     >
-      <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Trajet" description="Origine, destination et nom affiché de l'itinéraire.">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <ComponentCard title="Trajet" desc="Origine, destination et nom affiché de l'itinéraire.">
         <div className="grid gap-4">
           <Field label="Nom" hint="Auto-rempli depuis Origine → Destination">
             <Input value={name ?? ""} onChange={(e) => { setValue("name", e.target.value); setNameEdited(true); }} placeholder="Origine → Destination" />
@@ -176,9 +176,9 @@ export default function NewRoutePage() {
             </Field>
           </div>
         </div>
-        </FormSection>
+        </ComponentCard>
 
-        <FormSection index="02" title="Tarif & détails" description="Prix de base, distance, durée et statut de l'itinéraire.">
+        <ComponentCard title="Tarif & détails" desc="Prix de base, distance, durée et statut de l'itinéraire.">
         <div className="grid gap-4">
           <div className="grid grid-cols-3 gap-4">
             <Field label="Prix (MGA)">
@@ -206,7 +206,7 @@ export default function NewRoutePage() {
             </Select>
           </Field>
         </div>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/routes`}>

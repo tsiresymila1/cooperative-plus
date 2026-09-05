@@ -13,7 +13,7 @@ import {
   db,
   id,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   Badge,
   toast,
@@ -174,8 +174,8 @@ export default function NewTripPage() {
       breadcrumb={<><span>{coop.displayName}</span><ChevronRight size={12} /><span>Trajets</span><ChevronRight size={12} /><span className="text-ink">Nouveau</span></>}
       action={<Link href={`/${slug}/trips`}><Button size="sm" variant="outline"><ArrowLeft size={16} /> Retour</Button></Link>}
     >
-      <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Itinéraire & véhicules" description="Déclarez le(s) véhicule(s) par modèle. Chauffeur et immatriculation sont optionnels — assignables maintenant ou plus tard.">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <ComponentCard title="Itinéraire & véhicules" desc="Déclarez le(s) véhicule(s) par modèle. Chauffeur et immatriculation sont optionnels — assignables maintenant ou plus tard.">
           <div className="grid gap-4">
             <Field label="Itinéraire" error={errors.routeId?.message}>
               <Select value={routeId} onValueChange={(v) => setValue("routeId", v, { shouldValidate: true })}>
@@ -238,9 +238,9 @@ export default function NewTripPage() {
               </div>
             </Field>
           </div>
-        </FormSection>
+        </ComponentCard>
 
-        <FormSection index="02" title="Départ & tarif" description="Date, heure de départ et prix du billet pour cette instance.">
+        <ComponentCard title="Départ & tarif" desc="Date, heure de départ et prix du billet pour cette instance.">
           <div className="grid gap-4">
             <div className="grid grid-cols-2 gap-4">
               <Field label="Date de départ" error={errors.date?.message}>
@@ -264,7 +264,7 @@ export default function NewTripPage() {
               </Select>
             </Field>
           </div>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/trips`}><Button variant="outline" size="sm">Annuler</Button></Link>

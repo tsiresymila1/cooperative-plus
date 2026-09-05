@@ -11,7 +11,7 @@ import {
   coopNav,
   useCoop,
   Button,
-  FormSection,
+  ComponentCard,
   Field,
   toast,
   COOP_PERMISSIONS,
@@ -87,8 +87,8 @@ export default function NewTeamMemberPage() {
         </Link>
       }
     >
-      <div className="mx-auto max-w-4xl">
-        <FormSection index="01" title="Compte" description="Un compte assistant avec mot de passe sera créé.">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <ComponentCard title="Compte" desc="Un compte assistant avec mot de passe sera créé.">
         <div className="grid gap-4">
           <Field label="Nom" error={errors.name?.message}>
             <Input {...register("name")} placeholder="Nom de l'assistant" />
@@ -120,9 +120,9 @@ export default function NewTeamMemberPage() {
             </div>
           </Field>
         </div>
-        </FormSection>
+        </ComponentCard>
 
-        <FormSection index="02" title="Permissions" description="Sélectionnez les actions autorisées pour cet assistant.">
+        <ComponentCard title="Permissions" desc="Sélectionnez les actions autorisées pour cet assistant.">
           <div className="grid grid-cols-2 gap-2">
             {COOP_PERMISSIONS.map((p) => (
               <label key={p.key} className="flex items-center gap-2 text-sm text-ink">
@@ -136,7 +136,7 @@ export default function NewTeamMemberPage() {
               </label>
             ))}
           </div>
-        </FormSection>
+        </ComponentCard>
 
         <div className="flex justify-end gap-2 pt-2">
           <Link href={`/${slug}/team`}>
