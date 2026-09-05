@@ -134,7 +134,7 @@ export function CoopLogo({ url, name, size = 40, className }: { url?: string | n
 export function TagBadge({ name, color, className }: { name: string; color?: string | null; className?: string }) {
   return (
     <span
-      className={cn("inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm", className)}
+      className={cn("inline-flex items-center rounded-xl px-4 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white shadow-sm", className)}
       style={{ backgroundColor: color || "#14314C" }}
     >
       {name}
