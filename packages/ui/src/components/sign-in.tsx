@@ -75,9 +75,18 @@ export function SignInScreen({
     <div className="grid min-h-dvh lg:grid-cols-2">
       {/* ── Brand panel ─────────────────────────────────────── */}
       <aside
-        className="relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex
-        [background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)] dark:[background:linear-gradient(150deg,#17286f_0%,#0f2d5c_55%,#0b1d44_100%)] dark:border-r dark:border-r-ink/5"
+        className="relative hidden flex-col justify-between overflow-hidden bg-[#0b1d44] p-12 text-white lg:flex dark:border-r dark:border-r-ink/5"
       >
+        {/* Brand photo backdrop + navy wash for legibility */}
+        <span
+          aria-hidden
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/brand-bg.jpg')" }}
+        />
+        <span
+          aria-hidden
+          className="absolute inset-0 [background:linear-gradient(150deg,rgba(23,40,111,.92)_0%,rgba(15,45,92,.88)_55%,rgba(11,29,68,.95)_100%)]"
+        />
         {/* concentric rings */}
         <svg
           aria-hidden
