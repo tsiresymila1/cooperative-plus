@@ -49,8 +49,8 @@ export function SeatSelector({ layout, taken, held = [], selected, onToggle, max
                     onClick={() => onToggle(label)} title={`Siège ${label}`}
                     className={cn(SEAT,
                       isTaken ? "cursor-not-allowed border-red-600 bg-red-600 text-white"
-                        : isHeld ? "cursor-not-allowed border-laterite bg-laterite text-white"
-                          : isSel ? "border-laterite bg-laterite text-white"
+                        : isHeld ? "cursor-not-allowed border-gold-nav bg-gold-nav text-white"
+                          : isSel ? "border-gold-nav bg-gold-nav text-white"
                             : "border-ink/12 bg-paper text-ink-soft hover:border-laterite/60 hover:bg-laterite/[.06] hover:text-ink")}>
                     {isTaken ? <User size={15} /> : isHeld ? <Clock size={15} /> : label}
                   </motion.button>
