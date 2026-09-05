@@ -1,7 +1,7 @@
 import Image from "next/image";
 import SectionHeading from "@/components/ui/SectionHeading";
 
-/* Closing block on /about-us. */
+/* Closing block on /about. */
 
 export default function AppPromo() {
   return (

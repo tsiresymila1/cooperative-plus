@@ -5,5 +5,5 @@ export const NAV: NavItem[] = [
   { label: "Trajets", href: "/search" },
   { label: "À propos", href: "/about" },
   { label: "FAQ", href: "/faq" },
-  { label: "Devenir coopérative", href: "/coop/request" },
+  { label: "Rejoindre", href: "/coop/request" },
 ];

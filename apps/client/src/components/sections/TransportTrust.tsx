@@ -16,7 +16,7 @@ export default function TransportTrust() {
         <h2 className="mx-auto max-w-[1000px] font-display text-[40px] font-semibold uppercase leading-[42px] tracking-[-1.5px] text-white lg:text-section lg:leading-[63px] lg:tracking-[-2.5px]">
           Confort, sécurité et ponctualité – tout pour votre trajet
         </h2>
-        <CtaButton href="/about-us" className="mt-[40px]">
+        <CtaButton href="/about" className="mt-[40px]">
           En savoir plus
         </CtaButton>
       </div>

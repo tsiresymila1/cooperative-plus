@@ -78,7 +78,7 @@ export default function WhatYouGet({
               ))}
             </div>
 
-            <CtaButton href="/about-us" className="mt-[50px]">
+            <CtaButton href="/about" className="mt-[50px]">
               En savoir plus
             </CtaButton>
           </div>
