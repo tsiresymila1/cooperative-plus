@@ -74,7 +74,7 @@ export default function Confirmation() {
 
   const [pdfBusy, setPdfBusy] = useState(false);
   const [printBusy, setPrintBusy] = useState(false);
-   const c = useColors();
+  const c = useColors();
 
   async function run(set: (b: boolean) => void, fn: () => Promise<void>) {
     set(true);
@@ -115,6 +115,14 @@ export default function Confirmation() {
 
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
+      <View className="flex flex-row justify-start w-full">
+        <Pressable
+          onPress={() => router.back()}
+          className="h-9 w-9 items-center justify-center rounded-full bg-white/15 px-8"
+        >
+          <ChevronLeft size={30} color={c.ink} />
+        </Pressable>
+      </View>
       {isLoading ? (
         <View className="w-full h-full items-center justify-center">
           <Spinner />
@@ -144,14 +152,6 @@ export default function Confirmation() {
             entering={ZoomIn.springify().damping(11).duration(500)}
             className="items-center"
           >
-            <View className="flex flex-row justify-start w-full">
-              <Pressable
-                onPress={() => router.back()}
-                className="h-9 w-9 items-center justify-center rounded-full bg-white/15"
-              >
-                <ChevronLeft size={30} color={c.ink} />
-              </Pressable>
-            </View>
             <CheckCircle2 size={56} color="#62b22e" />
             <Text className="mt-3 font-display text-2xl text-ink">
               Réservation confirmée
