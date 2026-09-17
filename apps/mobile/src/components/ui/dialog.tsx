@@ -37,7 +37,7 @@ function DialogContent({
             <Pressable onPress={() => {}}>
               <DialogPrimitive.Content
                 className={cn(
-                  "w-full gap-4 rounded-[4px] border border-ink/10 bg-paper p-5",
+                  "w-full gap-4 rounded-lg border border-ink/10 bg-paper p-5",
                   className,
                 )}
                 {...props}
@@ -46,7 +46,7 @@ function DialogContent({
                 {showClose && (
                   <DialogPrimitive.Close
                     hitSlop={12}
-                    className="absolute right-3 top-3 h-7 w-7 items-center justify-center rounded-[4px] bg-ink/10 active:opacity-80"
+                    className="absolute right-3 top-3 h-7 w-7 items-center justify-center rounded-full bg-ink/10 active:opacity-80"
                   >
                     <X size={15} color={colorScheme === "dark" ? "#ffffff" : "#000000"} />
                   </DialogPrimitive.Close>

@@ -5,7 +5,7 @@
 
 /* ── Semantic tokens (shadcn / react-native-reusables) — light ── */
 :root {
-  --background: #f8fafc;
+  --background: #f1f1f1;
   --foreground: #14314C;
   --card: #ffffff;
   --card-foreground: #14314C;
@@ -27,7 +27,7 @@
   --radius: 0.25rem;
   /* brand tokens (light) */
   --ink: #14314C; --ink-soft: #475569;
-  --sand: #f8fafc; --sand-deep: #eaedff; --paper: #ffffff; --strong: #14314C;
+  --sand: #f1f1f1; --sand-deep: #eaedff; --paper: #ffffff; --strong: #14314C;
   --orange: #D9A441; --orange-deep: #c2902f;
   --laterite: #D9A441; --laterite-deep: #c2902f;
   --green: #34c759; --baobab: #34c759; --clay: #f59e0b; --sky: #14314C; --navy: #14314C;
@@ -56,13 +56,13 @@
     --destructive-foreground: #0a0a0b;
     --border: #2a2a2f;
     --input: #2a2a2f;
-    --ring: #e6bd6e;
+    --ring: #D9A441;
     /* brand tokens (dark) */
     --ink: #ededf0; --ink-soft: #9a9aa3;
-    --sand: #0a0a0b; --sand-deep: #121214; --paper: #161719; --strong: #232327;
-    --orange: #e6bd6e; --orange-deep: #ff7a1a;
-    --laterite: #e6bd6e; --laterite-deep: #ff7a1a;
-    --green: #3ddc84; --baobab: #3ddc84; --clay: #ffb066; --sky: #57aacb; --navy: #ededf0;
+    --sand: #0a0a0b; --sand-deep: #121214; --paper: #161719; --strong: #14314C;
+    --orange: #D9A441; --orange-deep: #c2902f;
+    --laterite: #D9A441; --laterite-deep: #c2902f;
+    --green: #3ddc84; --baobab: #3ddc84; --clay: #ffb066; --sky: #57aacb; --navy: #14314C;
   }
 }
 
@@ -114,8 +114,8 @@
   /* Static (non-reactive) tokens */
   --color-navy-deep: #00183d;
 
-  --font-display: Inter_700Bold;
-  --font-sans: Montserrat_500Medium;
+  --font-display: BarlowCondensed_700Bold;
+  --font-sans: PlusJakartaSans_500Medium;
   --font-mono: JetBrainsMono_400Regular;
 
   --radius-xl: 16px;

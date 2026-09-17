@@ -95,7 +95,7 @@ export default function Profile() {
                 <Input value={phone} onChangeText={setPhone} placeholder="034 12 345 67" keyboardType="phone-pad" />
               </Field>
             </Card>
-            <Button className="mt-3" onPress={save} loading={saving}>
+            <Button variant="ink" className="mt-3" onPress={save} loading={saving}>
               <Text className="font-sans font-medium text-white">Enregistrer</Text>
             </Button>
             {saved && <Text className="mt-2 text-center font-sans text-sm text-baobab">Enregistré ✓</Text>}
@@ -106,10 +106,10 @@ export default function Profile() {
             <Card>
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2.5">
-                  <Moon size={18} color={dark ? "#e6bd6e" : "#475569"} />
+                  <Moon size={18} color={dark ? "#D9A441" : "#475569"} />
                   <Text className="font-sans text-base text-ink">Thème sombre</Text>
                 </View>
-                <Switch value={dark} onValueChange={toggleTheme} trackColor={{ true: "#e6bd6e" }} />
+                <Switch value={dark} onValueChange={toggleTheme} trackColor={{ true: "#D9A441" }} />
               </View>
             </Card>
           </Animated.View>
@@ -137,7 +137,7 @@ export default function Profile() {
             <Button variant="outline" className="flex-1" onPress={() => setConfirmOut(false)}>
               <Text className="font-sans font-medium text-ink">Annuler</Text>
             </Button>
-            <Button className="flex-1" onPress={() => { setConfirmOut(false); signOut(); }}>
+            <Button variant="ink" className="flex-1" onPress={() => { setConfirmOut(false); signOut(); }}>
               <LogOut size={18} color="#ffffff" />
               <Text className="font-sans font-medium text-paper">Déconnexion</Text>
             </Button>

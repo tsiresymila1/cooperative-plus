@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
 import {
   Armchair,
   CheckCircle2,
   Download,
+  MapPin,
   Printer,
 } from "lucide-react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -16,7 +17,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SeatMapView } from "@/components/seat-map";
 import { fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
-import { bookingStatusFr, fmtTime, parseSeatLayout } from "@/lib/domain";
+import { bookingStatusFr, fmtDateKey, fmtTime, parseSeatLayout } from "@/lib/domain";
 import { printTicket, shareTicketPdf } from "@/lib/ticket-pdf";
 import { TagBadge } from "@/components/tag-badge";
 
@@ -105,8 +106,8 @@ export default function Confirmation() {
           <Text className="font-display text-xl text-ink">
             Réservation introuvable
           </Text>
-          <Button className="mt-4" onPress={() => router.replace("/")}>
-            <Text className="font-sans font-medium text-paper">Accueil</Text>
+          <Button variant="ink" className="mt-4" onPress={() => router.replace("/")}>
+            <Text className="font-sans font-medium text-white">Accueil</Text>
           </Button>
         </View>
       ) : (
@@ -118,7 +119,7 @@ export default function Confirmation() {
           showsVerticalScrollIndicator={false}
         >
           <Animated.View
-            entering={FadeIn.duration(400)}
+            entering={ZoomIn.springify().damping(11).duration(500)}
             className="items-center pt-6"
           >
             <CheckCircle2 size={56} color="#62b22e" />
@@ -140,65 +141,101 @@ export default function Confirmation() {
                 <TagBadge name={trip.tag.name} color={trip.tag.color} />
               </View>
             ) : null}
-            <View className="overflow-hidden rounded-[16px] border-0 border-ink/8 bg-paper">
+            <View className="overflow-hidden rounded-[16px] bg-paper">
 
-              {/* Navy header: coop + reference, then route + date */}
-              <View className="bg-navy-deep px-5 pb-6 pt-5">
-                <View className="flex-row items-start justify-between">
-                  <View className="flex-1 flex-row items-center gap-2.5">
-                    <CoopLogo
-                      url={trip?.cooperative?.logoUrl}
-                      brandColor={trip?.cooperative?.brandColor}
-                      name={trip?.coopName ?? ""}
-                      size={32}
-                    />
-                    <Text className="flex-1 font-sans text-sm font-bold text-white" numberOfLines={1}>
-                      {trip?.coopName}
-                    </Text>
-                  </View>
-                  <View className="items-end">
-                    <Text className="font-mono text-[10px] uppercase tracking-widest text-white/45">
-                      Référence
-                    </Text>
-                    <Text className="mt-0.5 font-mono text-sm font-bold text-orange">
-                      {booking.reference}
-                    </Text>
-                  </View>
-                </View>
-                <Text className="mt-4 font-display text-2xl text-white">
-                  {trip?.originName} → {trip?.destName}
-                </Text>
-                <Text className="mt-1.5 font-mono text-sm text-white/70">
-                  {longDepart(trip?.departDate, trip?.departureAt)}
-                </Text>
-              </View>
-
-              {/* Notch seam */}
-              <View className="relative h-0">
-                <View className="absolute -left-2.5 -top-2.5 h-5 w-5 rounded-full bg-sand" />
-                <View className="absolute -right-2.5 -top-2.5 h-5 w-5 rounded-full bg-sand" />
-              </View>
-
-              {/* White body: single QR + summary rows */}
-              <View className="flex-row items-center gap-5 px-5 py-6">
-                <View className="rounded-[4px] bg-paper">
-                  <QRCode
-                    value={tickets[0]?.qrToken ?? booking.reference}
-                    size={100}
-                    color="#14314C"
-                    backgroundColor="#ffffff"
+              {/* Gold header: coop + logo */}
+              <View className="flex-row items-center justify-between gap-3 bg-laterite px-5 py-3.5">
+                <View className="flex-1 flex-row items-center gap-2.5">
+                  <CoopLogo
+                    url={trip?.cooperative?.logoUrl}
+                    brandColor={trip?.cooperative?.brandColor}
+                    name={trip?.coopName ?? ""}
+                    size={30}
                   />
+                  <Text className="flex-1 font-display text-sm font-bold uppercase tracking-wide text-navy" numberOfLines={1}>
+                    {trip?.coopName}
+                  </Text>
                 </View>
-                <View className="flex-1 gap-2">
-                  <TicketRow label="Sièges" value={tickets.map((t) => t.seatLabel).join(", ") || "—"} />
+                <Text className="font-display text-lg font-bold uppercase tracking-[2px] text-navy">
+                  Billet
+                </Text>
+              </View>
+
+              {/* White body: route pins + date/time/seats/total grid */}
+              <View className="px-5 py-5">
+                <View className="flex-row gap-6">
+                  <View className="relative flex-1 pl-6">
+                    <View
+                      className="absolute bottom-3 left-[7px] top-3 w-px"
+                      style={{ borderLeftWidth: 2, borderStyle: "dashed", borderColor: "#14314C33" }}
+                    />
+                    <View className="relative">
+                      <MapPin size={16} color="#D9A441" style={{ position: "absolute", left: -24, top: 1 }} />
+                      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">Départ</Text>
+                      <Text className="font-display text-base font-bold uppercase text-ink" numberOfLines={1}>
+                        {trip?.originName}
+                      </Text>
+                    </View>
+                    <View className="relative mt-4">
+                      <MapPin size={16} color="#D9A441" style={{ position: "absolute", left: -24, top: 1 }} />
+                      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">Destination</Text>
+                      <Text className="font-display text-base font-bold uppercase text-ink" numberOfLines={1}>
+                        {trip?.destName}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View className="w-[104px] gap-3">
+                    <TicketField label="Date" value={trip?.departDate ? fmtDateKey(trip.departDate) : "—"} />
+                    <TicketField label="Heure" value={fmtTime(trip?.departureAt)} />
+                  </View>
+                </View>
+
+                <View className="mt-5 flex-row gap-6">
+                  <TicketField className="flex-1" label="Sièges" value={tickets.map((t) => t.seatLabel).join(", ") || "—"} />
+                  <TicketField className="flex-1" label="Total" value={fmtMoney(booking.totalAmount, booking.currency)} />
+                </View>
+
+                {/* Secondary details */}
+                <View
+                  className="mt-5 flex-row flex-wrap gap-x-5 gap-y-3 pt-4"
+                  style={{ borderTopWidth: 1, borderStyle: "dashed", borderColor: "#14314C26" }}
+                >
                   <TicketRow label="Véhicule" value={vehReg ? `${vehLabel} · ${vehReg}` : vehLabel} />
                   {vehDriver ? <TicketRow label="Chauffeur" value={vehDriver} /> : null}
                   <TicketRow label="Passagers" value={String(tickets.length)} />
-                  <TicketRow label="Total" value={fmtMoney(booking.totalAmount, booking.currency)} />
-                  <View className="flex-row items-center justify-between">
-                    <Text className="font-sans text-sm text-ink-soft">Statut</Text>
+                  <View className="gap-1">
+                    <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">Statut</Text>
                     <Badge {...bookingStatusFr(booking.status)} />
                   </View>
+                </View>
+              </View>
+
+              {/* Perforation seam */}
+              <View className="flex-row justify-center gap-2.5 bg-navy px-5">
+                {Array.from({ length: 14 }, (_, i) => (
+                  <View key={i} className="h-1.5 w-1.5 rounded-full bg-sand" style={{ marginTop: -6 }} />
+                ))}
+              </View>
+
+              {/* Navy stub: reference + QR */}
+              <View className="items-center gap-3 bg-navy px-5 pb-6 pt-1">
+                <View className="items-center">
+                  <Text className="font-mono text-[9px] uppercase tracking-[3px] text-orange/70">Référence</Text>
+                  <Text className="mt-0.5 font-display text-xl font-bold tracking-widest text-orange">
+                    {booking.reference}
+                  </Text>
+                </View>
+                <Text className="font-mono text-xs text-white/60">
+                  {longDepart(trip?.departDate, trip?.departureAt)}
+                </Text>
+                <View className="rounded-[4px] bg-paper p-2">
+                  <QRCode
+                    value={tickets[0]?.qrToken ?? booking.reference}
+                    size={104}
+                    color="#14314C"
+                    backgroundColor="#ffffff"
+                  />
                 </View>
               </View>
             </View>
@@ -237,8 +274,8 @@ export default function Confirmation() {
           </View>
 
           <View className="mt-5 gap-5">
-            <Button onPress={() => router.replace("/bookings")}>
-              <Text className="font-sans font-medium text-white">
+            <Button variant="outline" onPress={() => router.replace("/bookings")}>
+              <Text className="font-sans font-medium text-ink">
                 Mes réservations
               </Text>
             </Button>
@@ -263,9 +300,20 @@ export default function Confirmation() {
 
 function TicketRow({ label, value }: { label: string; value: string }) {
   return (
-    <View className="flex-row items-center justify-between">
-      <Text className="font-sans text-sm text-ink-soft">{label}</Text>
+    <View className="gap-1">
+      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">{label}</Text>
       <Text className="font-sans text-sm font-bold text-ink">{value}</Text>
+    </View>
+  );
+}
+
+function TicketField({ label, value, className }: { label: string; value: string; className?: string }) {
+  return (
+    <View className={className}>
+      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">{label}</Text>
+      <Text className="mt-0.5 font-display text-base font-bold uppercase text-ink" numberOfLines={1}>
+        {value}
+      </Text>
     </View>
   );
 }

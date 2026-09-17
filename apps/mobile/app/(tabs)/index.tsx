@@ -5,10 +5,11 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ArrowRight, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
-import { Badge, Button, Card } from "@/components/ui";
+import { ArrowUpDown, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
+import { Badge, Button } from "@/components/ui";
 import { DateField, DestinationField, type Dest } from "@/components/picker";
 import { CoopLogo } from "@/components/coop-logo";
+import { RouteTimeline } from "@/components/route-timeline";
 import { TagBadge } from "@/components/tag-badge";
 import { useColors } from "@/lib/colors";
 import { cn, fmtMoney } from "@/lib/cn";
@@ -95,11 +96,11 @@ export default function Home() {
           style={{ paddingTop: insets.top + 8 }}
         >
           <View className="flex-row items-center justify-between">
-            <Image source={require("../../assets/logo-long.png")} style={{ width: 170, height: 40, borderRadius: 8 }} resizeMode="contain" />
+            <Image source={require("../../assets/logo-long.png")} style={{ width: 122, height: 60, borderRadius: 8 }} resizeMode="contain" />
             <View className="flex-row items-center gap-2">
               <Pressable
                 onPress={toggleTheme}
-                className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
+                className="h-9 w-9 items-center justify-center rounded-full bg-white/15"
               >
                 {dark ? <Sun size={18} color="#ffffff" /> : <Moon size={18} color="#ffffff" />}
               </Pressable>
@@ -129,9 +130,9 @@ export default function Home() {
           contentContainerStyle={{ paddingTop: 16, paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Search card — primary focus, gets the most space */}
-          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5">
-            <Card className="gap-6 p-5 shadow-lg">
+          {/* Search fields — primary focus, gets the most space */}
+          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="px-5 gap-3">
+            <View className="relative gap-3">
               <DestinationField
                 label="Départ"
                 value={origin}
@@ -141,7 +142,6 @@ export default function Home() {
                 tint={c.ink}
                 error={originErr}
               />
-              <View className="h-px bg-ink/8" />
               <DestinationField
                 label="Arrivée"
                 value={dest}
@@ -151,14 +151,20 @@ export default function Home() {
                 tint={c.laterite}
                 error={destErr}
               />
-              <DateField value={date} onChange={setDate} className="py-2" />
-              <View className="h-px bg-ink/8" />
-              {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
-              <Button size="md" className="mt-1 w-full" onPress={goSearch} loading={searching}>
-                {!searching && <Search size={18} color="#ffffff" />}
-                <Text className="font-sans text-base font-semibold uppercase tracking-wide text-white">Rechercher</Text>
-              </Button>
-            </Card>
+              <Pressable
+                onPress={() => { setOrigin(dest); setDest(origin); setTried(false); }}
+                className="absolute right-4 top-1/2 h-9 w-9 items-center justify-center rounded-lg bg-strong"
+                style={{ marginTop: -18 }}
+              >
+                <ArrowUpDown size={16} color="#D9A441" />
+              </Pressable>
+            </View>
+            <DateField value={date} onChange={setDate} className="rounded-lg border border-ink/10 bg-paper px-6 py-3" />
+            {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
+            <Button size="md" className="mt-1 w-full" onPress={goSearch} loading={searching}>
+              {!searching && <Search size={18} color="#ffffff" />}
+              <Text className="font-sans text-base font-semibold uppercase tracking-wide text-white">Rechercher</Text>
+            </Button>
           </Animated.View>
 
           {/* Prochains départs — secondary, kept compact */}
@@ -179,7 +185,7 @@ export default function Home() {
                         disabled={full}
                         onPress={() => router.push({ pathname: "/trip/[id]", params: { id: r.id } })}
                         className={cn(
-                          "rounded-[4px] border border-ink/8 bg-paper p-3.5 active:opacity-80",
+                          "rounded-lg border border-ink/8 bg-paper p-3.5 active:opacity-80",
                           full && "opacity-60",
                         )}
                       >
@@ -193,21 +199,29 @@ export default function Home() {
                           {r.tag ? <TagBadge name={r.tag.name} color={r.tag.color} /> : null}
                         </View>
 
-                        {/* Route */}
-                        <View className="mt-2.5 flex-row items-center gap-2">
-                          <Text className="font-display text-lg text-ink" numberOfLines={1}>{r.originName}</Text>
-                          <ArrowRight size={15} color="#D9A441" />
-                          <Text className="flex-1 font-display text-lg text-laterite" numberOfLines={1}>{r.destName}</Text>
-                          <Text className="font-mono text-sm font-bold text-green">{fmtMoney(r.price, r.currency)}</Text>
+                        {/* Cities */}
+                        <View className="mt-3 flex-row items-center gap-2">
+                          <Text className="flex-1 font-display text-base text-ink" numberOfLines={1}>{r.originName}</Text>
+                          <Text className="flex-1 text-right font-display text-base text-laterite" numberOfLines={1}>{r.destName}</Text>
                         </View>
 
-                        {/* Date · time + seats */}
+                        {/* Timeline: origin time — dashed line + bus — dest time */}
+                        <View className="mt-1.5 flex-row items-center gap-2.5">
+                          <Text className="font-mono text-base font-bold text-ink">{fmtTime(r.departureAt)}</Text>
+                          <RouteTimeline className="flex-1" />
+                          <Text className="font-mono text-base font-bold text-ink-soft">
+                            {r.arrivalEstimateAt ? fmtTime(r.arrivalEstimateAt) : "—"}
+                          </Text>
+                        </View>
+
+                        {/* Date + price / seats */}
                         <View className="mt-2.5 flex-row items-center justify-between">
                           <View className="flex-row items-center gap-1.5">
                             <Clock size={13} color={c.inkSoft} />
                             <Text className="font-mono text-[11px] text-ink-soft/70">
-                              {fmtDateKey(r.departDate)} · {fmtTime(r.departureAt)}
+                              {fmtDateKey(r.departDate)}
                             </Text>
+                            <Text className="font-mono text-xs font-bold text-green">{fmtMoney(r.price, r.currency)}</Text>
                           </View>
                           <Badge
                             tone={full ? "danger" : booked / r.seatsTotal >= 0.8 ? "warning" : "success"}

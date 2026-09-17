@@ -12,14 +12,30 @@ export default function Home() {
   return (
     <main>
       <Hero />
-      <Destinations />
-      <WhatYouGet />
-      <Benefits />
-      <Counters />
-      <Schedule />
-      <BusTravel />
-      <TransportTrust />
-      <Faq />
+      <div className="reveal">
+        <Destinations />
+      </div>
+      <div className="reveal">
+        <WhatYouGet />
+      </div>
+      <div className="reveal">
+        <Benefits />
+      </div>
+      <div className="reveal">
+        <Counters />
+      </div>
+      <div className="reveal">
+        <Schedule />
+      </div>
+      <div className="reveal">
+        <BusTravel />
+      </div>
+      <div className="reveal">
+        <TransportTrust />
+      </div>
+      <div className="reveal">
+        <Faq />
+      </div>
     </main>
   );
 }

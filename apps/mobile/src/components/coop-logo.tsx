@@ -1,27 +1,13 @@
-import { Image, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Image, View } from "react-native";
 import { cn } from "@/lib/cn";
 
-// Deterministic brand-ish color per cooperative (used when no logoUrl/brandColor).
-const PALETTE = ["#14314C", "#D9A441", "#62b22e", "#2b6f8f", "#c2902f"];
+const LOAD_TIMEOUT_MS = 2500;
 
-function colorFor(name: string): string {
-  let sum = 0;
-  for (let i = 0; i < name.length; i++) sum += name.charCodeAt(i);
-  return PALETTE[sum % PALETTE.length]!;
-}
-
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return (parts[0]![0]! + (parts[1]?.[0] ?? "")).toUpperCase();
-}
-
-/** Cooperative avatar: real logo when available, else a colored monogram tile. */
+/** Cooperative avatar: real logo when available, else the Coopérative Plus mark. */
 export function CoopLogo({
   url,
-  name = "",
   size = 40,
-  brandColor,
   className,
 }: {
   url?: string | null;
@@ -30,18 +16,54 @@ export function CoopLogo({
   brandColor?: string | null;
   className?: string;
 }) {
-  const color = brandColor || colorFor(name);
+  const [failed, setFailed] = useState(false);
+  const settledRef = useRef(false);
+
+  // A broken/expired remote logo (e.g. an expired signed URL) doesn't reliably
+  // fire onError on iOS — the request can just hang, leaving the tile blank
+  // forever. Fall back unconditionally if it hasn't loaded within a timeout,
+  // regardless of whether any network callback ever fires.
+  useEffect(() => {
+    settledRef.current = false;
+    setFailed(false);
+    if (!url) return;
+    const t = setTimeout(() => {
+      if (!settledRef.current) {
+        settledRef.current = true;
+        setFailed(true);
+      }
+    }, LOAD_TIMEOUT_MS);
+    return () => clearTimeout(t);
+  }, [url]);
+
+  function markFailed() {
+    settledRef.current = true;
+    setFailed(true);
+  }
+  function markLoaded() {
+    settledRef.current = true;
+  }
+
+  const showImage = !!url && !failed;
   return (
     <View
-      className={cn("items-center justify-center overflow-hidden rounded-[4px] border border-ink/10", className)}
-      style={{ width: size, height: size, backgroundColor: url ? "#eef1f7" : `${color}1A` }}
+      className={cn("items-center justify-center overflow-hidden rounded-[4px] bg-paper", className)}
+      style={{ width: size, height: size }}
     >
-      {url ? (
-        <Image source={{ uri: url }} style={{ width: size, height: size }} resizeMode="cover" />
+      {showImage ? (
+        <Image
+          source={{ uri: url! }}
+          style={{ width: size, height: size }}
+          resizeMode="cover"
+          onLoad={markLoaded}
+          onError={markFailed}
+        />
       ) : (
-        <Text style={{ color, fontSize: size * 0.38 }} className="font-display">
-          {initials(name)}
-        </Text>
+        <Image
+          source={require("../../assets/logo-round.png")}
+          style={{ width: size, height: size }}
+          resizeMode="contain"
+        />
       )}
     </View>
   );

@@ -1,11 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
 import { ChevronLeft, CircleDot, Clock, DoorOpen, User } from "lucide-react-native";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
 import { CoopLogo } from "@/components/coop-logo";
+import { RouteTimeline } from "@/components/route-timeline";
 import { TagBadge } from "@/components/tag-badge";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
@@ -193,7 +201,7 @@ export default function TripDetail() {
       >
         <Pressable
           onPress={() => router.back()}
-          className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15"
+          className="h-9 w-9 items-center justify-center rounded-full bg-white/15"
         >
           <ChevronLeft size={20} color="#ffffff" />
         </Pressable>
@@ -246,17 +254,16 @@ export default function TripDetail() {
                     {trip.destName}
                   </Text>
                 </View>
-                <View className="mt-3 flex-row items-center gap-4">
-                  <View className="flex-row items-center gap-1.5">
-                    <Clock size={14} color="#4a5680" />
-                    <Text className="font-mono text-sm text-ink-soft">
-                      {fmtTime(trip.departureAt)}
-                      {trip.arrivalEstimateAt
-                        ? ` → ${fmtTime(trip.arrivalEstimateAt)}`
-                        : ""}
-                    </Text>
-                  </View>
-                  <Text className="font-mono text-sm text-ink-soft">
+                <View className="mt-3 flex-row items-center gap-2.5">
+                  <Text className="font-mono text-base font-bold text-ink">{fmtTime(trip.departureAt)}</Text>
+                  <RouteTimeline className="flex-1" />
+                  <Text className="font-mono text-base font-bold text-ink-soft">
+                    {trip.arrivalEstimateAt ? fmtTime(trip.arrivalEstimateAt) : "—"}
+                  </Text>
+                </View>
+                <View className="mt-2 flex-row items-center gap-1.5">
+                  <Clock size={13} color="#4a5680" />
+                  <Text className="font-mono text-xs text-ink-soft/70">
                     {fmtDateKey(trip.departDate)}
                   </Text>
                 </View>
@@ -294,7 +301,7 @@ export default function TripDetail() {
                 <View className="mb-3 flex-row flex-wrap gap-1.5">
                   {slots.map((s: any) => (
                     <Pressable key={s.id} onPress={() => { setSlotId(s.id); setSelected({}); }}
-                      className={s.id === slot?.id ? "rounded-[4px] bg-ink px-3 py-1.5" : "rounded-[4px] border border-ink/15 px-3 py-1.5"}>
+                      className={s.id === slot?.id ? "rounded-full bg-ink px-3 py-1.5" : "rounded-full border border-ink/15 px-3 py-1.5"}>
                       <Text className={s.id === slot?.id ? "font-sans text-xs font-bold text-paper" : "font-sans text-xs font-medium text-ink-soft"}>{s.label}</Text>
                     </Pressable>
                   ))}
@@ -378,7 +385,7 @@ function SeatMap({
 
   let seatIdx = -1;
   return (
-    <View className="w-full rounded-[4px] border border-ink/10 bg-sand-deep/40 p-4">
+    <View className="w-full rounded-lg border border-ink/10 bg-sand-deep/40 p-4">
       <Text className="mb-3 text-center font-mono text-[10px] uppercase tracking-widest text-ink-soft/55">
         ↑ avant du véhicule
       </Text>
@@ -391,7 +398,7 @@ function SeatMap({
                 return (
                   <View
                     key={col}
-                    className="h-14 w-14 items-center justify-center rounded-[4px] border border-ink/15 bg-ink/5"
+                    className="h-14 w-14 items-center justify-center rounded-lg border border-ink/15 bg-ink/5"
                   >
                     <CircleDot size={16} color="#4a5680" />
                   </View>
@@ -401,7 +408,7 @@ function SeatMap({
                 return (
                   <View
                     key={col}
-                    className="h-14 w-14 items-center justify-center rounded-[4px] border border-dashed border-ink/20"
+                    className="h-14 w-14 items-center justify-center rounded-lg border border-dashed border-ink/20"
                   >
                     <DoorOpen size={16} color="#4a568088" />
                   </View>
@@ -415,43 +422,13 @@ function SeatMap({
               const isTaken = takenLabels.has(label);
               const isSel = !!selected[label];
               return (
-                <Pressable
+                <SeatButton
                   key={col}
-                  disabled={isTaken}
-                  onPress={() => onToggle(label)}
-                  style={
-                    isSel
-                      ? {
-                          shadowColor: "#D9A441",
-                          shadowOpacity: 0.5,
-                          shadowRadius: 10,
-                          shadowOffset: { width: 0, height: 6 },
-                          elevation: 0,
-                        }
-                      : undefined
-                  }
-                  className={cn(
-                    "h-14 w-14 items-center justify-center rounded-[4px] border active:opacity-80",
-                    isTaken
-                      ? "border-danger bg-red-600"
-                      : isSel
-                        ? "border-laterite bg-laterite"
-                        : "border-ink/15 bg-paper",
-                  )}
-                >
-                  {isTaken ? <User size={16} color="white" /> : <Text
-                    className={cn(
-                      "font-mono text-xs font-semibold",
-                      isTaken
-                        ? "text-ink-soft/40 line-through"
-                        : isSel
-                          ? "text-white"
-                          : "text-ink",
-                    )}
-                  >
-                    {label}
-                  </Text>}
-                </Pressable>
+                  label={label}
+                  isTaken={isTaken}
+                  isSel={isSel}
+                  onToggle={() => onToggle(label)}
+                />
               );
             })}
           </View>
@@ -465,6 +442,71 @@ function SeatMap({
         <LegendItem className="border-ink/10 bg-ink/10" label="Occupé" />
       </View>
     </View>
+  );
+}
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function SeatButton({
+  label,
+  isTaken,
+  isSel,
+  onToggle,
+}: {
+  label: string;
+  isTaken: boolean;
+  isSel: boolean;
+  onToggle: () => void;
+}) {
+  const scale = useSharedValue(1);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+
+  function press() {
+    scale.value = withSequence(
+      withSpring(0.8, { damping: 12, stiffness: 400 }),
+      withSpring(1, { damping: 8, stiffness: 260 }),
+    );
+    onToggle();
+  }
+
+  return (
+    <AnimatedPressable
+      disabled={isTaken}
+      onPress={press}
+      style={[
+        style,
+        isSel
+          ? {
+              shadowColor: "#D9A441",
+              shadowOpacity: 0.5,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 6 },
+              elevation: 0,
+            }
+          : undefined,
+      ]}
+      className={cn(
+        "h-14 w-14 items-center justify-center rounded-lg border active:opacity-80",
+        isTaken
+          ? "border-danger bg-red-600"
+          : isSel
+            ? "border-laterite bg-laterite"
+            : "border-ink/15 bg-paper",
+      )}
+    >
+      {isTaken ? (
+        <User size={16} color="white" />
+      ) : (
+        <Text
+          className={cn(
+            "font-mono text-xs font-semibold",
+            isTaken ? "text-ink-soft/40 line-through" : isSel ? "text-white" : "text-ink",
+          )}
+        >
+          {label}
+        </Text>
+      )}
+    </AnimatedPressable>
   );
 }
 

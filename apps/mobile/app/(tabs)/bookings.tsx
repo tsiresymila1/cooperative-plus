@@ -44,13 +44,13 @@ export default function Bookings() {
   );
 
   return (
-    <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
-      <View className="px-5 pb-1 pt-3">
-        <Text className="font-display text-3xl text-ink">Mes réservations</Text>
+    <View className="flex-1 bg-sand">
+      <View className="px-5  pb-6 bg-strong" style={{ paddingTop: insets.top }}>
+        <Text className="font-display text-3xl text-white">Mes réservations</Text>
       </View>
 
       {user && (
-        <View className="mx-5 mb-3 mt-2 flex-row rounded-[4px] bg-sand-deep/70 p-1">
+        <View className="px-5 py-6 mb-3 flex-row bg-strong p-1 rounded-b-2xl">
           {(["active", "expired"] as const).map((k) => (
             <Pressable
               key={k}
@@ -58,7 +58,7 @@ export default function Bookings() {
               style={
                 tab === k
                   ? {
-                      shadowColor: "#14314C",
+                      shadowColor: "#14310C",
                       shadowOpacity: 0.1,
                       shadowRadius: 8,
                       shadowOffset: { width: 0, height: 3 },
@@ -67,14 +67,14 @@ export default function Bookings() {
                   : undefined
               }
               className={cn(
-                "flex-1 items-center rounded-[4px] py-2.5",
-                tab === k && "bg-paper",
+                "flex-1 items-center rounded-[4px] py-2.5 ",
+                tab === k ? "bg-primary" : "bg-sand/5",
               )}
             >
               <Text
                 className={cn(
                   "font-sans text-sm font-medium",
-                  tab === k ? "text-ink" : "text-ink-soft/60",
+                  tab === k ? "text-ink" : "text-white",
                 )}
               >
                 {k === "active" ? "Actifs" : "Expirés"}
@@ -236,7 +236,7 @@ function TicketCard({
               params: { id: b.id },
             })
           }
-          className="flex-row items-center gap-2 rounded-[4px] bg-navy dark:bg-[#003366] px-4 py-2.5 active:opacity-90"
+          className="flex-row items-center gap-2 rounded-[4px] bg-navy px-4 py-2.5 active:opacity-90"
         >
           <QrCode size={16} color="#ffffff" />
           <Text className="font-sans text-sm font-medium text-white">

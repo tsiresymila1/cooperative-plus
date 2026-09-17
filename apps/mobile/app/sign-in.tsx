@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Image, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
@@ -17,7 +17,15 @@ export default function SignIn() {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const emailRef = useRef<TextInput>(null);
   const codeRef = useRef<TextInput>(null);
+
+  // autoFocus fires before the entrance animation settles the layout, so the
+  // keyboard silently fails to raise on iOS — focus explicitly once mounted.
+  useEffect(() => {
+    const t = setTimeout(() => (step === "email" ? emailRef : codeRef).current?.focus(), 350);
+    return () => clearTimeout(t);
+  }, [step]);
 
   async function sendCode() {
     const e = email.trim().toLowerCase();
@@ -73,11 +81,13 @@ export default function SignIn() {
       <View className="flex-1 justify-center px-5 pb-16">
         {/* Brand mark */}
         <Animated.View entering={FadeIn.duration(400)} className="mb-8 items-center">
-          <View className="h-16 w-16 items-center justify-center rounded-[4px] bg-navy">
-            {step === "email"
-              ? <Mail size={28} color="#D9A441" />
-              : <ShieldCheck size={28} color="#D9A441" />}
-          </View>
+          {step === "email" ? (
+            <Image source={require("../assets/logo-round.png")} style={{ width: 64, height: 64, borderRadius: 32 }} resizeMode="contain" />
+          ) : (
+            <View className="h-16 w-16 items-center justify-center rounded-[4px] bg-navy">
+              <ShieldCheck size={28} color="#D9A441" />
+            </View>
+          )}
           <Text className="mt-4 font-display text-3xl text-ink">
             {step === "email" ? "Connexion" : "Vérification"}
           </Text>
@@ -90,21 +100,20 @@ export default function SignIn() {
 
         {step === "email" ? (
           <Animated.View entering={FadeInDown.delay(80).duration(420)}>
-            <View className="rounded-[4px] border border-ink/10 bg-paper p-1.5">
-              <View className="flex-row items-center gap-2 px-3">
-                <Mail size={18} color="#4a5680" />
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="vous@exemple.mg"
-                  placeholderTextColor="#4a568066"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoFocus
-                  onSubmitEditing={sendCode}
-                  className="flex-1 py-3.5 font-sans text-base text-ink"
-                />
-              </View>
+            <View className="h-14 flex-row items-center gap-2 rounded-[4px] border border-ink/10 bg-paper px-4">
+              <Mail size={18} color={c.inkSoft} />
+              <TextInput
+                ref={emailRef}
+                value={email}
+                onChangeText={setEmail}
+                placeholder="vous@exemple.mg"
+                placeholderTextColor={c.inkSoft + "88"}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                onSubmitEditing={sendCode}
+                style={{ paddingVertical: 0 }}
+                className="flex-1 font-sans text-base text-ink"
+              />
             </View>
 
             {err && <Text className="mt-2 px-1 font-sans text-sm text-laterite-deep">{err}</Text>}
@@ -145,7 +154,6 @@ export default function SignIn() {
                 }}
                 keyboardType="number-pad"
                 maxLength={6}
-                autoFocus
                 className="absolute h-px w-px opacity-0"
               />
             </Pressable>

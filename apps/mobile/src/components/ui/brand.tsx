@@ -12,7 +12,7 @@ import {
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
-const button = cva("flex-row items-center justify-center gap-2 rounded-[4px] active:opacity-90", {
+const button = cva("flex-row items-center justify-center gap-2 rounded-lg active:opacity-90", {
   variants: {
     variant: {
       primary: "bg-laterite",
@@ -61,7 +61,7 @@ export function Card({ className, style, ...p }: ViewProps) {
   // that flashed during entrance animations (esp. Android elevation).
   return (
     <View
-      className={cn("rounded-[4px] border border-ink/8 bg-paper p-4", className)}
+      className={cn("rounded-lg border border-ink/8 bg-paper p-4", className)}
       style={style}
       {...p}
     />
@@ -114,7 +114,7 @@ export function Badge({ tone = "neutral", label }: { tone?: "neutral" | "success
   };
   const text = { neutral: "text-ink-soft", success: "text-baobab", warning: "text-clay", danger: "text-laterite-deep" };
   return (
-    <View className={cn("self-start rounded-[4px] px-2.5 py-1", tones[tone])}>
+    <View className={cn("self-start rounded-full px-2.5 py-1", tones[tone])}>
       <Text className={cn("text-xs font-medium", text[tone])}>{label}</Text>
     </View>
   );

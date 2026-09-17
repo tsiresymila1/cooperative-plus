@@ -3,13 +3,21 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowRight, Bus, ChevronLeft, ChevronRight } from "lucide-react-native";
-import { Badge, Card, Spinner } from "@/components/ui";
-import { CoopLogo } from "@/components/coop-logo";
+import { Spinner } from "@/components/ui";
+import { RouteTimeline } from "@/components/route-timeline";
 import { TagBadge } from "@/components/tag-badge";
 import { useColors } from "@/lib/colors";
-import { fmtMoney } from "@/lib/cn";
+import { cn, fmtMoney } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { fmtDateKey, fmtTime, toMs } from "@/lib/domain";
+
+/** "3h 30m" from two epoch-ms timestamps. */
+function durationLabel(startMs: number, endMs: number): string {
+  const mins = Math.max(0, Math.round((endMs - startMs) / 60000));
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return h > 0 ? `${h}h ${m > 0 ? `${m}m` : ""}`.trim() : `${m}m`;
+}
 
 export default function Results() {
   const insets = useSafeAreaInsets();
@@ -49,7 +57,7 @@ export default function Results() {
       {/* Navy header band */}
       <View className="rounded-b-[20px] bg-strong px-5 pb-6" style={{ paddingTop: insets.top + 8 }}>
         <View className="flex-row items-center gap-3">
-          <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15">
+          <Pressable onPress={() => router.back()} className="h-9 w-9 items-center justify-center rounded-full bg-white/15">
             <ChevronLeft size={20} color="#ffffff" />
           </Pressable>
           <Text className="font-display text-lg uppercase tracking-wide text-white">Trajets</Text>
@@ -75,7 +83,7 @@ export default function Results() {
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           {trips.length === 0 ? (
             <View className="items-center pt-16">
-              <View className="h-14 w-14 items-center justify-center rounded-[4px] bg-ink/5">
+              <View className="h-14 w-14 items-center justify-center rounded-full bg-ink/5">
                 <Bus size={26} color="#4a5680" />
               </View>
               <Text className="mt-4 font-display text-xl text-ink">Aucun départ trouvé</Text>
@@ -96,49 +104,58 @@ export default function Results() {
                           <TagBadge name={(t as any).tag.name} color={(t as any).tag.color} />
                         </View>
                       )}
-                      <Card className="mb-3 p-0">
-                        {/* Top: coop + seats */}
-                        <View className="flex-row items-center justify-between px-4 pt-3">
+                      <View className="mb-3 rounded-2xl bg-paper p-4 shadow-sm shadow-black/10">
+                        {/* Top: coop name + vehicle */}
+                        <View className="flex-row items-center justify-between gap-2">
                           <View className="flex-1 flex-row items-center gap-2">
-                            <CoopLogo url={t.cooperative?.logoUrl} brandColor={t.cooperative?.brandColor} name={t.coopName} size={32} />
-                            <Text className="font-sans text-sm font-semibold text-laterite" numberOfLines={1}>{t.coopName}</Text>
+                            <Bus size={16} color="#14314C" />
+                            <Text className="flex-1 font-sans text-sm font-bold text-ink" numberOfLines={1}>{t.coopName}</Text>
                           </View>
-                          <Badge
-                            tone={full ? "danger" : booked / t.seatsTotal >= 0.8 ? "warning" : "success"}
-                            label={full ? "Complet" : `${t.seatsTotal-booked}/${t.seatsTotal} places`}
-                          />
+                          <View className="rounded-full bg-laterite/10 px-2.5 py-1">
+                            <Text className="font-mono text-[11px] font-semibold text-laterite" numberOfLines={1}>{t.vehicleName}</Text>
+                          </View>
                         </View>
 
-                        {/* Time row */}
-                        <View className="flex-row items-center gap-3 px-4 pt-2">
-                          <Text className="font-mono text-2xl text-ink">{fmtTime(t.departureAt)}</Text>
-                          <View className="flex-1 flex-row items-center gap-1.5">
-                            <View className="h-2 w-2 rounded-full border border-ink/30" />
-                            <View className="h-px flex-1 bg-ink/15" />
-                            <Bus size={13} color="#4a5680" />
-                            <View className="h-px flex-1 bg-ink/15" />
-                            <View className="h-2 w-2 rounded-full bg-laterite" />
-                          </View>
-                          <Text className="font-mono text-2xl text-ink-soft">
-                            {t.arrivalEstimateAt ? fmtTime(t.arrivalEstimateAt) : "—"}
-                          </Text>
-                        </View>
-
-                        {/* Footer: vehicle + price + gold CTA */}
-                        <View className="mt-3 flex-row items-center justify-between border-t border-ink/8 px-4 py-3">
+                        {/* Times + timeline */}
+                        <View className="mt-3 flex-row items-center">
                           <View>
-                            <View className="flex-row items-center gap-1.5">
-                              <Bus size={13} color="#4a5680" />
-                              <Text className="font-mono text-xs text-ink-soft/70">{t.vehicleName}</Text>
-                            </View>
-                            <Text className="mt-1 font-mono text-lg font-bold text-green">{fmtMoney(t.price, t.currency)}</Text>
+                            <Text className="font-mono text-[10px] uppercase tracking-wide text-ink-soft/50" numberOfLines={1}>{origin}</Text>
+                            <Text className="mt-0.5 font-mono text-base font-bold text-ink">{fmtTime(t.departureAt)}</Text>
                           </View>
-                          <View className="flex-row items-center gap-1 rounded-[4px] bg-laterite px-4 py-2.5">
-                            <Text className="font-sans text-sm font-semibold uppercase tracking-wide text-white">Réserver</Text>
-                            <ChevronRight size={16} color="#ffffff" />
+                          <RouteTimeline className="mx-3 flex-1" />
+                          <View className="items-end">
+                            <Text className="font-mono text-[10px] uppercase tracking-wide text-ink-soft/50" numberOfLines={1}>{dest}</Text>
+                            <Text className="mt-0.5 font-mono text-base font-bold text-ink">
+                              {t.arrivalEstimateAt ? fmtTime(t.arrivalEstimateAt) : "—"}
+                            </Text>
                           </View>
                         </View>
-                      </Card>
+                        {t.arrivalEstimateAt ? (
+                          <Text className="mt-1 text-center font-mono text-[10px] text-ink-soft/45">
+                            Estimé {durationLabel(toMs(t.departureAt), toMs(t.arrivalEstimateAt))}
+                          </Text>
+                        ) : null}
+
+                        {/* Footer: price + seats left / seat-picker link */}
+                        <View
+                          className="mt-3 flex-row items-center justify-between pt-3"
+                          style={{ borderTopWidth: 1, borderStyle: "dashed", borderColor: "#14314C22" }}
+                        >
+                          <View>
+                            <Text className="font-mono text-base font-bold text-ink">{fmtMoney(t.price, t.currency)}</Text>
+                            <Text className={cn(
+                              "font-mono text-xs font-semibold",
+                              full ? "text-laterite-deep" : booked / t.seatsTotal >= 0.8 ? "text-clay" : "text-green",
+                            )}>
+                              {full ? "Complet" : `${t.seatsTotal - booked} place${t.seatsTotal - booked > 1 ? "s" : ""} restante${t.seatsTotal - booked > 1 ? "s" : ""}`}
+                            </Text>
+                          </View>
+                          <View className="flex-row items-center gap-1">
+                            <Text className="font-sans text-sm font-bold text-laterite">Voir places</Text>
+                            <ChevronRight size={16} color="#D9A441" />
+                          </View>
+                        </View>
+                      </View>
                     </Pressable>
                   </Animated.View>
                 );
