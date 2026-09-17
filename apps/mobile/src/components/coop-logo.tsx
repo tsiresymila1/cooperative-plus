@@ -47,7 +47,7 @@ export function CoopLogo({
   const showImage = !!url && !failed;
   return (
     <View
-      className={cn("items-center justify-center overflow-hidden rounded-[4px] bg-paper", className)}
+      className={cn("items-center justify-center overflow-hidden rounded-[4px] ", className)}
       style={{ width: size, height: size }}
     >
       {showImage ? (

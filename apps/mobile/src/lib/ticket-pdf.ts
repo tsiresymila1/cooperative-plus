@@ -90,9 +90,17 @@ async function html(a: Args): Promise<string> {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @page { size: 230mm 95mm; margin: 0; }
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+      /* Some print engines only honor this per-element, not inherited from
+         body — set it everywhere so the gold header / navy stub don't get
+         silently flattened to grayscale. */
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
     body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #14314C; margin: 0;
-      padding: 6mm; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      padding: 6mm; background: #fff; }
 
     .ticket { display: flex; width: 840px; margin: 0 auto; border-radius: 12px; overflow: hidden;
       box-shadow: 0 12px 30px -14px rgba(20,49,76,.4); }
