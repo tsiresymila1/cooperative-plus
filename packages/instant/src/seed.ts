@@ -36,7 +36,6 @@ const VEH_DIMS: Record<string, { rows: number; cols: number }> = {
   minibus_18: { rows: 5, cols: 4 },
   bus_30: { rows: 8, cols: 4 },
 };
-const seatsOf = (veh: string) => { const d = VEH_DIMS[veh]!; return d.rows * d.cols - 1; };
 
 const DESTS = [
   ["Antananarivo", "Analamanga", true], ["Mahajanga", "Boeny", true], ["Toamasina", "Atsinanana", true],
@@ -50,20 +49,40 @@ const COOPS = [
   { id: uid("0c", 3), slug: "trans-betsileo", name: "Trans Betsileo", status: "active" },
 ];
 
+// Fallback vehicle type per coop index — only used when that coop has no real
+// vehicleModel of its own yet (fresh/empty DB). Once a coop admin creates a
+// real model, the seed uses it instead — see `resolveCoopSeats` below.
+const FALLBACK_VEH = ["minibus_18", "bus_30", "minibus_15"];
+
 const ROUTES = [
-  { coop: 0, from: "Antananarivo", to: "Mahajanga", price: 35000, km: 570, dur: 480, veh: "minibus_18" },
-  { coop: 0, from: "Antananarivo", to: "Toamasina", price: 30000, km: 350, dur: 420, veh: "minibus_18" },
-  { coop: 1, from: "Antananarivo", to: "Toamasina", price: 28000, km: 350, dur: 430, veh: "bus_30" },
-  { coop: 1, from: "Antananarivo", to: "Fianarantsoa", price: 32000, km: 410, dur: 540, veh: "bus_30" },
-  { coop: 2, from: "Antananarivo", to: "Fianarantsoa", price: 30000, km: 410, dur: 540, veh: "minibus_15" },
-  { coop: 2, from: "Antananarivo", to: "Antsirabe", price: 12000, km: 170, dur: 180, veh: "minibus_15" },
-  { coop: 0, from: "Antsirabe", to: "Toliara", price: 60000, km: 760, dur: 840, veh: "minibus_18" },
+  { coop: 0, from: "Antananarivo", to: "Mahajanga", price: 35000, km: 570, dur: 480 },
+  { coop: 0, from: "Antananarivo", to: "Toamasina", price: 30000, km: 350, dur: 420 },
+  { coop: 1, from: "Antananarivo", to: "Toamasina", price: 28000, km: 350, dur: 430 },
+  { coop: 1, from: "Antananarivo", to: "Fianarantsoa", price: 32000, km: 410, dur: 540 },
+  { coop: 2, from: "Antananarivo", to: "Fianarantsoa", price: 30000, km: 410, dur: 540 },
+  { coop: 2, from: "Antananarivo", to: "Antsirabe", price: 12000, km: 170, dur: 180 },
+  { coop: 0, from: "Antsirabe", to: "Toliara", price: 60000, km: 760, dur: 840 },
 ];
 
 const TIMES = ["06:00", "07:30", "13:00", "18:00"];
 const DAYS = 5; // today + 4
 
 async function main() {
+  // Prefer each coop's own real vehicleModel (created via the admin) over the
+  // fallback shape — this is what was missing before: seeded trips used to
+  // invent their own seat count instead of respecting a model the coop admin
+  // had actually configured, so "Modèles" and "Trajets" could disagree.
+  const { vehicleModels } = await adminDb.query({
+    vehicleModels: { $: { where: { "cooperative.id": { $in: COOPS.map((c) => c.id) } } }, cooperative: {} },
+  });
+  const seatsOfModel = (m: any) => (Array.isArray(m?.layout) && m.layout.length ? m.layout.filter((c: any) => c.type === "seat").length : (m?.seatCount ?? 0));
+  const coopSeats = COOPS.map((c, i) => {
+    const real = (vehicleModels ?? []).find((m: any) => m.cooperative?.id === c.id && !m.deletedAt);
+    if (real) return { seats: seatsOfModel(real), layout: Array.isArray(real.layout) ? real.layout : buildLayout(...(Object.values(VEH_DIMS[FALLBACK_VEH[i]!]!) as [number, number])), modelId: real.id as string | undefined, type: real.type ?? FALLBACK_VEH[i] };
+    const dims = VEH_DIMS[FALLBACK_VEH[i]!]!;
+    return { seats: dims.rows * dims.cols - 1, layout: buildLayout(dims.rows, dims.cols), modelId: undefined as string | undefined, type: FALLBACK_VEH[i]! };
+  });
+
   // base entities
   const base = [
     ...DESTS.map(([name, region, pop], i) => tx.destinations[uid("0a", i + 1)].update({ name, slug: name.toLowerCase().replace(/\s+/g, "-"), region, country: "MG", isPopular: pop, isGlobal: true, createdAt: now })),
@@ -72,8 +91,10 @@ async function main() {
     // enable all global destinations for each cooperative
     ...COOPS.map((c) => tx.cooperatives[c.id].link({ enabledDestinations: DESTS.map((_, i) => uid("0a", i + 1)) })),
     ...COOPS.map((c, i) => {
-      const type = ["minibus_18", "bus_30", "minibus_15"][i]!;
-      return tx.vehicles[uid("0e", i + 1)].update({ registrationNo: `${1000 + i} TBA`, name: ["Mercedes Sprinter", "King Long Bus", "Toyota Hiace"][i]!, type, seatCount: seatsOf(type), status: "active", createdAt: now }).link({ cooperative: c.id });
+      const resolved = coopSeats[i]!;
+      let v = tx.vehicles[uid("0e", i + 1)].update({ registrationNo: `${1000 + i} TBA`, name: ["Mercedes Sprinter", "King Long Bus", "Toyota Hiace"][i]!, type: resolved.type, seatCount: resolved.seats, status: "active", createdAt: now }).link({ cooperative: c.id });
+      if (resolved.modelId) v = v.link({ model: resolved.modelId });
+      return v;
     }),
   ];
   await adminDb.transact(base);
@@ -99,7 +120,7 @@ async function main() {
         const departDate = new Date(dateMs).toISOString().slice(0, 10);
         const departureAt = new Date(`${departDate}T${time}:00+03:00`).getTime();
         const booked = 0; // real occupancy comes from real bookings (no fake)
-        const dims = VEH_DIMS[r.veh]!;
+        const resolved = coopSeats[r.coop]!;
         steps.push(
           tx.tripInstances[uid("0f", tripN)].update({
             originName: r.from, destName: r.to, departDate, departureAt,
@@ -107,7 +128,7 @@ async function main() {
             routeName: `${r.from} → ${r.to}`, coopName: COOPS[r.coop]!.name,
             vehicleName: ["Mercedes Sprinter", "King Long Bus", "Toyota Hiace"][r.coop]!,
             status: "scheduled", price: r.price, currency: "MGA",
-            seatsTotal: seatsOf(r.veh), seatsBooked: booked, seatMapSnapshot: buildLayout(dims.rows, dims.cols), createdAt: now,
+            seatsTotal: resolved.seats, seatsBooked: booked, seatMapSnapshot: resolved.layout, createdAt: now,
             driverName: ["Rakoto", "Rabe", "Randria"][r.coop]!,
           }).link({ cooperative: COOPS[r.coop]!.id, route: uid("0d", ri + 1), vehicle: uid("0e", r.coop + 1) }),
         );
