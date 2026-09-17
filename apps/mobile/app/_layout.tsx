@@ -77,6 +77,21 @@ export default function RootLayout() {
 
   if (!ready) return null;
 
+  // Screens with a navy (bg-strong) header force white status-bar icons
+  // regardless of theme; every other screen follows the theme as usual.
+  // Keep this list in sync with any screen that renders a bg-strong header.
+  // Centralized here (not a local <StatusBar> per screen) because
+  // expo-router keeps prior stack screens mounted, so a locally-mounted
+  // override on e.g. Home would keep winning even after navigating away.
+  const seg = segments as string[];
+  // The tabs group's index route collapses to just ["(tabs)"] (no "index"
+  // segment) — treat a missing/undefined second segment as index too.
+  const lightHeaderScreen =
+    (seg[0] === "(tabs)" && (seg[1] === undefined || seg[1] === "index" || seg[1] === "bookings")) ||
+    seg[0] === "results" ||
+    seg[0] === "trip" ||
+    seg[0] === "checkout";
+
   const dark = colorScheme === "dark";
   const bg = dark ? "#0a0a0b" : "#f8fafc";
   // React Navigation manages the navigator/transition surfaces — give it a
@@ -93,7 +108,7 @@ export default function RootLayout() {
             <BottomSheetModalProvider>
               <AuthProvider>
                 <SelectionProvider>
-                  <StatusBar style={dark ? "light" : "dark"} />
+                  <StatusBar style={lightHeaderScreen ? "light" : dark ? "light" : "dark"} />
                   <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: bg } }}>
                     <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
                     <Stack.Screen name="(tabs)" />
