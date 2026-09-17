@@ -64,7 +64,7 @@ export default function Onboarding() {
       {/* Hero image with fade */}
       <View style={{ height: HERO_H }} className="w-full">
         <Image
-          source={require("../assets/onboarding-bus.png")}
+          source={require("../assets/onboarding-hero.jpg")}
           style={{ width: "100%", height: "100%" }}
           resizeMode="cover"
         />
@@ -80,7 +80,7 @@ export default function Onboarding() {
         </Pressable>
         {/* Brand */}
         <View className="absolute inset-x-0 bottom-2 flex-row items-center justify-center gap-2">
-          <Image source={require("../assets/logo-long.png")} style={{ width: 180, height: 100, borderRadius: 6 }} resizeMode="contain" />
+          <Image source={require("../assets/logo-long.png")} style={{ width: 160, height: 80, borderRadius: 12 }} resizeMode="contain" />
         </View>
       </View>
 

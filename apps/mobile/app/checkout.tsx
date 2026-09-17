@@ -140,8 +140,8 @@ export default function Checkout() {
     return (
       <View className="flex-1 items-center justify-center bg-sand p-8" style={{ paddingTop: insets.top }}>
         <Text className="font-display text-xl text-ink">Aucune sélection en cours</Text>
-        <Button className="mt-4" onPress={() => router.replace("/")}>
-          <Text className="font-sans font-medium text-paper">Retour à la recherche</Text>
+        <Button variant="ink" className="mt-4" onPress={() => router.replace("/")}>
+          <Text className="font-sans font-medium text-white">Retour à la recherche</Text>
         </Button>
       </View>
     );

@@ -126,7 +126,11 @@ export default function NewTripPage() {
             status: "scheduled",
             price: priceVal,
             currency,
-            seatMapSnapshot: first.layout ?? [],
+            // Trip-level snapshot only makes sense for a single vehicle — its cell
+            // count must match seatsTotal. With several vehicles, seatsTotal is the
+            // sum across all of them, so no single layout represents it; each
+            // vehicle's own seat map (tripVehicles) is the source of truth instead.
+            seatMapSnapshot: chosen.length === 1 ? (first.layout ?? []) : [],
             seatsTotal: totalSeats,
             seatsBooked: 0,
             createdAt: now,

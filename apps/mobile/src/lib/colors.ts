@@ -4,6 +4,6 @@ import { useColorScheme } from "react-native";
 export function useColors() {
   const colorScheme = useColorScheme();
   return colorScheme === "dark"
-    ? { ink: "#ededf0", inkSoft: "#9a9aa3", laterite: "#e6bd6e", paper: "#161719", sand: "#0a0a0b", border: "#2a2a2f" }
+    ? { ink: "#ededf0", inkSoft: "#9a9aa3", laterite: "#D9A441", paper: "#161719", sand: "#0a0a0b", border: "#2a2a2f" }
     : { ink: "#14314C", inkSoft: "#475569", laterite: "#D9A441", paper: "#ffffff", sand: "#f8fafc", border: "#e2e8f0" };
 }

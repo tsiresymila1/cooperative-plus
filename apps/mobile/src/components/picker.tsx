@@ -63,8 +63,6 @@ export function DestinationField({
     [],
   );
 
-
-
   function pick(name: string) {
     onSelect(name);
     setTerm("");
@@ -73,23 +71,45 @@ export function DestinationField({
 
   return (
     <>
-      <Pressable onPress={() => ref.current?.present()}>
-        <Text className={cn("text-[10px] font-medium uppercase tracking-widest", error ? "text-laterite-deep" : "text-ink-soft/60")}>
-          {label}
-        </Text>
-        <View className="mt-1 flex-row items-center gap-2">
+      <Pressable
+        onPress={() => ref.current?.present()}
+        className={cn(
+          "rounded-lg border bg-paper px-4 py-3",
+          error ? "border-laterite-deep/40" : "border-ink/10",
+        )}
+      >
+        <View className="flex flex-row w-full items-center gap-4">
           <MapPin size={18} color={error ? "#c2902f" : tint} />
-          <Text
-            className={cn(
-              "flex-1 font-sans text-base",
-              value ? "text-ink" : error ? "text-laterite-deep/70" : "text-ink-soft/45",
-            )}
-          >
-            {value || placeholder}
-          </Text>
+          <View className="flex-col items-start justify-start gap-2 grow">
+            <Text
+              className={cn(
+                "text-[10px] font-medium uppercase tracking-widest",
+                error ? "text-laterite-deep" : "text-ink-soft/60",
+              )}
+            >
+              {label}
+            </Text>
+            <Text
+              className={cn(
+                "flex-1 font-sans text-base",
+                value
+                  ? "text-ink"
+                  : error
+                    ? "text-laterite-deep/70"
+                    : "text-ink-soft/45",
+              )}
+            >
+              {value || placeholder}
+            </Text>
+          </View>
           <ChevronDown size={18} color={c.inkSoft} />
         </View>
-        {error ? <Text className="mt-1 font-sans text-xs text-laterite-deep">{error}</Text> : null}
+
+        {error ? (
+          <Text className="mt-1 font-sans text-xs text-laterite-deep">
+            {error}
+          </Text>
+        ) : null}
       </Pressable>
 
       <BottomSheetModal
@@ -101,7 +121,15 @@ export function DestinationField({
         handleIndicatorStyle={{ backgroundColor: c.inkSoft }}
         enableDynamicSizing={false}
       >
-        <BottomSheetView style={{ backgroundColor: c.paper, paddingHorizontal: 20, paddingTop: 4, paddingBottom: 10, zIndex: 1000 }}>
+        <BottomSheetView
+          style={{
+            backgroundColor: c.paper,
+            paddingHorizontal: 20,
+            paddingTop: 4,
+            paddingBottom: 10,
+            zIndex: 1000,
+          }}
+        >
           <Text className="font-display text-xl text-ink">{label}</Text>
           <View className="mt-3 flex-row items-center gap-2 rounded-[4px] border border-ink/10 bg-sand px-3">
             <Search size={16} color={c.inkSoft} />
@@ -110,17 +138,23 @@ export function DestinationField({
               onChangeText={setTerm}
               placeholder="Rechercher une ville"
               placeholderTextColor={c.inkSoft}
-              style={{ flex: 1, paddingVertical: 12, fontSize: 16, color: c.ink, fontFamily: "Montserrat_500Medium" }}
+              style={{
+                flex: 1,
+                paddingVertical: 12,
+                fontSize: 16,
+                color: c.ink,
+                fontFamily: "PlusJakartaSans_500Medium",
+              }}
             />
           </View>
         </BottomSheetView>
 
         <BottomSheetScrollView
-          contentContainerStyle={{ 
+          contentContainerStyle={{
             paddingTop: 100,
             paddingBottom: 32,
-            paddingHorizontal: 16
-           }}
+            paddingHorizontal: 16,
+          }}
           keyboardShouldPersistTaps="handled"
         >
           {filtered.length === 0 ? (
@@ -142,9 +176,13 @@ export function DestinationField({
                   <View className="h-9 w-9 items-center justify-center rounded-[4px] bg-sand">
                     <MapPin size={16} color={active ? c.laterite : c.ink} />
                   </View>
-                  <Text className="flex-1 font-sans text-base text-ink">{d.name}</Text>
+                  <Text className="flex-1 font-sans text-base text-ink">
+                    {d.name}
+                  </Text>
                   {d.region ? (
-                    <Text className="font-mono text-xs text-ink-soft/50">{d.region}</Text>
+                    <Text className="font-mono text-xs text-ink-soft/50">
+                      {d.region}
+                    </Text>
                   ) : null}
                 </Pressable>
               );
@@ -171,17 +209,20 @@ export function DateField({
 
   return (
     <View className={className}>
-      <Text className="text-[10px] font-medium uppercase tracking-widest text-ink-soft/60">
-        Date
-      </Text>
       <Pressable
         onPress={() => setOpen(true)}
-        className="mt-1 flex-row items-center gap-2"
+        className="mt-1 flex-row items-center gap-4"
       >
         <CalendarIcon size={16} color={c.ink} />
-        <Text className="font-sans text-base text-ink">
-          {fmtDateKey(toDateKey(value))}
-        </Text>
+        <View>
+          <Text className="text-[10px] font-medium uppercase tracking-widest text-ink-soft/60">
+            Date
+          </Text>
+
+          <Text className="font-sans text-base text-ink">
+            {fmtDateKey(toDateKey(value))}
+          </Text>
+        </View>
       </Pressable>
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -170,7 +170,10 @@ export default function TripViewPage() {
     try {
       await db.transact([
         db.tx.tripVehicles[id()].update({ label: `Voiture ${slots.length + 1}`, seatMapSnapshot: m.layout ?? [], seatsTotal: seats, seatsBooked: 0, vehicleName: m.name, createdAt: Date.now() }).link({ tripInstance: tripId, model: m.id }),
-        db.tx.tripInstances[tripId].update({ seatsTotal: (trip?.seatsTotal ?? 0) + seats }),
+        // Trip-level snapshot only represents a single vehicle's layout; once a
+        // second one is added it no longer matches seatsTotal (the sum across
+        // all vehicles), so clear it — each vehicle's own seat map is authoritative.
+        db.tx.tripInstances[tripId].update({ seatsTotal: (trip?.seatsTotal ?? 0) + seats, seatMapSnapshot: [] }),
       ]);
       toast.success("Véhicule ajouté."); setAddOpen(false); setAddModelId("");
     } catch (e: any) { toast.error(e?.message ?? "Échec."); }

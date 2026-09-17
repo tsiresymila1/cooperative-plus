@@ -80,6 +80,14 @@ export default function ModelsPage() {
       const label = v.name.trim() || undefined;
       if (editId) {
         await db.transact(db.tx.vehicleModels[editId].update(payload));
+        // Vehicles copy seatCount from the model only at assignment time, so an
+        // edit here would otherwise silently leave them (and any trip created
+        // from them) on the old seat count — keep them in sync with the model.
+        const { data: linked } = await db.queryOnce({ vehicles: { $: { where: { "model.id": editId } } } });
+        const vehicleTx = (linked?.vehicles ?? []).map((veh: any) =>
+          db.tx.vehicles[veh.id].update({ seatCount: seats, type: v.type }),
+        );
+        if (vehicleTx.length) await db.transact(vehicleTx);
         logActivity({ coopId, actorId: userId, action: "update", entityType: "model", entityId: editId, label });
         toast.success("Modèle mis à jour.");
       } else {
