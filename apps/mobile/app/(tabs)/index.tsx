@@ -96,7 +96,7 @@ export default function Home() {
           style={{ paddingTop: insets.top + 8 }}
         >
           <View className="flex-row items-center justify-between">
-            <Image source={require("../../assets/logo-long.png")} style={{ width: 122, height: 60, borderRadius: 8 }} resizeMode="contain" />
+            <Image source={require("../../assets/logo-long.png")} style={{ width: 100, height: 80, borderRadius: 8 }} resizeMode="contain" />
             <View className="flex-row items-center gap-2">
               <Pressable
                 onPress={toggleTheme}
@@ -116,7 +116,7 @@ export default function Home() {
           {/* Greeting + title */}
           <Animated.View entering={FadeInDown.delay(80).duration(420)} className="mt-6">
             <Text className="font-sans text-sm text-white/70">
-              {user?.email ? `Bonjour, ${user.email.split("@")[0]} 👋` : "Bonjour 👋"}
+              {user?.email ? `Bonjour, ${user.email.split("@")[0]}` : "Bonjour"}
             </Text>
             <Text className="mt-1 font-display text-3xl uppercase tracking-wide text-white">
               Où allez-vous ?
@@ -163,7 +163,7 @@ export default function Home() {
             {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
             <Button size="md" className="mt-1 w-full" onPress={goSearch} loading={searching}>
               {!searching && <Search size={18} color="#ffffff" />}
-              <Text className="font-sans text-base font-semibold uppercase tracking-wide text-white">Rechercher</Text>
+              <Text className="font-display text-base font-semibold uppercase tracking-wide text-white">Rechercher</Text>
             </Button>
           </Animated.View>
 

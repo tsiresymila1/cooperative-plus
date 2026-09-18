@@ -60,7 +60,7 @@ export default function Header() {
           aria-label="Coopérative Plus"
           className="shrink-0 transition-opacity duration-500 hover:opacity-80"
         >
-          <Logo dark={onDark} height={44} width={180} />
+          <Logo dark={onDark} height={80} width={180} />
         </Link>
 
         <nav className="hidden lg:block">

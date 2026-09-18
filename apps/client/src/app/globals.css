@@ -43,7 +43,8 @@
   --text-eyebrow--line-height: 1;
   --text-eyebrow--letter-spacing: 5px;
 
-  --container-shell: 1410px;
+  --container-shell: 1570px;
+  --container-header: 1570px;
   --container-content: 1220px;
   --container-narrow: 1000px;
 

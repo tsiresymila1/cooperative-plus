@@ -14,8 +14,19 @@ const PASSENGERS = ["1", "2", "3", "4", "5", "6"];
    destinations and the /search route (Coopérative Plus features). */
 export default function BookingForm({
   className = "",
+  defaultFrom = "",
+  defaultTo = "",
+  defaultDate = "",
+  defaultPax = "1",
 }: {
   className?: string;
+  /** Prefill from a URL param — e.g. when this form is re-rendered on /search
+   * for a shared link, it must reflect the criteria already applied, not
+   * reset to empty. */
+  defaultFrom?: string;
+  defaultTo?: string;
+  defaultDate?: string;
+  defaultPax?: string;
 }) {
   const router = useRouter();
   const fromRef = useRef<HTMLInputElement>(null);
@@ -58,7 +69,9 @@ export default function BookingForm({
         label="Départ :"
         placeholder="Ville de départ"
         options={cities}
+        defaultValue={defaultFrom}
         icon={MapPin}
+        className="border-r-1 border-gray"
       />
       <button
         type="button"
@@ -71,7 +84,7 @@ export default function BookingForm({
           f.value = t.value;
           t.value = v;
         }}
-        className="absolute left-[21%] top-1/2 z-20 hidden size-[38px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-navy shadow-[0_2px_10px_rgba(20,49,76,0.15)] transition-colors duration-300 hover:text-gold lg:flex"
+        className="absolute left-[21%] top-1/2 z-20 hidden size-[50px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-navy/20 text-navy shadow-[0_2px_10px_rgba(20,49,76,0.15)] transition-colors duration-300 hover:text-gold lg:flex"
       >
         <ArrowLeftRight className="size-4" strokeWidth={2} />
       </button>
@@ -80,15 +93,17 @@ export default function BookingForm({
         label="Arrivée :"
         placeholder="Destination"
         options={cities}
+        defaultValue={defaultTo}
         icon={MapPin}
+        className="border-r-1 border-gray"
       />
-      <FieldDatePicker name="date" label="Date :" />
+      <FieldDatePicker name="date" label="Date :" defaultValue={defaultDate} className="border-r-1 border-gray" />
       <FieldCombobox
         name="passengers"
         label="Voyageurs :"
         placeholder="1"
         options={PASSENGERS}
-        defaultValue="1"
+        defaultValue={defaultPax}
         icon={UserRound}
       />
       <button

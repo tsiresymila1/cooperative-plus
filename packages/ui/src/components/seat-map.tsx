@@ -74,7 +74,7 @@ export function SeatSelector({ layout, taken, held = [], selected, onToggle, max
 function Legend() {
   const items = [
     ["border-ink/12 bg-paper", "Libre"],
-    ["border-laterite bg-laterite", "Choisi / réservé"],
+    ["border-laterite bg-gold", "Choisi / réservé"],
     ["border-red-600 bg-red-600", "Occupé"],
   ] as const;
   return (

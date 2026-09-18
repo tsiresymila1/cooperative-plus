@@ -83,7 +83,7 @@ export function DestinationField({
           <View className="flex-col items-start justify-start gap-2 grow">
             <Text
               className={cn(
-                "text-[10px] font-medium uppercase tracking-widest",
+                "text-[10px] font-medium uppercase tracking-widest font-display",
                 error ? "text-laterite-deep" : "text-ink-soft/60",
               )}
             >
@@ -91,7 +91,7 @@ export function DestinationField({
             </Text>
             <Text
               className={cn(
-                "flex-1 font-sans text-base",
+                "flex-1 font-sans text-sm",
                 value
                   ? "text-ink"
                   : error
@@ -215,7 +215,7 @@ export function DateField({
       >
         <CalendarIcon size={16} color={c.ink} />
         <View>
-          <Text className="text-[10px] font-medium uppercase tracking-widest text-ink-soft/60">
+          <Text className="text-[10px] font-display font-medium uppercase tracking-widest text-ink-soft/60">
             Date
           </Text>
 

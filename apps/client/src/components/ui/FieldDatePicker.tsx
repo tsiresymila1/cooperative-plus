@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { CalendarDays } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,16 +19,21 @@ export default function FieldDatePicker({
   name,
   label,
   placeholder = "Departure",
+  defaultValue,
+  className,
 }: {
   name: string;
   label: string;
   placeholder?: string;
+  /** ISO date (yyyy-MM-dd), e.g. from a URL param — prefills the field. */
+  defaultValue?: string;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date | undefined>();
+  const [date, setDate] = useState<Date | undefined>(() => (defaultValue ? parseISO(defaultValue) : undefined));
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       <input
         type="hidden"
         name={name}

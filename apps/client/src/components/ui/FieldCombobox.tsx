@@ -28,6 +28,7 @@ export default function FieldCombobox({
   options,
   defaultValue = "",
   icon: Icon,
+  className,
 }: {
   name: string;
   label: string;
@@ -35,12 +36,13 @@ export default function FieldCombobox({
   options: string[];
   defaultValue?: string;
   icon?: React.ComponentType<{ className?: string }>;
+  className?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(defaultValue);
 
   return (
-    <div className="relative">
+    <div className={cn("relative", className)}>
       {/* real value for the surrounding form */}
       <input type="hidden" name={name} value={value} />
 

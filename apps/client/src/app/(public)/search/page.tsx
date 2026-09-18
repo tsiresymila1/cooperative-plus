@@ -2,7 +2,7 @@
 import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Ellipsis, MoveRight, Search } from "lucide-react";
 import { Spinner, db, fmtMoney, fmtTime, notDeleted } from "@cp/ui";
 import PageBanner from "@/components/site/PageBanner";
 import BookingForm from "@/components/sections/BookingForm";
@@ -28,17 +28,28 @@ function fmtDuration(min?: number | null) {
 function SearchInner() {
   const sp = useSearchParams();
   // URL params drive the live query (BookingForm navigates here with these).
-  const from = sp.get("from") || "Antananarivo";
-  const to = sp.get("to") || "Mahajanga";
+  // Several entry points (header, hero, FAQ, dashboard) link to bare
+  // `/search` with no params at all — that must browse every upcoming trip,
+  // not silently default to one fake Antananarivo → Mahajanga search.
+  const from = sp.get("from") || "";
+  const to = sp.get("to") || "";
   const date = toDate(sp.get("date"));
   const pax = Number(sp.get("pax")) || 1;
   const [sort, setSort] = useState<"depart" | "price" | "seats">("depart");
 
   const dk = dateKey(date);
-  // live results react to from/to/date
+  // live results react to from/to/date — origin/dest filters only apply when set.
   const { data, isLoading } = db.useQuery({
     tripInstances: {
-      $: { where: { originName: from, destName: to, departDate: dk, status: "scheduled" }, order: { departureAt: "asc" } },
+      $: {
+        where: {
+          ...(from ? { originName: from } : {}),
+          ...(to ? { destName: to } : {}),
+          departDate: dk,
+          status: "scheduled",
+        },
+        order: { departureAt: "asc" },
+      },
       route: {}, cooperative: {}, tickets: { booking: {} }, holds: {}, tag: {},
     },
   });
@@ -69,7 +80,13 @@ function SearchInner() {
       {/* Filter — template booking form, wired to /search */}
       <section className="pt-[60px]">
         <div className="mx-auto max-w-shell px-[15px]">
-          <BookingForm className="bg-gold/10 shadow-sm" />
+          <BookingForm
+            className="bg-gold/10 shadow-sm"
+            defaultFrom={from}
+            defaultTo={to}
+            defaultDate={sp.get("date") || ""}
+            defaultPax={String(pax)}
+          />
         </div>
       </section>
 
@@ -79,7 +96,9 @@ function SearchInner() {
           <div className="mb-[40px] flex flex-wrap items-center justify-between gap-4">
             <p className="font-display text-[24px] font-semibold uppercase leading-none text-navy">
               {isLoading ? "Recherche…" : `${results.length} trajet${results.length > 1 ? "s" : ""}`}
-              <span className="ml-3 font-body text-[14px] font-light normal-case text-navy/60">{from} → {to}</span>
+              {from && to ? (
+                <span className="ml-3 font-body text-[14px] font-light normal-case text-navy/60">{from} → {to}</span>
+              ) : null}
             </p>
             <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
               <SelectTrigger className="h-10 w-48 rounded-none border-navy/10 font-body text-[14px] text-navy"><SelectValue /></SelectTrigger>
@@ -114,22 +133,21 @@ function SearchInner() {
                       <span className="block font-display text-[24px] font-semibold uppercase leading-none text-navy">
                         {t.originName}
                       </span>
-                      <span className="mt-1 block font-body text-[14px] font-light text-navy/60">
+                      <span className="mt-1 block font-body text-[14px] text-navy/60">
                         {fmtTime(t.departureAt)}
                       </span>
                     </div>
 
-                    <div className="text-center">
-                      <span className="font-body text-[14px] font-light text-navy/60">
-                        {duration}
-                      </span>
+                    <div className="flex flex-col items-center">
+                      <div className="flex items-center justify-center"><Ellipsis /><Ellipsis /> <Ellipsis /> </div>
+                      <div className="font-body text-[14px] font-normal text-navy/60">{duration}</div>
                     </div>
 
                     <div>
                       <span className="block font-display text-[24px] font-semibold uppercase leading-none text-navy">
                         {t.destName}
                       </span>
-                      <span className="mt-1 block font-body text-[14px] font-light text-navy/60">
+                      <span className="mt-1 block font-body text-[14px] font-bold text-navy/60">
                         {t.coopName}
                       </span>
                     </div>
@@ -138,7 +156,7 @@ function SearchInner() {
                       <span className="block font-display text-[24px] font-semibold leading-none text-navy">
                         {fmtMoney(t.price)}
                       </span>
-                      <span className="mt-1 block font-body text-[12px] font-light text-navy/60">
+                      <span className="mt-1 block font-body text-[12px] font text-navy/60">
                         par adulte
                       </span>
                     </div>
@@ -147,17 +165,17 @@ function SearchInner() {
                       <span className="block font-display text-[24px] font-semibold leading-none text-stock">
                         {t.avail}
                       </span>
-                      <span className="mt-1 block font-body text-[12px] font-light text-navy/60">
+                      <span className="mt-1 block font-body text-[12px] font text-navy/60">
                         places restantes
                       </span>
                     </div>
 
                     <Link
                       href={`/trips/${t.id}`}
-                      className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
+                      className="inline-flex items-center justify-center bg-white gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 py-4 hover:bg-navy hover:text-white"
                     >
                       Réserver
-                      <ArrowRight className="size-4" strokeWidth={2} />
+                      <MoveRight className="size-4" strokeWidth={2} />
                     </Link>
                   </li>
                 );
