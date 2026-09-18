@@ -5,7 +5,7 @@ import { useCreateCoopAccount, usePurgeCooperative, useDeleteCooperative } from 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, ArrowLeft, ChevronRight, CreditCard, Eraser, Power, Trash2, UserPlus } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ChevronRight, CreditCard, Eraser, KeyRound, Power, Trash2, UserPlus } from "lucide-react";
 import { nextPeriodEnd } from "@cp/instant/subscription";
 import {
   adminNav,
@@ -15,6 +15,7 @@ import {
   Button,
   Badge,
   ComponentCard,
+  Dialog,
   Field,
   ImageUpload,
   DataTable,
@@ -361,6 +362,11 @@ function InfoSections({ coop, plans, sub }: { coop: any; plans: any[]; sub: any 
           <Field label="Région">
             <Input value={form.region} onChange={(e) => set("region", e.target.value)} />
           </Field>
+          <div className="flex justify-end">
+            <Button size="sm" onClick={save} disabled={saving}>
+              {saving ? "…" : "Enregistrer"}
+            </Button>
+          </div>
         </div>
       </ComponentCard>
 
@@ -462,6 +468,23 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
     }
   };
 
+  // Password reset for an existing account — reuses the same upsert-by-email
+  // endpoint as account creation; passing the row's own email/role keeps the
+  // existing membership/role intact and only rewrites the credentials hash.
+  const [resetTarget, setResetTarget] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const resetPassword = () => {
+    if (!resetTarget) return;
+    if (newPassword.length < 6) { toast.error("Le mot de passe doit faire au moins 6 caractères."); return; }
+    createAccount.mutate(
+      { coopId, email: resetTarget.user?.email, name: resetTarget.user?.name, password: newPassword, role: resetTarget.role },
+      {
+        onSuccess: () => { toast.success("Mot de passe réinitialisé."); setResetTarget(null); setNewPassword(""); },
+        onError: (e) => toast.error(e instanceof Error ? e.message : "Échec."),
+      },
+    );
+  };
+
   const columns: Column<any>[] = [
     {
       key: "name",
@@ -489,6 +512,9 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
       className: "text-right",
       render: (r) => (
         <div className="flex justify-end gap-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100 focus-within:opacity-100">
+          <Button size="sm" variant="ghost" onClick={() => { setResetTarget(r); setNewPassword(""); }}>
+            <KeyRound size={14} /> Mot de passe
+          </Button>
           <Button size="sm" variant="ghost" onClick={() => toggle(r)}>
             <Power size={14} /> {r.status === "active" ? "Désactiver" : "Activer"}
           </Button>
@@ -593,6 +619,32 @@ function AccountsSection({ coopId, members }: { coopId: string; members: any[] }
           </div>
         )}
       </div>
+
+      <Dialog
+        open={!!resetTarget}
+        onClose={() => setResetTarget(null)}
+        title="Réinitialiser le mot de passe"
+        description={resetTarget?.user?.email}
+        size="sm"
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setResetTarget(null)}>Annuler</Button>
+            <Button size="sm" onClick={resetPassword} disabled={saving}>
+              {saving ? "…" : "Réinitialiser"}
+            </Button>
+          </>
+        }
+      >
+        <Field label="Nouveau mot de passe" hint="Au moins 6 caractères.">
+          <Input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            autoComplete="new-password"
+            placeholder="••••••••"
+          />
+        </Field>
+      </Dialog>
     </ComponentCard>
   );
 }

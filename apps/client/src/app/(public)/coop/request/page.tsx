@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Building2, ArrowRight } from "lucide-react";
-import { db, id, toast } from "@cp/ui";
+import { db, Dialog, id, toast } from "@cp/ui";
 import PageBanner from "@/components/site/PageBanner";
 
 const empty = { displayName: "", legalName: "", region: "", contactName: "", email: "", phone: "", address: "", message: "" };
@@ -17,6 +17,7 @@ export default function CoopRequest() {
   const [form, setForm] = useState(empty);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+  const [sentEmail, setSentEmail] = useState("");
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async () => {
@@ -40,7 +41,9 @@ export default function CoopRequest() {
           createdAt: Date.now(),
         }),
       );
+      setSentEmail(form.email.trim());
       setDone(true);
+      setForm(empty);
     } catch (e: any) {
       toast.error(e?.message ?? "Échec de l'envoi.");
     } finally {
@@ -54,27 +57,6 @@ export default function CoopRequest() {
 
       <section className="py-[100px]">
         <div className="mx-auto max-w-narrow px-[15px]">
-          {done ? (
-            <div className="mx-auto flex max-w-[640px] flex-col items-center gap-4 border border-navy/10 bg-white p-12 text-center">
-              <span className="grid h-16 w-16 place-items-center rounded-full bg-gold/15 text-gold">
-                <CheckCircle2 size={36} />
-              </span>
-              <h1 className="font-display text-[36px] font-semibold uppercase leading-none tracking-[-1px] text-navy">
-                Demande envoyée
-              </h1>
-              <p className="max-w-md font-body text-[16px] leading-[26px] text-navy/70">
-                Notre équipe examine votre demande. Vous serez contacté à{" "}
-                <span className="font-semibold text-navy">{form.email}</span>{" "}
-                dès validation, avec vos accès à l&apos;espace coopérative.
-              </p>
-              <Link
-                href="/"
-                className="mt-2 inline-flex h-[56px] items-center justify-center border border-navy/20 px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:border-gold hover:text-gold"
-              >
-                Retour à l&apos;accueil
-              </Link>
-            </div>
-          ) : (
             <div className="mx-auto max-w-[720px]">
               <div className="mb-10">
                 <span className="inline-flex items-center gap-2 font-body text-eyebrow font-semibold uppercase tracking-[3px] text-gold">
@@ -174,9 +156,32 @@ export default function CoopRequest() {
                 </div>
               </div>
             </div>
-          )}
         </div>
       </section>
+
+      <Dialog
+        open={done}
+        onClose={() => setDone(false)}
+        size="sm"
+        title="Demande envoyée"
+      >
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-gold/15 text-gold">
+            <CheckCircle2 size={36} />
+          </span>
+          <p className="max-w-md font-body text-[16px] leading-[26px] text-navy/70">
+            Notre équipe examine votre demande. Vous serez contacté à{" "}
+            <span className="font-semibold text-navy">{sentEmail}</span>{" "}
+            dès validation, avec vos accès à l&apos;espace coopérative.
+          </p>
+          <Link
+            href="/"
+            className="mt-2 inline-flex h-[56px] items-center justify-center border border-navy/20 px-7 font-display text-[15px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:border-gold hover:text-gold"
+          >
+            Retour à l&apos;accueil
+          </Link>
+        </div>
+      </Dialog>
     </main>
   );
 }

@@ -74,6 +74,7 @@ const STATUSES = ["scheduled", "boarding", "departed", "arrived", "cancelled"];
 const reserveSchema = z.object({
   name: z.string().trim().min(1, "Nom requis"),
   phone: z.string().trim().min(1, "Téléphone requis").refine(isValidPhone, "Numéro de téléphone invalide"),
+  idCardNumber: z.string().trim().optional(),
 });
 type ReserveValues = z.infer<typeof reserveSchema>;
 const methodLabel = (m: string) =>
@@ -240,7 +241,7 @@ export default function TripViewPage() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ReserveValues>({
     resolver: zodResolver(reserveSchema),
     mode: "onChange",
-    defaultValues: { name: "", phone: "" },
+    defaultValues: { name: "", phone: "", idCardNumber: "" },
   });
   const [method, setMethod] = useState(paymentMethods[0] ?? "cash");
   const [booking, setBooking] = useState(false);
@@ -328,6 +329,14 @@ export default function TripViewPage() {
 
   const duplicate = async () => {
     if (!trip) return;
+    if (
+      !(await confirm({
+        title: "Dupliquer ce trajet ?",
+        message: `Un nouveau départ ${trip.originName} → ${trip.destName} sera créé pour demain, même véhicule et même prix.`,
+        confirmLabel: "Dupliquer",
+        tone: "default",
+      }))
+    ) return;
     setDuplicating(true);
     const newId = id();
     const d = new Date();
@@ -430,6 +439,7 @@ export default function TripViewPage() {
     }
     const name = v.name.trim();
     const phone = v.phone.trim();
+    const idCardNumber = v.idCardNumber?.trim() || undefined;
     if (
       !(await confirm({
         title: "Confirmer la réservation ?",
@@ -482,6 +492,7 @@ export default function TripViewPage() {
               seatLabel,
               passengerName: name,
               passengerPhone: phone,
+              idCardNumber,
               price,
               qrToken: `${bookingId}_${seatLabel}_${Math.random().toString(36).slice(2, 10)}`,
               createdAt: Date.now(),
@@ -512,7 +523,7 @@ export default function TripViewPage() {
       await db.transact(txs);
       toast.success(`Réservation créée (${selected.length} place(s))`);
       setSelected([]);
-      reset({ name: "", phone: "" });
+      reset({ name: "", phone: "", idCardNumber: "" });
       setMethod(paymentMethods[0] ?? "cash");
     } catch (e: any) {
       toast.error("Erreur: " + (e?.message ?? "siège déjà pris"));
@@ -727,6 +738,12 @@ export default function TripViewPage() {
                     <div className="relative">
                       <Phone size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
                       <Input {...register("phone")} className="pl-9" placeholder="034 00 000 00" />
+                    </div>
+                  </Field>
+                  <Field label="Carte d'identité (facultatif)" error={errors.idCardNumber?.message}>
+                    <div className="relative">
+                      <IdCard size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
+                      <Input {...register("idCardNumber")} className="pl-9" placeholder="N° CIN / passeport" />
                     </div>
                   </Field>
                   <Field label="Mode de paiement">

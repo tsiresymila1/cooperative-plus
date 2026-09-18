@@ -33,19 +33,30 @@ export default function AppPromo() {
               directement dans votre poche, partout à Madagascar.
             </p>
 
-            <div className="mt-[36px] flex flex-wrap gap-4">
-              {["/wp-content/uploads/2025/03/app-2.png", "/wp-content/uploads/2025/03/app-3.png"].map(
-                (src) => (
-                  <Image
-                    key={src}
-                    src={src}
-                    alt=""
-                    width={200}
-                    height={59}
-                    className="h-[59px] w-[200px] object-contain"
-                  />
-                ),
-              )}
+            <div className="mt-[36px] flex flex-wrap items-center gap-4">
+              <span title="Bientôt disponible sur l'App Store" className="cursor-default opacity-60">
+                <Image
+                  src="/wp-content/uploads/2025/03/app-2.png"
+                  alt="Bientôt disponible sur l'App Store"
+                  width={200}
+                  height={59}
+                  className="h-[59px] w-[200px] object-contain"
+                />
+              </span>
+              <a
+                href="https://play.google.com/store/apps/details?id=ts.mila.cooperativeplus"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Disponible sur Google Play"
+              >
+                <Image
+                  src="/wp-content/uploads/2025/03/app-3.png"
+                  alt="Disponible sur Google Play"
+                  width={200}
+                  height={59}
+                  className="h-[59px] w-[200px] object-contain"
+                />
+              </a>
             </div>
           </div>
 

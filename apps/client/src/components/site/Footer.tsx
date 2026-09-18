@@ -31,20 +31,30 @@ export default function Footer() {
       <div className="mx-auto max-w-shell px-[15px] py-[76px]">
         <div className="flex flex-col gap-8 border-b border-white/10 pb-10 lg:flex-row lg:items-center lg:justify-between">
           <Logo dark height={48} width={190} />
-          <div className="mt-[36px] flex flex-wrap gap-4">
-            {[
-              "/wp-content/uploads/2025/03/app-2.png",
-              "/wp-content/uploads/2025/03/app-3.png",
-            ].map((src) => (
+          <div className="mt-[36px] flex flex-wrap items-center gap-4">
+            <span title="Bientôt disponible sur l'App Store" className="cursor-default opacity-60">
               <Image
-                key={src}
-                src={src}
-                alt=""
+                src="/wp-content/uploads/2025/03/app-2.png"
+                alt="Bientôt disponible sur l'App Store"
                 width={200}
                 height={59}
                 className="h-[59px] w-[200px] object-contain"
               />
-            ))}
+            </span>
+            <a
+              href="https://play.google.com/store/apps/details?id=ts.mila.cooperativeplus"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Disponible sur Google Play"
+            >
+              <Image
+                src="/wp-content/uploads/2025/03/app-3.png"
+                alt="Disponible sur Google Play"
+                width={200}
+                height={59}
+                className="h-[59px] w-[200px] object-contain"
+              />
+            </a>
           </div>
           <p className="max-w-md font-display text-[28px] font-semibold uppercase leading-[1.05] text-white">
             Réservez votre place en 2 minutes.
