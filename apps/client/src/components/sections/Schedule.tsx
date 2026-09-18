@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, MoveRight, Search , Ellipsis } from "lucide-react";
 import { db, fmtMoney, fmtTime } from "@cp/ui";
 import SectionHeading from "@/components/ui/SectionHeading";
 
@@ -17,15 +17,18 @@ const dateKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padS
 
 type WeekDay = { label: string; sub: string; key: string; today: boolean };
 
-function weekDays(now = new Date()): WeekDay[] {
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  return DAYS.map((label, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+// 7-day window centered on `now + offsetDays` — today always lands on the
+// 4th tab (index 3) when offsetDays is 0, regardless of which weekday it is.
+function weekDays(offsetDays: number, now = new Date()): WeekDay[] {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() + offsetDays - 3);
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
     const today = d.toDateString() === now.toDateString();
     return {
-      label: today ? "Aujourd'hui" : label,
+      label: today ? "Aujourd'hui" : DAYS[(d.getDay() + 6) % 7],
       sub: today ? "" : `${String(d.getDate()).padStart(2, "0")} ${MONTHS[d.getMonth()]}`,
       key: dateKey(d),
       today,
@@ -46,11 +49,19 @@ export default function Schedule({
 }: {
   padding?: string;
 } = {}) {
-  const days = useMemo(() => weekDays(), []);
+  const [offset, setOffset] = useState(0);
+  const days = useMemo(() => weekDays(offset), [offset]);
   const [active, setActive] = useState(() => {
     const i = days.findIndex((d) => d.today);
-    return i >= 0 ? i : 0;
+    return i >= 0 ? i : 3;
   });
+
+  // Re-anchor the selected tab whenever the window shifts (offset changes):
+  // prefer today if it's in view, else the centered anchor day.
+  useEffect(() => {
+    const i = days.findIndex((d) => d.today);
+    setActive(i >= 0 ? i : 3);
+  }, [days]);
 
   // Whole visible week in one query; grouped/filtered client-side by tab.
   const { data, isLoading } = db.useQuery({
@@ -82,27 +93,47 @@ export default function Schedule({
       className={`bg-contain bg-center bg-no-repeat ${padding}`}
       style={{ backgroundImage: "url('/wp-content/uploads/2025/04/schedule-bg.png')" }}
     >
-      <div className="mx-auto max-w-shell px-[15px]">
+      <div className="mx-auto max-w-7xl px-[15px]">
         <SectionHeading eyebrow="Heure de départ" title="Horaires récents" align="center" className="mb-[50px]" />
 
-        {/* Day tab strip — navy bar, active tab gold */}
-        <div className="mb-[40px] grid grid-cols-4 bg-navy md:grid-cols-7">
-          {days.map((d, i) => (
-            <button
-              key={d.key}
-              type="button"
-              onClick={() => setActive(i)}
-              aria-pressed={i === active}
-              className={`flex h-[80px] flex-col items-center justify-center transition-colors duration-300 ${
-                i === active ? "bg-gold text-navy" : "text-white hover:bg-white/10"
-              }`}
-            >
-              <span className="font-display text-[16px] font-semibold uppercase leading-none">{d.label}</span>
-              {d.sub ? (
-                <span className="mt-2 font-body text-[12px] font-semibold uppercase tracking-[2px] opacity-60">{d.sub}</span>
-              ) : null}
-            </button>
-          ))}
+        {/* Day tab strip — navy bar, active tab gold, week-by-week nav on either side */}
+        <div className="mb-[40px] flex items-stretch bg-navy">
+          <button
+            type="button"
+            onClick={() => setOffset((o) => o - 7)}
+            aria-label="Semaine précédente"
+            className="flex w-[44px] shrink-0 items-center justify-center  cursor-pointer border-0 border-white/10 text-white transition-colors duration-300 hover:bg-white/10 md:w-[56px]"
+          >
+            <ChevronLeft className="size-5 text-gold-nav" strokeWidth={2} />
+          </button>
+
+          <div className="grid flex-1 grid-cols-4 md:grid-cols-7">
+            {days.map((d, i) => (
+              <button
+                key={d.key}
+                type="button"
+                onClick={() => setActive(i)}
+                aria-pressed={i === active}
+                className={`flex h-[80px] flex-col items-center justify-center transition-colors duration-300  cursor-pointer ${
+                  i === active ? "bg-gold text-navy" : "text-white hover:bg-white/10"
+                }`}
+              >
+                <span className="font-display text-[16px] font-semibold uppercase leading-none">{d.label}</span>
+                {d.sub ? (
+                  <span className="mt-2 font-body text-[12px] font-semibold uppercase tracking-[2px] opacity-60">{d.sub}</span>
+                ) : null}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setOffset((o) => o + 7)}
+            aria-label="Semaine suivante"
+            className="flex w-[44px] shrink-0 items-center justify-center cursor-pointer border-0 border-white/10 text-white transition-colors duration-300 hover:bg-white/10 md:w-[56px]"
+          >
+            <ChevronRight className="size-5 text-gold-nav" strokeWidth={2} />
+          </button>
         </div>
 
         {isLoading ? (
@@ -126,34 +157,35 @@ export default function Schedule({
                 >
                   <div>
                     <span className="block font-display text-[24px] font-semibold uppercase leading-none text-navy">{t.originName}</span>
-                    <span className="mt-1 block font-body text-[14px] font-light text-navy/60">{fmtTime(t.departureAt)}</span>
+                    <span className="mt-1 block font-body text-[14px] font-normal text-navy/60">{fmtTime(t.departureAt)}</span>
                   </div>
 
-                  <div className="text-center">
-                    <span className="font-body text-[14px] font-light text-navy/60">{duration}</span>
+                  <div className="flex flex-col items-center">
+                    <div className="flex items-center justify-center"><Ellipsis /><Ellipsis /> <Ellipsis /> </div>
+                    <div className="font-body text-[14px] font-normal text-navy/60">{duration}</div>
                   </div>
 
                   <div>
                     <span className="block font-display text-[24px] font-semibold uppercase leading-none text-navy">{t.destName}</span>
-                    <span className="mt-1 block font-body text-[14px] font-light text-navy/60">{t.coopName}</span>
+                    <span className="mt-1 block font-body text-[14px] text-navy/60 font-bold">{t.coopName}</span>
                   </div>
 
                   <div>
                     <span className="block font-display text-[24px] font-semibold leading-none text-navy">{fmtMoney(t.price)}</span>
-                    <span className="mt-1 block font-body text-[12px] font-light text-navy/60">par adulte</span>
+                    <span className="mt-1 block font-body text-[12px] font-normal text-navy/60">par adulte</span>
                   </div>
 
                   <div>
                     <span className="block font-display text-[24px] font-semibold leading-none text-stock">{t.avail}</span>
-                    <span className="mt-1 block font-body text-[12px] font-light text-navy/60">places restantes</span>
+                    <span className="mt-1 block font-body text-[12px] font-normal text-navy/60">places restantes</span>
                   </div>
 
                   <Link
                     href={`/trips/${t.id}`}
-                    className="inline-flex items-center gap-2 font-display text-[16px] font-semibold uppercase text-navy transition-colors duration-500 hover:text-gold"
+                    className="inline-flex items-center gap-2 font-display text-[16px] font-semibold hover:bg-navy hover:text-white uppercase text-navy bg-white justify-center py-4 transition-colors duration-500 hover:text-gold"
                   >
                     Réserver
-                    <ArrowRight className="size-4" strokeWidth={2} />
+                    <MoveRight className="size-4 text-gold" strokeWidth={2} />
                   </Link>
                 </li>
               );

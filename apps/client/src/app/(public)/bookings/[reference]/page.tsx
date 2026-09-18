@@ -235,13 +235,13 @@ export default function Confirmation({
               {/* Boarding pass — Tourix "bus ticket" artwork, rebuilt as a real card:
               gold top bar · white world-map body · navy tear-off stub at right.
               Fixed width; only this container scrolls horizontally on small screens. */}
-              <div className="relative flex w-[840px] shrink-0 overflow-hidden rounded-xl bg-white shadow-[0_24px_60px_-28px_rgba(20,49,76,.55)]">
+              <div className="relative flex w-[840px] shrink-0 overflow-hidden rounded-xl bg-white shadow-[2px_24px_60px_-28px_rgba(20,49,76,.55)] border">
                 {/* ── Main pass ── */}
                 <div className="min-w-0 flex-1">
                   {/* Gold header bar */}
                   <div className="flex items-center justify-between gap-3 bg-gold-nav px-5 py-3.5 text-navy">
                     <span className="flex items-center gap-3">
-                      <BrandLogo className="h-10" tone="light" />
+                      <BrandLogo className="h-10 bg-navy rounded-md" tone="light" />
                       <span className="font-display text-2xl font-bold uppercase tracking-[0.06em]">
                         Ticket
                       </span>
@@ -249,7 +249,7 @@ export default function Confirmation({
                     </span>
                     <span className="flex items-center gap-2.5 text-right">
                       <span className="hidden font-body text-[9px] font-semibold uppercase leading-tight tracking-[1.5px] text-navy/70 sm:block">
-                        {trip?.coopName ?? "Cooperative Plus"}
+                        {trip?.coopName ?? "Coop Plus"}
                       </span>
                       <CoopLogo
                         url={trip?.cooperative?.logoUrl}

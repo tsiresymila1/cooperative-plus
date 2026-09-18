@@ -334,7 +334,7 @@ export default function Checkout() {
         style={{ paddingTop: insets.top + 8 }}
       >
         <View className="flex-row items-center gap-3">
-          <Pressable onPress={leave} className="h-9 w-9 items-center justify-center rounded-[4px] bg-white/15">
+          <Pressable onPress={leave} className="h-9 w-9 items-center justify-center rounded-full bg-white/15">
             <ChevronLeft size={20} color="#ffffff" />
           </Pressable>
           <Text className="font-display text-lg uppercase tracking-wide text-white">Paiement</Text>
@@ -375,7 +375,7 @@ export default function Checkout() {
               <Text className="font-sans text-sm text-ink-soft">
                 Sièges {selection.seats.map((s) => s.seatLabel).join(", ")}
               </Text>
-              <Text className="font-mono text-base text-ink">
+              <Text className="font-sans text-base text-ink">
                 {seatCount} × {fmtMoney(selection.price, selection.currency)}
               </Text>
             </View>
@@ -419,8 +419,8 @@ export default function Checkout() {
                     <m.Icon size={20} color={active ? "#ffffff" : "#14314C"} />
                   </View>
                   <View className="flex-1">
-                    <Text className="font-sans text-base font-medium text-ink">{m.label}</Text>
-                    <Text className="font-mono text-[11px] text-ink-soft/60">{m.desc}</Text>
+                    <Text className="font-display text-base font-medium text-ink">{m.label}</Text>
+                    <Text className="font-sans text-[11px] text-ink-soft/60">{m.desc}</Text>
                   </View>
                   <View
                     className={cn(
@@ -440,10 +440,10 @@ export default function Checkout() {
       <View className="absolute inset-x-0 bottom-0 border-t border-ink/10 bg-paper px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         <View className="mb-2 flex-row items-center justify-between">
           <Text className="font-sans font-bold text-sm text-ink-soft">Total</Text>
-          <Text className="font-mono font-bold text-xl text-green">{fmtMoney(total, selection.currency)}</Text>
+          <Text className="font-sans font-bold text-xl text-green">{fmtMoney(total, selection.currency)}</Text>
         </View>
         <Button className="w-full" onPress={() => setConfirmOpen(true)} loading={submitting} disabled={!canSubmit}>
-          <Text className="font-sans font-semibold uppercase tracking-wide text-white">
+          <Text className="font-display font-semibold uppercase tracking-wide text-white">
             {isOnline ? `Payer ${fmtMoney(total, selection.currency)}` : "Réserver · payer à la gare"}
           </Text>
         </Button>
@@ -465,7 +465,7 @@ export default function Checkout() {
               <Text className="font-sans font-medium text-ink">Annuler</Text>
             </Button>
             <Button className="flex-1" onPress={confirm}>
-              <Text className="font-sans font-medium text-white">
+              <Text className="font-display font-medium text-white">
                 {isOnline ? "Payer en ligne" : "Réserver"}
               </Text>
             </Button>

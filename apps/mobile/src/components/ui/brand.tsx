@@ -24,7 +24,7 @@ const button = cva("flex-row items-center justify-center gap-2 rounded-lg active
   },
   defaultVariants: { variant: "primary", size: "md" },
 });
-const buttonText = cva("font-sans font-medium", {
+const buttonText = cva("font-display font-medium", {
   variants: {
     variant: { primary: "text-paper", ink: "text-white", outline: "text-ink", ghost: "text-ink" },
     size: { sm: "text-sm", md: "text-base", lg: "text-base" },

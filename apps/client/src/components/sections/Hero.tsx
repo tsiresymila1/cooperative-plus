@@ -12,7 +12,7 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <>
-      <section className="relative h-[624px] overflow-hidden bg-navy lg:h-[90vh]">
+      <section className="relative h-[624px] overflow-hidden bg-navy lg:h-[calc(90vh-110px)]">
         <div className="absolute inset-0 animate-[heroZoom_1500ms_ease-out_forwards]">
           <Image
             src="/wp-content/uploads/2025/02/SLIDE_01.jpg?v=7"
@@ -31,24 +31,24 @@ export default function Hero() {
           {/* The source sets the strapline beside the heading, bottom-aligned
               with its last line — not stacked under it. */}
           <div className="flex flex-col items-start gap-12 lg:flex-row lg:items-end lg:gap-[24px]">
-            <h1 className="font-display text-[64px] font-semibold uppercase leading-[0.85] tracking-[-1.5px] text-white lg:text-hero lg:leading-[110.5px] lg:tracking-[-2.5px]">
+            <h1 className="font-display text-[64px] font-semibold uppercase leading-[0.85] tracking-[-1.5px] text-white lg:text-hero lg:leading-[110.5px] lg:tracking-[-5.5px]">
               <span className="text-gold">Voyager</span>
               <br />
               partout à
               <br />
-              Madagascar
+              Mada
             </h1>
 
-            <p className="max-w-[260px] font-body text-[16px] font-bold uppercase leading-[25.6px] tracking-[1px] text-white/80 lg:mb-[30px] lg:max-w-[190px]">
+            <p className="max-w-[300px] lg:-ml-[200px] font-display text-[24px] font-bold uppercase leading-[30px] tracking-[1px] text-white/80 lg:-mb-[0px] lg:max-w-[300px]">
               Réservez et payez vos trajets en ligne, en toute simplicité
             </p>
           </div>
-          <Link
+          {/*<Link
             href="/search"
             className="mt-[40px] flex w-[200px] items-center justify-center bg-gold px-5 py-3 text-center font-display text-lg font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:bg-navy hover:text-white sm:inline-flex"
           >
             Réserver
-          </Link>
+          </Link>*/}
 
           {/* Source pins the form at y=857 in a 1057-tall hero — 96px off the
               bottom — rather than letting it sit under the centred heading. */}

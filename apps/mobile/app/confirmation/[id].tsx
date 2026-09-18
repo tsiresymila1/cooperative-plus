@@ -115,13 +115,32 @@ export default function Confirmation() {
 
   return (
     <View className="flex-1 bg-sand" style={{ paddingTop: insets.top }}>
-      <View className="flex flex-row justify-start w-full">
+      <View className="flex flex-row justify-between items-center w-full">
         <Pressable
           onPress={() => router.back()}
-          className="h-9 w-9 items-center justify-center rounded-full bg-white/15 px-8"
+          className="h-9 w-9 items-center justify-center rounded-full bg-navy/15 ms-4"
         >
           <ChevronLeft size={30} color={c.ink} />
         </Pressable>
+        {/* Print / save */}
+        <View className=" flex-row">
+          <Button
+            variant="ghost"
+            className=""
+            loading={printBusy}
+            onPress={() => run(setPrintBusy, () => printTicket(pdfArgs()))}
+          >
+            {!printBusy && <Printer size={18} color={c.ink} />}
+          </Button>
+          <Button
+            variant="ghost"
+            className=""
+            loading={pdfBusy}
+            onPress={() => run(setPdfBusy, () => shareTicketPdf(pdfArgs()))}
+          >
+            {!pdfBusy && <Download size={18} color={c.ink} />}
+          </Button>
+        </View>
       </View>
       {isLoading ? (
         <View className="w-full h-full items-center justify-center">
@@ -171,7 +190,7 @@ export default function Confirmation() {
                 <TagBadge name={trip.tag.name} color={trip.tag.color} />
               </View>
             ) : null}
-            <View className="overflow-hidden rounded-[16px] bg-paper">
+            <View className="overflow-hidden rounded-[16px] bg-paper border border-gray-200 dark:border-gray-800">
               {/* Gold header: coop + logo */}
               <View className="flex-row items-center justify-between gap-3 bg-laterite px-5 py-3.5">
                 <View className="flex-1 flex-row items-center gap-2.5">
@@ -189,7 +208,7 @@ export default function Confirmation() {
                   </Text>
                 </View>
                 <Text className="font-display text-lg font-bold uppercase tracking-[2px] text-navy">
-                  Billet
+                  Ticket
                 </Text>
               </View>
 
@@ -341,30 +360,6 @@ export default function Confirmation() {
               </Text>
             </Button>
           )}
-
-          {/* Print / save */}
-          <View className="mt-5 flex-row gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              loading={pdfBusy}
-              onPress={() => run(setPdfBusy, () => shareTicketPdf(pdfArgs()))}
-            >
-              {!pdfBusy && <Download size={18} color="#14314C" />}
-              <Text className="font-sans font-medium text-ink">
-                Enregistrer PDF
-              </Text>
-            </Button>
-            <Button
-              variant="outline"
-              className="flex-1"
-              loading={printBusy}
-              onPress={() => run(setPrintBusy, () => printTicket(pdfArgs()))}
-            >
-              {!printBusy && <Printer size={18} color="#14314C" />}
-              <Text className="font-sans font-medium text-ink">Imprimer</Text>
-            </Button>
-          </View>
 
           <View className="mt-5 gap-5">
             <Button

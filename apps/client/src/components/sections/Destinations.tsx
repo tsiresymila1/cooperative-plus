@@ -1,15 +1,30 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Map as MapIcon } from "lucide-react";
 import { db, notDeleted } from "@cp/ui";
 import SectionHeading from "@/components/ui/SectionHeading";
 
 /* Custom destination marker — a pin carrying the brand chevron (not a lucide
    icon). Inherits currentColor. */
-function DestIcon({ className, chevronFill = "#14314C" }: { className?: string; chevronFill?: string }) {
+function DestIcon({
+  className,
+  chevronFill = "#14314C",
+}: {
+  className?: string;
+  chevronFill?: string;
+}) {
   return (
-    <svg viewBox="0 0 24 32" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-      <path d="M12 0C5.7 0 .6 5.1.6 11.4.6 20 12 32 12 32s11.4-12 11.4-20.6C23.4 5.1 18.3 0 12 0Z" fill="currentColor" />
+    <svg
+      viewBox="0 0 24 32"
+      className={className}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <path
+        d="M12 0C5.7 0 .6 5.1.6 11.4.6 20 12 32 12 32s11.4-12 11.4-20.6C23.4 5.1 18.3 0 12 0Z"
+        fill="currentColor"
+      />
       <path d="M9 6.5 16 12l-7 5.5V13l3-1-3-1V6.5Z" fill={chevronFill} />
     </svg>
   );
@@ -34,15 +49,28 @@ function cityImg(imageUrl: string | undefined, name: string) {
 
 /* Template "Popular destinations" band — same layout; real Coopérative Plus
    destinations. Branded gradient cards (no stock photos) + custom marker icon. */
-export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { padding?: string } = {}) {
-  const { data } = db.useQuery({ destinations: { $: { where: { isGlobal: true }, order: { name: "asc" } } } });
-  const all = [...new Map((data?.destinations ?? []).filter(notDeleted).map((d: any) => [d.name, d])).values()] as any[];
-  const featured = all.filter((d) => d.isPopular).concat(all.filter((d) => !d.isPopular)).slice(0, 4);
+export default function Destinations({
+  padding = "py-[45px] lg:py-[67px]",
+}: { padding?: string } = {}) {
+  const { data } = db.useQuery({
+    destinations: { $: { where: { isGlobal: true }, order: { name: "asc" } } },
+  });
+  const all = [
+    ...new Map(
+      (data?.destinations ?? [])
+        .filter(notDeleted)
+        .map((d: any) => [d.name, d]),
+    ).values(),
+  ] as any[];
+  const featured = all
+    .filter((d) => d.isPopular)
+    .concat(all.filter((d) => !d.isPopular))
+    .slice(0, 4);
   const rest = all.slice(0, 18);
 
   return (
     <section className={padding}>
-      <div className="mx-auto max-w-shell px-[15px]">
+      <div className="mx-auto max-w-shell px-[15px] pt-18">
         <SectionHeading
           eyebrow="Voyageons ensemble"
           title="Destinations populaires"
@@ -90,10 +118,10 @@ export default function Destinations({ padding = "py-[45px] lg:py-[67px]" }: { p
               <li key={c.id ?? c.name}>
                 <Link
                   href={`/search?to=${encodeURIComponent(c.name)}&pax=1`}
-                  className="flex h-[55px] items-center gap-3 border border-navy/10 px-[18px] font-body text-[14px] font-normal text-navy transition-colors duration-500 hover:border-gold hover:text-gold"
+                  className="flex py-6 items-center gap-3 bg-navy/10 border-0 border-navy/10 px-[18px] font-body text-[14px] font-normal text-navy transition-colors duration-500 hover:border-gold hover:text-gold"
                 >
-                  <DestIcon className="h-4 w-3.5 shrink-0 text-gold" />
-                  {c.name}
+                  <MapIcon className="h-5 w-5 shrink-0 text-gold" />
+                  <span className="font-bold tracking-wide">{c.name}</span>
                 </Link>
               </li>
             ))}

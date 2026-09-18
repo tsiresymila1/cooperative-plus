@@ -339,7 +339,7 @@ export default function TripDetail() {
               disabled={selectedLabels.length === 0}
               className="w-full"
             >
-              <Text className="font-sans font-semibold uppercase tracking-wide text-white">
+              <Text className="font-display font-semibold uppercase tracking-wide text-white">
                 {user
                   ? "Continuer"
                   : "Se connecter pour réserver"}

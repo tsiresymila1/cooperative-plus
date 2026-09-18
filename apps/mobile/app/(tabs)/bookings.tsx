@@ -177,7 +177,7 @@ function TicketCard({
       {/* Route timeline */}
       <View className="flex-row items-center px-5 pb-4 pt-3">
         <View className="flex-1">
-          <Text className="font-mono text-2xl text-ink">
+          <Text className="font-display text-2xl text-ink">
             {trip ? fmtTime(trip.departureAt) : "--:--"}
           </Text>
           <Text
@@ -195,12 +195,12 @@ function TicketCard({
             <View className="h-px flex-1 bg-ink/15" />
             <View className="h-2 w-2 rounded-full bg-laterite" />
           </View>
-          <Text className="mt-1 font-mono text-[10px] uppercase tracking-wider text-ink-soft/55">
+          <Text className="mt-1 font-display text-[10px] uppercase tracking-wider text-ink-soft/55">
             {trip ? fmtDateKey(trip.departDate) : ""}
           </Text>
         </View>
         <View className="flex-1 items-end">
-          <Text className="font-mono text-2xl text-ink-soft">
+          <Text className="font-display text-2xl text-ink-soft">
             {trip?.arrivalEstimateAt ? fmtTime(trip.arrivalEstimateAt) : "—"}
           </Text>
           <Text
@@ -222,10 +222,10 @@ function TicketCard({
       {/* Footer */}
       <View className="flex-row items-center justify-between px-5 py-4">
         <View>
-          <Text className="font-mono text-[10px] uppercase tracking-wider text-ink-soft/50">
+          <Text className="font-sans text-[10px] uppercase tracking-wider text-ink-soft/50">
             {b.seatCount} {b.seatCount > 1 ? "places" : "place"}
           </Text>
-          <Text className="mt-0.5 font-mono text-lg text-ink">
+          <Text className="mt-0.5 font-display text-lg text-ink">
             {fmtMoney(b.totalAmount, b.currency)}
           </Text>
         </View>
