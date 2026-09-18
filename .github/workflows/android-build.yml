@@ -115,15 +115,28 @@ jobs:
           if-no-files-found: error
 
       # Attach APK + AAB to a GitHub Release (only on tag push).
+      # "Error saving asset" is a known transient GitHub API flake on large
+      # uploads (AAB+APK ~120MB combined) — retry a few times with `gh`
+      # directly. continue-on-error so a persistent GitHub-side flake never
+      # blocks the Play Store deploy job below, which is independent.
       - name: Publish GitHub Release
         if: ${{ github.ref_type == 'tag' }}
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          files: |
-            apps/mobile/android/app/build/outputs/cooperative-plus_${{ steps.ver.outputs.tag }}.apk
-            apps/mobile/android/app/build/outputs/cooperative-plus_${{ steps.ver.outputs.tag }}.aab
+        continue-on-error: true
+        working-directory: apps/mobile/android/app/build/outputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ver.outputs.tag }}
+        run: |
+          for i in 1 2 3; do
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              gh release upload "$TAG" "cooperative-plus_${TAG}.apk" "cooperative-plus_${TAG}.aab" --clobber && exit 0
+            else
+              gh release create "$TAG" "cooperative-plus_${TAG}.apk" "cooperative-plus_${TAG}.aab" --title "$TAG" --generate-notes && exit 0
+            fi
+            echo "Attempt $i failed, retrying in 20s..."
+            sleep 20
+          done
+          echo "::warning::GitHub Release publish failed after 3 attempts (non-fatal, artifacts still available)"
 
   # ── Deploy: upload the built AAB to the Play Store (internal track). ──
   # Runs after `build`; skipped automatically when the Play secret is absent.
