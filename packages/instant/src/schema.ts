@@ -255,6 +255,7 @@ const schema = i.schema({
       seatLabel: i.string(),
       passengerName: i.string(),
       passengerPhone: i.string().optional(),
+      idCardNumber: i.string().optional(),
       price: i.number(),
       checkedInAt: i.date().optional(),
       qrToken: i.string().unique().indexed(),
