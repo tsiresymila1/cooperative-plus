@@ -118,6 +118,9 @@ export default function Home() {
             <Text className="font-sans text-sm text-white/70">
               {user?.email ? `Bonjour, ${user.email.split("@")[0]}` : "Bonjour"}
             </Text>
+            <Text style={{ fontFamily: "ABeeZee_400Regular", fontSize: 28, color: "white" }}>DEBUG explicit abeezee</Text>
+            <Text className="font-sans" style={{ fontSize: 28, color: "white" }}>DEBUG font-sans class</Text>
+            <Text style={{ fontFamily: "System", fontSize: 28, color: "white" }}>DEBUG system font</Text>
             <Text className="mt-1 font-display text-3xl uppercase tracking-wide text-white">
               Où allez-vous ?
             </Text>

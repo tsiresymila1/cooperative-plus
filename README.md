@@ -69,7 +69,7 @@ Plateforme multi-coopératives : comparez les départs, choisissez votre siège 
 | **Base de données** | InstantDB (realtime, schéma + permissions typés) |
 | **Web** | Next.js (App Router) · TypeScript · Tailwind v4 · React Query |
 | **Mobile** | Expo SDK 55 · React Native 0.83 (New Arch) · NativeWind v5 (Tailwind v4) · react-native-reusables · Reanimated 4 · gorhom bottom-sheet · expo-router |
-| **UI mobile** | Barlow Condensed (display) · Plus Jakarta Sans (sans) · JetBrains Mono · thème clair/sombre |
+| **UI mobile** | Barlow Condensed (display) · ABeeZee (sans) · JetBrains Mono · thème clair/sombre |
 
 ## 📂 Organisation
 

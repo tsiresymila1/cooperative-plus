@@ -12,10 +12,10 @@
   "dependencies": {
     "@cp/instant": "workspace:^",
     "@cp/validation": "workspace:*",
+    "@expo-google-fonts/abeezee": "^0.4.1",
     "@expo-google-fonts/barlow-condensed": "^0.4.1",
     "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@expo-google-fonts/manrope": "^0.4.2",
-    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
     "@expo-google-fonts/sora": "^0.4.2",
     "@expo/metro-runtime": "~55.0.11",
     "@gorhom/bottom-sheet": "^5.2.14",

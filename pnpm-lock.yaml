@@ -307,6 +307,9 @@ importers:
       '@cp/validation':
         specifier: workspace:*
         version: link:../../packages/validation
+      '@expo-google-fonts/abeezee':
+        specifier: ^0.4.1
+        version: 0.4.1
       '@expo-google-fonts/barlow-condensed':
         specifier: ^0.4.1
         version: 0.4.1
@@ -314,9 +317,6 @@ importers:
         specifier: ^0.4.1
         version: 0.4.1
       '@expo-google-fonts/manrope':
-        specifier: ^0.4.2
-        version: 0.4.2
-      '@expo-google-fonts/plus-jakarta-sans':
         specifier: ^0.4.2
         version: 0.4.2
       '@expo-google-fonts/sora':
@@ -1475,6 +1475,9 @@ packages:
   '@ewoudenberg/difflib@0.1.0':
     resolution: {integrity: sha512-OU5P5mJyD3OoWYMWY+yIgwvgNS9cFAU10f+DDuvtogcWQOoJIsQ4Hy2McSfUfhKjq8L0FuWVb4Rt7kgA+XK86A==}
 
+  '@expo-google-fonts/abeezee@0.4.1':
+    resolution: {integrity: sha512-eC8E+DJp7519ilH4hy4A4opxt2K33CdRzTjDmw1SLzJnrtQjTfcJvqjTCXpApYNAYU1ya9JiHhx6Yq87+8FQ+w==}
+
   '@expo-google-fonts/barlow-condensed@0.4.1':
     resolution: {integrity: sha512-9yuXU1MpI4Dw/8rR4pj2EXcT4/31H5+DrrT47auF8IzD9r7SZPRoNVq8clRq7zxOTh7v1gJk3pBhydDVf2x/dA==}
 
@@ -1486,9 +1489,6 @@ packages:
 
   '@expo-google-fonts/material-symbols@0.4.38':
     resolution: {integrity: sha512-IJkBtN1o8u9BW5fvSii1MyHPQ7Q0HxbWcVBvOrOzgMLpVtZw7R2w94wBTVR7kZwv3w1JNTESMmLA5Sqn1+Z36A==}
-
-  '@expo-google-fonts/plus-jakarta-sans@0.4.2':
-    resolution: {integrity: sha512-6LYVmVGwjQvH+uzzWlVc9+oMj4lkNQ41aymVDjO+x8aFk8kCye20wOyLomYMZaMezA++Uf1mZRCw3W3Fy/hxEA==}
 
   '@expo-google-fonts/sora@0.4.2':
     resolution: {integrity: sha512-X86Kl1cfObcSUzTLIbtmrPCLRlIbCNh0uBOo8bjmXb8gWgVVhnI8CZJEK2btsdq85JPn5k4P6sbV9JLbAm7dqQ==}
@@ -6926,6 +6926,8 @@ snapshots:
     dependencies:
       heap: 0.2.7
 
+  '@expo-google-fonts/abeezee@0.4.1': {}
+
   '@expo-google-fonts/barlow-condensed@0.4.1': {}
 
   '@expo-google-fonts/jetbrains-mono@0.4.1': {}
@@ -6933,8 +6935,6 @@ snapshots:
   '@expo-google-fonts/manrope@0.4.2': {}
 
   '@expo-google-fonts/material-symbols@0.4.38': {}
-
-  '@expo-google-fonts/plus-jakarta-sans@0.4.2': {}
 
   '@expo-google-fonts/sora@0.4.2': {}
 
