@@ -143,7 +143,7 @@ export function DestinationField({
                 paddingVertical: 12,
                 fontSize: 16,
                 color: c.ink,
-                fontFamily: "PlusJakartaSans_500Medium",
+                fontFamily: "ABeeZee_400Regular",
               }}
             />
           </View>

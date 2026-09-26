@@ -66,15 +66,17 @@ export default function BusTravel() {
           </div>
         </div>
 
-        {/* Boarding-pass artwork (Antananarivo → Mahajanga). */}
+        {/* Boarding-pass artwork (Antananarivo → Toamasina) — real ticket design,
+            rotated 90° to a vertical 330x840 image, then tilted -30° for the
+            "falling ticket" presentation, transparent background. */}
         <Image
-          src="/wp-content/uploads/2025/02/tickets_img.png?v=3"
+          src="/wp-content/uploads/2025/02/tickets_img_vertical.png?v=1"
           alt=""
-          width={564}
-          height={593}
-          sizes="(max-width: 1024px) 90vw, 564px"
+          width={330}
+          height={840}
+          sizes="(max-width: 1024px) 60vw, 300px"
           aria-hidden
-          className="mx-auto mt-[40px] h-[378px] w-auto object-contain motion-safe:animate-[ticketReveal_900ms_cubic-bezier(0.16,1,0.3,1)_both] lg:pointer-events-none lg:absolute lg:left-[525px] lg:top-[40px] lg:mt-0 lg:h-[593px] lg:w-[564px] lg:max-w-none"
+          className="mx-auto mt-[40px] h-auto w-[160px] -rotate-[160deg] object-contain motion-safe:animate-[ticketReveal_900ms_cubic-bezier(0.16,1,0.3,1)_both] lg:pointer-events-none lg:absolute lg:left-[640px] lg:top-[20px] lg:mt-0 lg:w-[300px] lg:max-w-none"
         />
       </div>
     </section>
