@@ -60,7 +60,7 @@ export function Calendar({
       <View className="mt-3 flex-row">
         {WEEKDAYS.map((w, i) => (
           <View key={i} className="flex-1 items-center">
-            <Text className="font-mono text-[11px] text-ink-soft/50">{w}</Text>
+            <Text className="font-code text-[11px] text-ink-soft/50">{w}</Text>
           </View>
         ))}
       </View>
@@ -84,7 +84,7 @@ export function Calendar({
               >
                 <Text
                   className={cn(
-                    "font-sans text-sm",
+                    "font-body text-sm",
                     selected ? "text-paper" : disabled ? "text-ink-soft/25" : "text-ink",
                   )}
                 >

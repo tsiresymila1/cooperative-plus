@@ -1,5 +1,4 @@
 import "../global.css";
-import "@/lib/default-font";
 import { useCallback, useEffect, useState } from "react";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";

@@ -69,7 +69,7 @@ export default function Results() {
           <ArrowRight size={18} color="#D9A441" />
           <Text className="flex-1 font-display text-2xl text-laterite" numberOfLines={1}>{dest}</Text>
         </View>
-        <Text className="mt-1.5 font-mono text-xs text-white/70">
+        <Text className="mt-1.5 font-code text-xs text-white/70">
           {fmtDateKey(date)}
           {!isLoading && !error ? ` · ${trips.length} départ${trips.length > 1 ? "s" : ""}` : ""}
         </Text>
@@ -78,7 +78,7 @@ export default function Results() {
       {isLoading ? (
         <Spinner />
       ) : error ? (
-        <Text className="px-5 pt-5 font-sans text-sm text-laterite-deep">Erreur de chargement. Réessayez.</Text>
+        <Text className="px-5 pt-5 font-body text-sm text-laterite-deep">Erreur de chargement. Réessayez.</Text>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           {trips.length === 0 ? (
@@ -87,7 +87,7 @@ export default function Results() {
                 <Bus size={26} color="#4a5680" />
               </View>
               <Text className="mt-4 font-display text-xl text-ink">Aucun départ trouvé</Text>
-              <Text className="mt-2 text-center font-sans text-sm text-ink-soft/70">
+              <Text className="mt-2 text-center font-body text-sm text-ink-soft/70">
                 Pas de trajet {origin} → {dest} le {fmtDateKey(date)}.
               </Text>
             </View>
@@ -109,29 +109,29 @@ export default function Results() {
                         <View className="flex-row items-center justify-between gap-2">
                           <View className="flex-1 flex-row items-center gap-2">
                             <Bus size={16} color="#14314C" />
-                            <Text className="flex-1 font-sans text-sm font-bold text-ink" numberOfLines={1}>{t.coopName}</Text>
+                            <Text className="flex-1 font-body text-sm font-bold text-ink" numberOfLines={1}>{t.coopName}</Text>
                           </View>
                           <View className="rounded-full bg-laterite/10 px-2.5 py-1">
-                            <Text className="font-mono text-[11px] font-semibold text-laterite" numberOfLines={1}>{t.vehicleName}</Text>
+                            <Text className="font-code text-[11px] font-semibold text-laterite" numberOfLines={1}>{t.vehicleName}</Text>
                           </View>
                         </View>
 
                         {/* Times + timeline */}
                         <View className="mt-3 flex-row items-center">
                           <View>
-                            <Text className="font-mono text-[10px] uppercase tracking-wide text-ink-soft/50" numberOfLines={1}>{origin}</Text>
-                            <Text className="mt-0.5 font-mono text-base font-bold text-ink">{fmtTime(t.departureAt)}</Text>
+                            <Text className="font-code text-[10px] uppercase tracking-wide text-ink-soft/50" numberOfLines={1}>{origin}</Text>
+                            <Text className="mt-0.5 font-code text-base font-bold text-ink">{fmtTime(t.departureAt)}</Text>
                           </View>
                           <RouteTimeline className="mx-3 flex-1" />
                           <View className="items-end">
-                            <Text className="font-mono text-[10px] uppercase tracking-wide text-ink-soft/50" numberOfLines={1}>{dest}</Text>
-                            <Text className="mt-0.5 font-mono text-base font-bold text-ink">
+                            <Text className="font-code text-[10px] uppercase tracking-wide text-ink-soft/50" numberOfLines={1}>{dest}</Text>
+                            <Text className="mt-0.5 font-code text-base font-bold text-ink">
                               {t.arrivalEstimateAt ? fmtTime(t.arrivalEstimateAt) : "—"}
                             </Text>
                           </View>
                         </View>
                         {t.arrivalEstimateAt ? (
-                          <Text className="mt-1 text-center font-mono text-[10px] text-ink-soft/45">
+                          <Text className="mt-1 text-center font-code text-[10px] text-ink-soft/45">
                             Estimé {durationLabel(toMs(t.departureAt), toMs(t.arrivalEstimateAt))}
                           </Text>
                         ) : null}
@@ -142,16 +142,16 @@ export default function Results() {
                           style={{ borderTopWidth: 1, borderStyle: "dashed", borderColor: "#14314C22" }}
                         >
                           <View>
-                            <Text className="font-mono text-base font-bold text-ink">{fmtMoney(t.price, t.currency)}</Text>
+                            <Text className="font-code text-base font-bold text-ink">{fmtMoney(t.price, t.currency)}</Text>
                             <Text className={cn(
-                              "font-mono text-xs font-semibold",
+                              "font-code text-xs font-semibold",
                               full ? "text-laterite-deep" : booked / t.seatsTotal >= 0.8 ? "text-clay" : "text-green",
                             )}>
                               {full ? "Complet" : `${t.seatsTotal - booked} place${t.seatsTotal - booked > 1 ? "s" : ""} restante${t.seatsTotal - booked > 1 ? "s" : ""}`}
                             </Text>
                           </View>
                           <View className="flex-row items-center gap-1">
-                            <Text className="font-sans text-sm font-bold text-laterite">Voir places</Text>
+                            <Text className="font-body text-sm font-bold text-laterite">Voir places</Text>
                             <ChevronRight size={16} color="#D9A441" />
                           </View>
                         </View>

@@ -32,7 +32,7 @@ export default function TabsLayout() {
           shadowOffset: { width: 0, height: -4 },
           elevation: 16,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: "600", marginTop: 2 },
+        tabBarLabelStyle: { fontFamily: "ABeeZee_400Regular", fontSize: 11, fontWeight: "600", marginTop: 2 },
         tabBarItemStyle: { paddingTop: 4 },
       }}
     >

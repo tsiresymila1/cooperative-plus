@@ -19,7 +19,7 @@
     "android": {
       "package": "ts.mila.cooperativeplus",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-round.png",
+        "foregroundImage": "./assets/ic_launcher.png",
         "backgroundColor": "#ffffff"
       }
     },

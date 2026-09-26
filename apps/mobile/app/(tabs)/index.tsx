@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
 import { useColorScheme } from "nativewind";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ArrowUpDown, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
+import { ArrowUpDown, Bus, Clock, Moon, Search, Sun, User as UserIcon } from "lucide-react-native";
 import { Badge, Button } from "@/components/ui";
 import { DateField, DestinationField, type Dest } from "@/components/picker";
 import { CoopLogo } from "@/components/coop-logo";
@@ -115,12 +115,9 @@ export default function Home() {
 
           {/* Greeting + title */}
           <Animated.View entering={FadeInDown.delay(80).duration(420)} className="mt-6">
-            <Text className="font-sans text-sm text-white/70">
+            <Text className="font-body text-sm text-white/70">
               {user?.email ? `Bonjour, ${user.email.split("@")[0]}` : "Bonjour"}
             </Text>
-            <Text style={{ fontFamily: "ABeeZee_400Regular", fontSize: 28, color: "white" }}>DEBUG explicit abeezee</Text>
-            <Text className="font-sans" style={{ fontSize: 28, color: "white" }}>DEBUG font-sans class</Text>
-            <Text style={{ fontFamily: "System", fontSize: 28, color: "white" }}>DEBUG system font</Text>
             <Text className="mt-1 font-display text-3xl uppercase tracking-wide text-white">
               Où allez-vous ?
             </Text>
@@ -163,7 +160,7 @@ export default function Home() {
               </Pressable>
             </View>
             <DateField value={date} onChange={setDate} className="rounded-lg border border-ink/10 bg-paper px-6 py-3" />
-            {sameErr ? <Text className="font-sans text-xs text-laterite-deep">{sameErr}</Text> : null}
+            {sameErr ? <Text className="font-body text-xs text-laterite-deep">{sameErr}</Text> : null}
             <Button size="md" className="mt-1 w-full" onPress={goSearch} loading={searching}>
               {!searching && <Search size={18} color="#ffffff" />}
               <Text className="font-display text-base font-semibold uppercase tracking-wide text-white">Rechercher</Text>
@@ -172,11 +169,16 @@ export default function Home() {
 
           {/* Prochains départs — secondary, kept compact */}
           <View className="px-5 pt-8">
-            <Text className="mb-1 font-sans text-xs font-semibold uppercase tracking-wider text-ink-soft/60">
+            <Text className="mb-1 font-body text-xs font-semibold uppercase tracking-wider text-ink-soft/60">
               Prochains départs
             </Text>
             {popular.length === 0 ? (
-              <Text className="mt-3 font-sans text-sm text-ink-soft/70">Aucun départ programmé pour le moment.</Text>
+              <View className="flex flex-col justify-center items-center flex-1 grow">
+                <View className="h-14 w-14 items-center justify-center rounded-full bg-ink/5">
+                  <Bus size={26} color="#4a5680" />
+                </View>
+                <Text className="mt-4 font-display text-xl text-ink">Aucun départ programmé pour le moment.</Text>
+              </View>
             ) : (
               <View className="mt-2 gap-2.5">
                 {popular.map((r, i) => {
@@ -196,8 +198,8 @@ export default function Home() {
                         <View className="flex-row items-center gap-3">
                           <CoopLogo url={r.cooperative?.logoUrl} brandColor={r.cooperative?.brandColor} name={r.coopName} size={30} />
                           <View className="flex-1 gap-1">
-                            <Text className="font-sans text-sm font-bold text-laterite" numberOfLines={1}>{r.coopName}</Text>
-                            <Text className="font-mono text-xs font-bold text-ink-soft/70" numberOfLines={1}>{r.vehicleName}</Text>
+                            <Text className="font-body text-sm font-bold text-laterite" numberOfLines={1}>{r.coopName}</Text>
+                            <Text className="font-code text-xs font-bold text-ink-soft/70" numberOfLines={1}>{r.vehicleName}</Text>
                           </View>
                           {r.tag ? <TagBadge name={r.tag.name} color={r.tag.color} /> : null}
                         </View>
@@ -210,9 +212,9 @@ export default function Home() {
 
                         {/* Timeline: origin time — dashed line + bus — dest time */}
                         <View className="mt-1.5 flex-row items-center gap-2.5">
-                          <Text className="font-mono text-base font-bold text-ink">{fmtTime(r.departureAt)}</Text>
+                          <Text className="font-code text-base font-bold text-ink">{fmtTime(r.departureAt)}</Text>
                           <RouteTimeline className="flex-1" />
-                          <Text className="font-mono text-base font-bold text-ink-soft">
+                          <Text className="font-code text-base font-bold text-ink-soft">
                             {r.arrivalEstimateAt ? fmtTime(r.arrivalEstimateAt) : "—"}
                           </Text>
                         </View>
@@ -221,10 +223,10 @@ export default function Home() {
                         <View className="mt-2.5 flex-row items-center justify-between">
                           <View className="flex-row items-center gap-1.5">
                             <Clock size={13} color={c.inkSoft} />
-                            <Text className="font-mono text-[11px] text-ink-soft/70">
+                            <Text className="font-code text-[11px] text-ink-soft/70">
                               {fmtDateKey(r.departDate)}
                             </Text>
-                            <Text className="font-mono text-xs font-bold text-green">{fmtMoney(r.price, r.currency)}</Text>
+                            <Text className="font-code text-xs font-bold text-green">{fmtMoney(r.price, r.currency)}</Text>
                           </View>
                           <Badge
                             tone={full ? "danger" : booked / r.seatsTotal >= 0.8 ? "warning" : "success"}

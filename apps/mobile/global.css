@@ -114,9 +114,13 @@
   /* Static (non-reactive) tokens */
   --color-navy-deep: #00183d;
 
+  /* NOT --font-sans/--font-mono: those collide with Tailwind's own
+     `@theme default` tokens (theme.css), and react-native-css's theme
+     merging doesn't let our override win for those two reserved names —
+     confirmed on-device (silently fell back to the system font). */
   --font-display: BarlowCondensed_700Bold;
-  --font-sans: ABeeZee_400Regular;
-  --font-mono: ABeeZee_400Regular;
+  --font-body: ABeeZee_400Regular;
+  --font-code: ABeeZee_400Regular;
 
   --radius-xl: 16px;
   --radius-2xl: 20px;

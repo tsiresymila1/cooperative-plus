@@ -33,7 +33,7 @@ export function SeatMapView({
   let seatIdx = -1;
   return (
     <View className="rounded-[4px] border border-ink/10 bg-sand-deep/40 p-4">
-      <Text className="mb-3 text-center font-mono text-[10px] uppercase tracking-widest text-ink-soft/55">
+      <Text className="mb-3 text-center font-code text-[10px] uppercase tracking-widest text-ink-soft/55">
         ↑ avant du véhicule
       </Text>
       <View className="items-center gap-3">
@@ -79,7 +79,7 @@ export function SeatMapView({
                   ) : (
                     <Text
                       className={cn(
-                        "font-mono text-xs font-semibold",
+                        "font-code text-xs font-semibold",
                         isMine ? "text-paper" : "text-ink",
                       )}
                     >
@@ -106,7 +106,7 @@ function Legend({ className, label }: { className: string; label: string }) {
   return (
     <View className="flex-row items-center gap-1.5">
       <View className={cn("h-4 w-4 rounded-full border", className)} />
-      <Text className="font-sans text-xs text-ink-soft">{label}</Text>
+      <Text className="font-body text-xs text-ink-soft">{label}</Text>
     </View>
   );
 }

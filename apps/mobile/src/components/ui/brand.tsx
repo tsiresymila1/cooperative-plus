@@ -89,7 +89,7 @@ export function Field({
 }) {
   return (
     <View className={className}>
-      <Text className="text-[10px] font-medium uppercase tracking-widest text-ink-soft/60">{label}</Text>
+      <Text className="font-body text-[10px] font-medium uppercase tracking-widest text-ink-soft/60">{label}</Text>
       <View className="mt-1 flex-row items-center gap-2">
         {icon}
         <View className="flex-1">{children}</View>
@@ -102,7 +102,7 @@ export function Input({ className, ...p }: TextInputProps) {
   return (
     <TextInput
       placeholderTextColor="#4a568066"
-      className={cn("font-sans text-base text-ink", className)}
+      className={cn("font-body text-base text-ink", className)}
       {...p}
     />
   );
@@ -115,7 +115,7 @@ export function Badge({ tone = "neutral", label }: { tone?: "neutral" | "success
   const text = { neutral: "text-ink-soft", success: "text-baobab", warning: "text-clay", danger: "text-laterite-deep" };
   return (
     <View className={cn("self-start rounded-full px-2.5 py-1", tones[tone])}>
-      <Text className={cn("text-xs font-medium", text[tone])}>{label}</Text>
+      <Text className={cn("font-body text-xs font-medium", text[tone])}>{label}</Text>
     </View>
   );
 }

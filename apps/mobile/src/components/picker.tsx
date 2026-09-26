@@ -91,7 +91,7 @@ export function DestinationField({
             </Text>
             <Text
               className={cn(
-                "flex-1 font-sans text-sm",
+                "flex-1 font-body text-sm",
                 value
                   ? "text-ink"
                   : error
@@ -106,7 +106,7 @@ export function DestinationField({
         </View>
 
         {error ? (
-          <Text className="mt-1 font-sans text-xs text-laterite-deep">
+          <Text className="mt-1 font-body text-xs text-laterite-deep">
             {error}
           </Text>
         ) : null}
@@ -158,7 +158,7 @@ export function DestinationField({
           keyboardShouldPersistTaps="handled"
         >
           {filtered.length === 0 ? (
-            <Text className="px-3 py-6 text-center font-sans text-sm text-ink-soft/60">
+            <Text className="px-3 py-6 text-center font-body text-sm text-ink-soft/60">
               Aucune ville trouvée.
             </Text>
           ) : (
@@ -176,11 +176,11 @@ export function DestinationField({
                   <View className="h-9 w-9 items-center justify-center rounded-[4px] bg-sand">
                     <MapPin size={16} color={active ? c.laterite : c.ink} />
                   </View>
-                  <Text className="flex-1 font-sans text-base text-ink">
+                  <Text className="flex-1 font-body text-base text-ink">
                     {d.name}
                   </Text>
                   {d.region ? (
-                    <Text className="font-mono text-xs text-ink-soft/50">
+                    <Text className="font-code text-xs text-ink-soft/50">
                       {d.region}
                     </Text>
                   ) : null}
@@ -219,7 +219,7 @@ export function DateField({
             Date
           </Text>
 
-          <Text className="font-sans text-base text-ink">
+          <Text className="font-body text-base text-ink">
             {fmtDateKey(toDateKey(value))}
           </Text>
         </View>

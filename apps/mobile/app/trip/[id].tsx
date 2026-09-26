@@ -213,7 +213,7 @@ export default function TripDetail() {
           <Spinner />
         </View>
       ) : error || !trip ? (
-        <Text className="px-5 font-sans text-sm text-laterite-deep">
+        <Text className="px-5 font-body text-sm text-laterite-deep">
           Trajet introuvable.
         </Text>
       ) : (
@@ -237,10 +237,10 @@ export default function TripDetail() {
                     size={40}
                   />
                   <View>
-                    <Text className="font-sans text-sm font-semibold text-laterite">
+                    <Text className="font-body text-sm font-semibold text-laterite">
                       {trip.coopName}
                     </Text>
-                    <Text className="font-mono text-[11px] text-ink-soft/60">
+                    <Text className="font-code text-[11px] text-ink-soft/60">
                       {trip.vehicleName}
                     </Text>
                   </View>
@@ -249,26 +249,26 @@ export default function TripDetail() {
                   <Text className="font-display text-2xl text-ink">
                     {trip.originName}
                   </Text>
-                  <Text className="text-laterite">→</Text>
+                  <Text className="font-body text-laterite">→</Text>
                   <Text className="font-display text-2xl text-laterite">
                     {trip.destName}
                   </Text>
                 </View>
                 <View className="mt-3 flex-row items-center gap-2.5">
-                  <Text className="font-mono text-base font-bold text-ink">{fmtTime(trip.departureAt)}</Text>
+                  <Text className="font-code text-base font-bold text-ink">{fmtTime(trip.departureAt)}</Text>
                   <RouteTimeline className="flex-1" />
-                  <Text className="font-mono text-base font-bold text-ink-soft">
+                  <Text className="font-code text-base font-bold text-ink-soft">
                     {trip.arrivalEstimateAt ? fmtTime(trip.arrivalEstimateAt) : "—"}
                   </Text>
                 </View>
                 <View className="mt-2 flex-row items-center gap-1.5">
                   <Clock size={13} color="#4a5680" />
-                  <Text className="font-mono text-xs text-ink-soft/70">
+                  <Text className="font-code text-xs text-ink-soft/70">
                     {fmtDateKey(trip.departDate)}
                   </Text>
                 </View>
                 <View className="mt-3 flex-row items-center justify-between">
-                  <Text className="font-mono font-bold text-xl text-green">
+                  <Text className="font-code font-bold text-xl text-green">
                     {fmtMoney(trip.price, trip.currency)} / place
                   </Text>
                   <Badge
@@ -291,7 +291,7 @@ export default function TripDetail() {
                 <Text className="font-display text-lg text-ink">
                   Choisir vos sièges
                 </Text>
-                <Text className="mt-0.5 font-mono text-xs text-ink-soft/60">
+                <Text className="mt-0.5 font-code text-xs text-ink-soft/60">
                   {selectedLabels.length > 0
                     ? `${selectedLabels.length} siège${selectedLabels.length > 1 ? "s" : ""} sélectionné${selectedLabels.length > 1 ? "s" : ""}`
                     : "Touchez les sièges libres"}
@@ -302,7 +302,7 @@ export default function TripDetail() {
                   {slots.map((s: any) => (
                     <Pressable key={s.id} onPress={() => { setSlotId(s.id); setSelected({}); }}
                       className={s.id === slot?.id ? "rounded-full bg-ink px-3 py-1.5" : "rounded-full border border-ink/15 px-3 py-1.5"}>
-                      <Text className={s.id === slot?.id ? "font-sans text-xs font-bold text-paper" : "font-sans text-xs font-medium text-ink-soft"}>{s.label}</Text>
+                      <Text className={s.id === slot?.id ? "font-body text-xs font-bold text-paper" : "font-body text-xs font-medium text-ink-soft"}>{s.label}</Text>
                     </Pressable>
                   ))}
                 </View>
@@ -324,12 +324,12 @@ export default function TripDetail() {
             style={{ paddingBottom: insets.bottom + 12 }}
           >
             <View className="mb-2 flex-row items-center justify-between">
-              <Text className="font-sans text-sm text-ink-soft">
+              <Text className="font-body text-sm text-ink-soft">
                 {selectedLabels.length > 0
                   ? selectedLabels.join(", ")
                   : "Aucun siège"}
               </Text>
-              <Text className="font-mono font-bold text-lg text-ink">
+              <Text className="font-code font-bold text-lg text-ink">
                 {fmtMoney(total, trip.currency)}
               </Text>
             </View>
@@ -386,7 +386,7 @@ function SeatMap({
   let seatIdx = -1;
   return (
     <View className="w-full rounded-lg border border-ink/10 bg-sand-deep/40 p-4">
-      <Text className="mb-3 text-center font-mono text-[10px] uppercase tracking-widest text-ink-soft/55">
+      <Text className="mb-3 text-center font-code text-[10px] uppercase tracking-widest text-ink-soft/55">
         ↑ avant du véhicule
       </Text>
       <View className="w-full flex-1 items-center gap-3">
@@ -499,7 +499,7 @@ function SeatButton({
       ) : (
         <Text
           className={cn(
-            "font-mono text-xs font-semibold",
+            "font-code text-xs font-semibold",
             isTaken ? "text-ink-soft/40 line-through" : isSel ? "text-white" : "text-ink",
           )}
         >
@@ -520,7 +520,7 @@ function LegendItem({
   return (
     <View className="flex-row items-center gap-1.5">
       <View className={cn("h-4 w-4 rounded-full border", className)} />
-      <Text className="font-sans text-xs text-ink-soft">{label}</Text>
+      <Text className="font-body text-xs text-ink-soft">{label}</Text>
     </View>
   );
 }
