@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 export function TagBadge({ name, color }: { name: string; color?: string | null }) {
   return (
     <View style={{ backgroundColor: color || "#14314C" }} className="self-start rounded-[4px] px-2 py-0.5">
-      <Text className="font-sans text-[10px] font-bold uppercase text-white">{name}</Text>
+      <Text className="font-body text-[10px] font-bold uppercase text-white">{name}</Text>
     </View>
   );
 }

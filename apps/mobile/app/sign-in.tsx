@@ -67,7 +67,7 @@ export default function SignIn() {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-sand"
       style={{ paddingTop: insets.top }}
     >
@@ -82,7 +82,7 @@ export default function SignIn() {
         {/* Brand mark */}
         <Animated.View entering={FadeIn.duration(400)} className="mb-8 items-center">
           {step === "email" ? (
-            <Image source={require("../assets/logo-round.png")} style={{ width: 64, height: 64, borderRadius: 32 }} resizeMode="contain" />
+            <Image source={require("../assets/ic_launcher.png")} style={{ width: 64, height: 64, borderRadius: 32 }} className="rounded-full" resizeMode="contain" />
           ) : (
             <View className="h-16 w-16 items-center justify-center rounded-[4px] bg-navy">
               <ShieldCheck size={28} color="#D9A441" />
@@ -91,7 +91,7 @@ export default function SignIn() {
           <Text className="mt-4 font-display text-3xl text-ink">
             {step === "email" ? "Connexion" : "Vérification"}
           </Text>
-          <Text className="mt-1 text-center font-sans text-sm text-ink-soft">
+          <Text className="mt-1 text-center font-body text-sm text-ink-soft">
             {step === "email"
               ? "Entrez votre email — un code à 6 chiffres vous sera envoyé."
               : `Code envoyé à ${email}`}
@@ -112,22 +112,30 @@ export default function SignIn() {
                 autoCapitalize="none"
                 onSubmitEditing={sendCode}
                 style={{ paddingVertical: 0 }}
-                className="flex-1 font-sans text-base text-ink"
+                className="flex-1 font-body text-base text-ink"
               />
             </View>
 
-            {err && <Text className="mt-2 px-1 font-sans text-sm text-laterite-deep">{err}</Text>}
+            {err && <Text className="mt-2 px-1 font-body text-sm text-laterite-deep">{err}</Text>}
 
             <Button size="md" className="mt-4" onPress={sendCode} loading={busy}>
-              <Text className="font-sans font-medium text-paper">Envoyer le code</Text>
+              <Text className="font-display font-medium text-paper uppercase">Envoyer le code</Text>
               {!busy && <ArrowRight size={18} color="#ffffff" />}
             </Button>
           </Animated.View>
         ) : (
           <Animated.View entering={FadeInDown.delay(80).duration(420)}>
             {/* OTP cells over a hidden input */}
-            <Pressable onPress={() => codeRef.current?.focus()}>
-              <View className="flex-row justify-between">
+            <Pressable
+              onPress={() => {
+                // Android: after the soft keyboard is dismissed (back button/swipe),
+                // RN can still think this input is focused and skip re-raising the
+                // keyboard on a plain .focus() call — force a blur first.
+                codeRef.current?.blur();
+                requestAnimationFrame(() => codeRef.current?.focus());
+              }}
+            >
+              <View className="flex-row justify-center gap-2">
                 {Array.from({ length: 6 }, (_, i) => {
                   const char = code[i] ?? "";
                   const active = i === code.length;
@@ -139,7 +147,7 @@ export default function SignIn() {
                         char ? "border-navy" : active ? "border-laterite" : "border-ink/12",
                       )}
                     >
-                      <Text className="font-mono text-2xl text-ink">{char}</Text>
+                      <Text className="font-code text-2xl text-ink">{char}</Text>
                     </View>
                   );
                 })}
@@ -158,14 +166,14 @@ export default function SignIn() {
               />
             </Pressable>
 
-            {err && <Text className="mt-3 px-1 text-center font-sans text-sm text-laterite-deep">{err}</Text>}
+            {err && <Text className="mt-3 px-1 text-center font-body text-sm text-laterite-deep">{err}</Text>}
 
             <Button size="md" className="mt-5" onPress={() => verify()} loading={busy}>
-              <Text className="font-sans font-medium text-paper">Se connecter</Text>
+              <Text className="font-display font-medium text-paper uppercase">Se connecter</Text>
             </Button>
 
             <Pressable onPress={() => { setStep("email"); setCode(""); setErr(null); }} className="mt-4">
-              <Text className="text-center font-sans text-sm text-ink-soft/70">Changer d'email</Text>
+              <Text className="text-center font-body text-sm text-ink-soft/70">Changer d'email</Text>
             </Pressable>
           </Animated.View>
         )}

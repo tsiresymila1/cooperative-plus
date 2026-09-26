@@ -10,6 +10,7 @@ import { Button, Card, Field, Input, Spinner } from "@/components/ui";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
+import { EmptyState } from "@/components/empty-state";
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
@@ -69,17 +70,17 @@ export default function Profile() {
       {authLoading ? (
         <Spinner />
       ) : !user ? (
-        <View className="flex-1 items-center justify-center p-8">
-          <Text className="font-display text-xl text-ink">Vous n'êtes pas connecté</Text>
-          <Button className="mt-4" onPress={() => router.push("/sign-in")}>
-            <Text className="font-sans font-medium text-paper">Se connecter</Text>
-          </Button>
-        </View>
+        <EmptyState
+          title="Connectez-vous"
+          message="Vous n'êtes pas connecté."
+          actionLabel="Se connecter"
+          onAction={() => router.push("/sign-in")}
+        />
       ) : (
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           <Animated.View entering={FadeIn.duration(400)}>
             <Card>
-              <Text className="font-mono text-xs text-ink-soft/70">Connecté en tant que</Text>
+              <Text className="font-code text-xs text-ink-soft/70">Connecté en tant que</Text>
               <Text className="mt-1 font-display text-lg text-ink">{user.email}</Text>
             </Card>
           </Animated.View>
@@ -96,9 +97,9 @@ export default function Profile() {
               </Field>
             </Card>
             <Button variant="ink" className="mt-3" onPress={save} loading={saving}>
-              <Text className="font-sans font-medium text-white">Enregistrer</Text>
+              <Text className="font-display font-medium text-white uppercase">Enregistrer&nbsp;</Text>
             </Button>
-            {saved && <Text className="mt-2 text-center font-sans text-sm text-baobab">Enregistré ✓</Text>}
+            {saved && <Text className="mt-2 text-center font-body text-sm text-baobab">Enregistré ✓</Text>}
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(120).duration(420)} className="mt-5">
@@ -107,9 +108,9 @@ export default function Profile() {
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2.5">
                   <Moon size={18} color={dark ? "#D9A441" : "#475569"} />
-                  <Text className="font-sans text-base text-ink">Thème sombre</Text>
+                  <Text className="font-body text-base text-ink">Thème sombre</Text>
                 </View>
-                <Switch value={dark} onValueChange={toggleTheme} trackColor={{ true: "#D9A441" }} />
+                <Switch value={dark} onValueChange={toggleTheme} thumbColor="#475569"  trackColor={{ true: "#D9A441", false: "#D9A441" }} />
               </View>
             </Card>
           </Animated.View>
@@ -117,11 +118,11 @@ export default function Profile() {
           <Animated.View entering={FadeInDown.delay(160).duration(420)} className="mt-5">
             <Button variant="outline" onPress={() => router.push("/bookings")}>
               <TicketIcon size={18} color="#14314C" />
-              <Text className="font-sans font-medium text-ink">Mes réservations</Text>
+              <Text className="font-body font-medium text-ink">Mes réservations</Text>
             </Button>
             <Button variant="ghost" className="mt-2" onPress={() => setConfirmOut(true)}>
               <LogOut size={18} color="#c2902f" />
-              <Text className="font-sans font-medium text-laterite-deep">Se déconnecter</Text>
+              <Text className="font-body font-medium text-laterite-deep">Se déconnecter</Text>
             </Button>
           </Animated.View>
         </ScrollView>
@@ -130,16 +131,16 @@ export default function Profile() {
       <Dialog open={confirmOut} onOpenChange={setConfirmOut}>
         <DialogContent showClose={false} className="gap-3">
           <DialogTitle className="font-display text-xl text-ink">Se déconnecter ?</DialogTitle>
-          <Text className="font-sans text-base text-ink-soft">
+          <Text className="font-body text-base text-ink-soft">
             Vous devrez vous reconnecter pour accéder à vos réservations.
           </Text>
           <View className="mt-1 flex-row gap-2">
             <Button variant="outline" className="flex-1" onPress={() => setConfirmOut(false)}>
-              <Text className="font-sans font-medium text-ink">Annuler</Text>
+              <Text className="font-body font-medium text-ink">Annuler</Text>
             </Button>
             <Button variant="ink" className="flex-1" onPress={() => { setConfirmOut(false); signOut(); }}>
               <LogOut size={18} color="#ffffff" />
-              <Text className="font-sans font-medium text-paper">Déconnexion</Text>
+              <Text className="font-body font-medium text-paper">Déconnexion</Text>
             </Button>
           </View>
         </DialogContent>

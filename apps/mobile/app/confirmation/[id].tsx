@@ -118,9 +118,9 @@ export default function Confirmation() {
       <View className="flex flex-row justify-between items-center w-full">
         <Pressable
           onPress={() => router.back()}
-          className="h-9 w-9 items-center justify-center rounded-full bg-navy/15 ms-4"
+          className="h-9 w-9 items-center justify-center rounded-[4px] border border-ink/10 bg-paper ms-4"
         >
-          <ChevronLeft size={30} color={c.ink} />
+          <ChevronLeft size={20} color={c.ink} />
         </Pressable>
         {/* Print / save */}
         <View className=" flex-row">
@@ -156,7 +156,7 @@ export default function Confirmation() {
             className="mt-4"
             onPress={() => router.replace("/")}
           >
-            <Text className="font-sans font-medium text-white">Accueil</Text>
+            <Text className="font-body font-medium text-white">Accueil</Text>
           </Button>
         </View>
       ) : (
@@ -175,7 +175,7 @@ export default function Confirmation() {
             <Text className="mt-3 font-display text-2xl text-ink">
               Réservation confirmée
             </Text>
-            <Text className="mt-1 font-mono text-sm text-ink-soft/90 font-bold">
+            <Text className="mt-1 font-code text-sm text-ink-soft/90 font-bold">
               {booking.reference}
             </Text>
           </Animated.View>
@@ -230,7 +230,7 @@ export default function Confirmation() {
                         color="#D9A441"
                         style={{ position: "absolute", left: -24, top: 1 }}
                       />
-                      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">
+                      <Text className="font-code text-[9px] uppercase tracking-widest text-ink-soft/60">
                         Départ
                       </Text>
                       <Text
@@ -246,7 +246,7 @@ export default function Confirmation() {
                         color="#D9A441"
                         style={{ position: "absolute", left: -24, top: 1 }}
                       />
-                      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">
+                      <Text className="font-code text-[9px] uppercase tracking-widest text-ink-soft/60">
                         Destination
                       </Text>
                       <Text
@@ -303,7 +303,7 @@ export default function Confirmation() {
                   ) : null}
                   <TicketRow label="Passagers" value={String(tickets.length)} />
                   <View className="gap-1">
-                    <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">
+                    <Text className="font-code text-[9px] uppercase tracking-widest text-ink-soft/60">
                       Statut
                     </Text>
                     <Badge {...bookingStatusFr(booking.status)} />
@@ -323,16 +323,16 @@ export default function Confirmation() {
               </View>
 
               {/* Navy stub: reference + QR */}
-              <View className="items-center gap-3 bg-navy px-5 pb-6 pt-1">
+              <View className="items-center gap-3 bg-navy px-5 pb-6 pt-4">
                 <View className="items-center">
-                  <Text className="font-mono text-[9px] uppercase tracking-[3px] text-orange/70">
+                  <Text className="font-code text-[9px] uppercase tracking-[3px] text-orange/70">
                     Référence
                   </Text>
                   <Text className="mt-0.5 font-display text-xl font-bold tracking-widest text-orange">
                     {booking.reference}
                   </Text>
                 </View>
-                <Text className="font-mono text-xs text-white/60">
+                <Text className="font-code text-xs text-white/60">
                   {longDepart(trip?.departDate, trip?.departureAt)}
                 </Text>
                 <View className="rounded-[4px] bg-paper p-2">
@@ -355,7 +355,7 @@ export default function Confirmation() {
               onPress={() => setSeatsOpen(true)}
             >
               <Armchair size={18} color="#D9A441" />
-              <Text className="font-sans font-medium text-ink">
+              <Text className="font-body font-medium text-ink">
                 Voir mes sièges dans le véhicule
               </Text>
             </Button>
@@ -366,7 +366,7 @@ export default function Confirmation() {
               variant="outline"
               onPress={() => router.replace("/bookings")}
             >
-              <Text className="font-sans font-medium text-ink">
+              <Text className="font-body font-medium text-ink">
                 Mes réservations
               </Text>
             </Button>
@@ -394,10 +394,10 @@ export default function Confirmation() {
 function TicketRow({ label, value }: { label: string; value: string }) {
   return (
     <View className="gap-1">
-      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">
+      <Text className="font-code text-[9px] uppercase tracking-widest text-ink-soft/60">
         {label}
       </Text>
-      <Text className="font-sans text-sm font-bold text-ink">{value}</Text>
+      <Text className="font-body text-sm font-bold text-ink">{value}</Text>
     </View>
   );
 }
@@ -413,7 +413,7 @@ function TicketField({
 }) {
   return (
     <View className={className}>
-      <Text className="font-mono text-[9px] uppercase tracking-widest text-ink-soft/60">
+      <Text className="font-code text-[9px] uppercase tracking-widest text-ink-soft/60">
         {label}
       </Text>
       <Text

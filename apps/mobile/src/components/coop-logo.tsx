@@ -60,9 +60,10 @@ export function CoopLogo({
         />
       ) : (
         <Image
-          source={require("../../assets/logo-round.png")}
+          source={require("../../assets/ic_launcher.png")}
           style={{ width: size, height: size }}
           resizeMode="contain"
+          className="rounded-full"
         />
       )}
     </View>

@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { bookingStatusFr, fmtDateKey, fmtTime, toDateKey } from "@/lib/domain";
 import { TagBadge } from "@/components/tag-badge";
+import { EmptyState } from "@/components/empty-state";
 
 type Tab = "active" | "expired";
 
@@ -73,7 +74,7 @@ export default function Bookings() {
             >
               <Text
                 className={cn(
-                  "font-sans text-sm font-medium",
+                  "font-body text-sm font-medium",
                   tab === k ? "text-ink" : "text-white",
                 )}
               >
@@ -161,12 +162,12 @@ function TicketCard({
           />
           <View className="flex-1">
             <Text
-              className="font-sans text-xs font-bold text-laterite"
+              className="font-body text-xs font-bold text-laterite"
               numberOfLines={1}
             >
               {trip?.coopName ?? "—"}
             </Text>
-            <Text className="font-mono text-[10px] text-ink-soft/90 font-bold">
+            <Text className="font-code text-[10px] text-ink-soft/90 font-bold">
               {b.reference}
             </Text>
           </View>
@@ -222,7 +223,7 @@ function TicketCard({
       {/* Footer */}
       <View className="flex-row items-center justify-between px-5 py-4">
         <View>
-          <Text className="font-sans text-[10px] uppercase tracking-wider text-ink-soft/50">
+          <Text className="font-body text-[10px] uppercase tracking-wider text-ink-soft/50">
             {b.seatCount} {b.seatCount > 1 ? "places" : "place"}
           </Text>
           <Text className="mt-0.5 font-display text-lg text-ink">
@@ -239,39 +240,12 @@ function TicketCard({
           className="flex-row items-center gap-2 rounded-[4px] bg-navy px-4 py-2.5 active:opacity-90"
         >
           <QrCode size={16} color="#ffffff" />
-          <Text className="font-sans text-sm font-medium text-white">
-            Voir le billet
+          <Text className="font-body text-sm font-medium text-white">
+            Detail
           </Text>
           <ArrowRight size={15} color="#D9A441" />
         </Pressable>
       </View>
     </Card>
-  );
-}
-
-function EmptyState({
-  title,
-  message,
-  actionLabel,
-  onAction,
-}: {
-  title: string;
-  message: string;
-  actionLabel: string;
-  onAction: () => void;
-}) {
-  return (
-    <View className="flex-1 items-center justify-center px-10 pb-24">
-      <View className="h-24 w-24 items-center justify-center rounded-full bg-laterite/10">
-        <Frown size={44} color="#D9A441" />
-      </View>
-      <Text className="mt-5 font-display text-xl text-ink">{title}</Text>
-      <Text className="mt-1.5 text-center font-sans text-sm text-ink-soft/70">
-        {message}
-      </Text>
-      <Button size="md" className="mt-6 w-full" onPress={onAction}>
-        <Text className="font-sans font-medium text-paper">{actionLabel}</Text>
-      </Button>
-    </View>
   );
 }

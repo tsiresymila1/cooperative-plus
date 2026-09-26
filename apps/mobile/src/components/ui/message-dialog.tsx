@@ -22,10 +22,10 @@ export function MessageDialog({
     <Dialog open={!!notice} onOpenChange={(o) => !o && close()}>
       <DialogContent showClose={false} className="gap-3">
         <DialogTitle className="font-display text-xl text-ink">{notice?.title}</DialogTitle>
-        <Text className="font-sans text-base text-ink-soft">{notice?.message}</Text>
+        <Text className="font-body text-base text-ink-soft">{notice?.message}</Text>
         <View className="mt-1">
           <Button onPress={close}>
-            <Text className="font-sans font-medium text-paper">{actionLabel}</Text>
+            <Text className="font-body font-medium text-paper">{actionLabel}</Text>
           </Button>
         </View>
       </DialogContent>

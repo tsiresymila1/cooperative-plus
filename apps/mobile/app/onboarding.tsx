@@ -76,7 +76,7 @@ export default function Onboarding() {
         />
         {/* Skip */}
         <Pressable onPress={finish} style={{ position: "absolute", right: 16, top: insets.top + 6 }} className="rounded-[4px] bg-paper/70 px-3 py-1.5">
-          <Text className="font-sans text-sm font-medium text-ink">Passer</Text>
+          <Text className="font-body text-sm font-medium text-ink">Passer</Text>
         </Pressable>
         {/* Brand */}
         <View className="absolute inset-x-0 bottom-2 flex-row items-center justify-center gap-2">
@@ -97,7 +97,7 @@ export default function Onboarding() {
           {SLIDES.map((s, i) => (
             <View key={i} style={{ width }} className="items-center px-8 pt-6">
               <Text className="text-center font-display text-3xl leading-tight text-ink">{s.title}</Text>
-              <Text className="mt-3 text-center font-sans text-base leading-6 text-ink-soft">{s.body}</Text>
+              <Text className="mt-3 text-center font-body text-base leading-6 text-ink-soft">{s.body}</Text>
             </View>
           ))}
         </ScrollView>
@@ -114,7 +114,7 @@ export default function Onboarding() {
             onPress={next}
             className="h-14 flex-row items-center justify-center gap-2 rounded-[4px] bg-laterite active:opacity-90"
           >
-            <Text className="font-sans text-base font-medium text-white">{last ? "Commencer" : "Suivant"}</Text>
+            <Text className="font-body text-base font-medium text-white">{last ? "Commencer" : "Suivant"}</Text>
             <ArrowRight size={18} color="#ffffff" />
           </Pressable>
         </View>

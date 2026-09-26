@@ -77,10 +77,10 @@ function ContactRow({
         <Icon size={16} color={c.ink} />
       </View>
       <View className="flex-1">
-        <Text className="font-sans text-[10px] uppercase tracking-wider text-ink-soft/55">
+        <Text className="font-body text-[10px] uppercase tracking-wider text-ink-soft/55">
           {label}
         </Text>
-        <Text className="font-sans text-sm text-ink">{value}</Text>
+        <Text className="font-body text-sm text-ink">{value}</Text>
       </View>
     </Pressable>
   );
@@ -121,17 +121,18 @@ export default function About() {
           className="items-center py-4"
         >
           <Image
-            source={require("../../assets/logo-round.png")}
+            source={require("../../assets/ic_launcher.png")}
             style={{ width: 84, height: 84, borderRadius: 8 }}
             resizeMode="contain"
+            className="rounded-full"
           />
           <Text className="mt-3 font-display text-2xl text-ink">
             Cooperative<Text className="text-laterite">+</Text>
           </Text>
-          <Text className="mt-1 font-mono text-xs text-ink-soft/60">
+          <Text className="mt-1 font-code text-xs text-ink-soft/60">
             Version {VERSION}
           </Text>
-          <Text className="mt-3 text-center font-sans text-sm leading-5 text-ink-soft">
+          <Text className="mt-3 text-center font-body text-sm leading-5 text-ink-soft">
             La façon simple et moderne de réserver votre place de taxi-brousse à
             Madagascar.
           </Text>
@@ -149,10 +150,10 @@ export default function About() {
                   <f.Icon size={18} color={c.laterite} />
                 </View>
                 <View className="flex-1">
-                  <Text className="font-sans text-base font-semibold text-ink">
+                  <Text className="font-body text-base font-semibold text-ink">
                     {f.title}
                   </Text>
-                  <Text className="mt-0.5 font-sans text-sm text-ink-soft">
+                  <Text className="mt-0.5 font-body text-sm text-ink-soft">
                     {f.body}
                   </Text>
                 </View>
@@ -218,22 +219,22 @@ export default function About() {
               <Bell size={16} color={c.laterite} />
             </View>
             <View className="flex-1">
-              <Text className="font-sans text-sm font-semibold text-ink">
+              <Text className="font-body text-sm font-semibold text-ink">
                 Tester la notification
               </Text>
-              <Text className="font-sans text-xs text-ink-soft/60">
+              <Text className="font-body text-xs text-ink-soft/60">
                 Rappel de départ dans 5 secondes
               </Text>
             </View>
           </Pressable>
           {testMsg ? (
-            <Text className="mt-2 px-1 font-sans text-xs text-ink-soft">
+            <Text className="mt-2 px-1 font-body text-xs text-ink-soft">
               {testMsg}
             </Text>
           ) : null}
         </Animated.View>
 
-        <Text className="mt-6 text-center justify justify-center items-center font-sans text-xs text-ink-soft/50">
+        <Text className="mt-6 text-center justify justify-center items-center font-body text-xs text-ink-soft/50">
           Made with <HeartHandshake color="red" /> · ©{" "}
           {new Date().getFullYear()} Tsiresy Milà
         </Text>

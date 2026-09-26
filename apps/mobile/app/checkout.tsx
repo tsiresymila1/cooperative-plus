@@ -141,7 +141,7 @@ export default function Checkout() {
       <View className="flex-1 items-center justify-center bg-sand p-8" style={{ paddingTop: insets.top }}>
         <Text className="font-display text-xl text-ink">Aucune sélection en cours</Text>
         <Button variant="ink" className="mt-4" onPress={() => router.replace("/")}>
-          <Text className="font-sans font-medium text-white">Retour à la recherche</Text>
+          <Text className="font-body font-medium text-white">Retour à la recherche</Text>
         </Button>
       </View>
     );
@@ -340,7 +340,7 @@ export default function Checkout() {
           <Text className="font-display text-lg uppercase tracking-wide text-white">Paiement</Text>
         </View>
         <View className={cn("rounded-[4px] px-3 py-1", expiring ? "bg-laterite/25" : "bg-white/15")}>
-          <Text className={cn("font-mono text-sm", expiring ? "text-laterite" : "text-white")}>
+          <Text className={cn("font-code text-sm", expiring ? "text-laterite" : "text-white")}>
             {fmtCountdown(Math.max(0, remaining))}
           </Text>
         </View>
@@ -358,9 +358,9 @@ export default function Checkout() {
                 size={38}
               />
               <View className="flex-1">
-                <Text className="font-sans text-sm font-semibold text-laterite" numberOfLines={1}>{selection.coopName}</Text>
+                <Text className="font-body text-sm font-semibold text-laterite" numberOfLines={1}>{selection.coopName}</Text>
                 {summaryTrip ? (
-                  <Text className="font-mono text-[11px] text-ink-soft/60">
+                  <Text className="font-code text-[11px] text-ink-soft/60">
                     {summaryTrip.tickets?.length ?? 0}/{summaryTrip.seatsTotal} places occupées
                   </Text>
                 ) : null}
@@ -368,14 +368,14 @@ export default function Checkout() {
             </View>
             <View className="mt-3 flex-row items-center gap-2">
               <Text className="font-display text-xl text-ink">{selection.originName}</Text>
-              <Text className="text-laterite">→</Text>
+              <Text className="font-body text-laterite">→</Text>
               <Text className="font-display text-xl text-laterite">{selection.destName}</Text>
             </View>
             <View className="mt-3 flex-row items-center justify-between">
-              <Text className="font-sans text-sm text-ink-soft">
+              <Text className="font-body text-sm text-ink-soft">
                 Sièges {selection.seats.map((s) => s.seatLabel).join(", ")}
               </Text>
-              <Text className="font-sans text-base text-ink">
+              <Text className="font-body text-base text-ink">
                 {seatCount} × {fmtMoney(selection.price, selection.currency)}
               </Text>
             </View>
@@ -420,7 +420,7 @@ export default function Checkout() {
                   </View>
                   <View className="flex-1">
                     <Text className="font-display text-base font-medium text-ink">{m.label}</Text>
-                    <Text className="font-sans text-[11px] text-ink-soft/60">{m.desc}</Text>
+                    <Text className="font-body text-[11px] text-ink-soft/60">{m.desc}</Text>
                   </View>
                   <View
                     className={cn(
@@ -439,8 +439,8 @@ export default function Checkout() {
 
       <View className="absolute inset-x-0 bottom-0 border-t border-ink/10 bg-paper px-5 pt-3" style={{ paddingBottom: insets.bottom + 12 }}>
         <View className="mb-2 flex-row items-center justify-between">
-          <Text className="font-sans font-bold text-sm text-ink-soft">Total</Text>
-          <Text className="font-sans font-bold text-xl text-green">{fmtMoney(total, selection.currency)}</Text>
+          <Text className="font-body font-bold text-sm text-ink-soft">Total</Text>
+          <Text className="font-body font-bold text-xl text-green">{fmtMoney(total, selection.currency)}</Text>
         </View>
         <Button className="w-full" onPress={() => setConfirmOpen(true)} loading={submitting} disabled={!canSubmit}>
           <Text className="font-display font-semibold uppercase tracking-wide text-white">
@@ -462,7 +462,7 @@ export default function Checkout() {
           </View>
           <View className="mt-1 flex-row gap-2">
             <Button variant="outline" className="flex-1" onPress={() => setConfirmOpen(false)}>
-              <Text className="font-sans font-medium text-ink">Annuler</Text>
+              <Text className="font-body font-medium text-ink">Annuler</Text>
             </Button>
             <Button className="flex-1" onPress={confirm}>
               <Text className="font-display font-medium text-white">
@@ -481,8 +481,8 @@ export default function Checkout() {
 function ConfirmRow({ k, v }: { k: string; v: string }) {
   return (
     <View className="flex-row items-center justify-between">
-      <Text className="font-sans text-sm text-ink-soft">{k}</Text>
-      <Text className="font-sans text-sm font-bold text-ink" numberOfLines={1}>{v}</Text>
+      <Text className="font-body text-sm text-ink-soft">{k}</Text>
+      <Text className="font-body text-sm font-bold text-ink" numberOfLines={1}>{v}</Text>
     </View>
   );
 }
