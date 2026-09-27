@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" suppressHydrationWarning className={`${sans.variable} ${display.variable} ${mono.variable}`}>
       <body className="min-h-dvh antialiased">
         <script dangerouslySetInnerHTML={{ __html: "(function(){try{if(localStorage.getItem('cp-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}})();" }} />
-        <QueryProvider><Providers><Progress>{children}</Progress></Providers></QueryProvider>
+        <QueryProvider><Providers ><Progress>{children}</Progress></Providers></QueryProvider>
         <Toaster />
       </body>
     </html>

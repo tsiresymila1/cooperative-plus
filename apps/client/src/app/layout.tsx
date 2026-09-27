@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <ScrollReveal />
         <Progress>
-          <Providers>{children}</Providers>
+          <Providers askConsentement>{children}</Providers>
         </Progress>
         <Toaster />
       </body>
