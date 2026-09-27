@@ -8,11 +8,13 @@
  */
 import { adminDb, id } from "./admin";
 
-const [email, role, coopSlug] = process.argv.slice(2);
-if (!email || !role) {
+const [emailArg, roleArg, coopSlug] = process.argv.slice(2);
+if (!emailArg || !roleArg) {
   console.error("usage: grant <email> <admin|owner|assistant> [coopSlug]");
   process.exit(1);
 }
+const email = emailArg;
+const role = roleArg;
 
 const ASSISTANT_PERMS = [
   "booking.create", "booking.update", "booking.cancel", "booking.checkin",
@@ -34,7 +36,7 @@ async function main() {
   if (!user) throw new Error("could not create/find user " + email);
 
   if (role === "admin") {
-    await adminDb.transact(adminDb.tx.$users[user.id].update({ isPlatformAdmin: true }));
+    await adminDb.transact(adminDb.tx.$users[user.id]!.update({ isPlatformAdmin: true }));
     console.log(`✓ ${email} is now PLATFORM ADMIN`);
   } else if (role === "owner" || role === "assistant") {
     if (!coopSlug) throw new Error("coopSlug required for owner/assistant");
@@ -44,7 +46,7 @@ async function main() {
     const m = await adminDb.query({ memberships: { $: { where: { "user.id": user.id, "cooperative.id": coop.id } } } });
     const mid = m.memberships[0]?.id ?? id();
     await adminDb.transact(
-      adminDb.tx.memberships[mid].update({
+      adminDb.tx.memberships[mid]!.update({
         role, status: "active", permissions: role === "assistant" ? ASSISTANT_PERMS : [], createdAt: Date.now(),
       }).link({ user: user.id, cooperative: coop.id }),
     );

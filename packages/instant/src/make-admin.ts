@@ -18,7 +18,7 @@ async function main() {
     process.exit(1);
   }
 
-  await adminDb.transact(adminDb.tx.$users[user.id].update({ isPlatformAdmin: true }));
+  await adminDb.transact(adminDb.tx.$users[user.id]!.update({ isPlatformAdmin: true }));
   console.log(`✓ ${email} is now a platform admin.`);
 }
 

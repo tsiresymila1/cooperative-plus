@@ -7,6 +7,12 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:coverage": "vitest run --config vitest.config.ts --coverage",
+    "test:e2e": "playwright test",
+    "test:mobile": "maestro test apps/mobile/.maestro",
     "seed": "pnpm --filter @cp/instant seed",
     "db:push-schema": "instant-cli push schema --app feb5e50f-21d7-4880-9de5-49eba48f2a45 --yes",
     "db:push-perms": "instant-cli push perms --app feb5e50f-21d7-4880-9de5-49eba48f2a45 --yes",
@@ -17,14 +23,18 @@
     "mobile": "pnpm --filter @cp/mobile start"
   },
   "devDependencies": {
+    "@instantdb/admin": "^1.0.49",
+    "@instantdb/core": "^1.0.49",
+    "@types/node": "^22.10.0",
+    "@vitest/coverage-v8": "^5.0.2",
+    "instant-cli": "^0.21.0",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
-    "@types/node": "^22.10.0",
-    "@instantdb/core": "^1.0.49",
-    "@instantdb/admin": "^1.0.49",
-    "instant-cli": "^0.21.0"
+    "vitest": "^5.0.2"
   },
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "pnpm": {
     "overrides": {
       "@instantdb/core": "1.0.49",

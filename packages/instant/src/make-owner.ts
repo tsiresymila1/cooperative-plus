@@ -34,7 +34,7 @@ async function main() {
   const mId = existing?.id ?? id();
 
   await adminDb.transact(
-    adminDb.tx.memberships[mId]
+    adminDb.tx.memberships[mId]!
       .update({ role: "owner", status: "active", permissions: [], createdAt: Date.now() })
       .link({ user: user.id, cooperative: coop.id }),
   );
