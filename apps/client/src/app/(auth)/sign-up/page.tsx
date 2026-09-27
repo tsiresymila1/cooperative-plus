@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { db, toast } from "@cp/ui";
 import PageBanner from "@/components/site/PageBanner";
+import {
+  GoogleSignInButton,
+  isGoogleSignInConfigured,
+} from "@/components/auth/google-sign-in-button";
 
 const FIELD =
   "h-[53px] w-full border border-navy/15 bg-white px-5 font-body text-[16px] text-navy outline-none transition-colors duration-300 focus:border-gold";
@@ -55,54 +59,72 @@ export default function SignUp() {
           </h2>
 
           {step === "info" ? (
-            <form onSubmit={sendCode} className="max-w-[640px]">
-              <div className="mb-6">
-                <label htmlFor="name" className={LABEL}>
-                  Nom complet <span className="text-sale">*</span>
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  placeholder="Rakoto Hery"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className={FIELD}
-                  required
-                />
-              </div>
-              <div className="mb-6">
-                <label htmlFor="phone" className={LABEL}>
-                  Téléphone
-                </label>
-                <input
-                  id="phone"
-                  name="phone"
-                  inputMode="tel"
-                  placeholder="034 00 000 00"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className={FIELD}
-                />
-              </div>
-              <div className="mb-6">
-                <label htmlFor="email" className={LABEL}>
-                  Adresse email <span className="text-sale">*</span>
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="vous@exemple.mg"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={FIELD}
-                  required
-                />
-              </div>
-              <button type="submit" className={GOLD_BTN} disabled={loading}>
-                {loading ? "Envoi…" : "Continuer"}
-              </button>
-            </form>
+            <div className="max-w-[640px]">
+              {isGoogleSignInConfigured ? (
+                <>
+                  <GoogleSignInButton
+                    text="signup_with"
+                    onSignedIn={() => {
+                      toast.success("Compte Google connecté");
+                      router.replace("/account/dashboard");
+                    }}
+                  />
+                  <div className="my-7 flex max-w-[320px] items-center gap-3 text-[12px] uppercase tracking-[0.14em] text-navy/45">
+                    <span className="h-px flex-1 bg-navy/15" />
+                    ou
+                    <span className="h-px flex-1 bg-navy/15" />
+                  </div>
+                </>
+              ) : null}
+              <form onSubmit={sendCode}>
+                <div className="mb-6">
+                  <label htmlFor="name" className={LABEL}>
+                    Nom complet <span className="text-sale">*</span>
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    placeholder="Rakoto Hery"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className={FIELD}
+                    required
+                  />
+                </div>
+                <div className="mb-6">
+                  <label htmlFor="phone" className={LABEL}>
+                    Téléphone
+                  </label>
+                  <input
+                    id="phone"
+                    name="phone"
+                    inputMode="tel"
+                    placeholder="034 00 000 00"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className={FIELD}
+                  />
+                </div>
+                <div className="mb-6">
+                  <label htmlFor="email" className={LABEL}>
+                    Adresse email <span className="text-sale">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    placeholder="vous@exemple.mg"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={FIELD}
+                    required
+                  />
+                </div>
+                <button type="submit" className={GOLD_BTN} disabled={loading}>
+                  {loading ? "Envoi…" : "Continuer"}
+                </button>
+              </form>
+            </div>
           ) : (
             <form onSubmit={verify} className="max-w-[640px]">
               <div className="mb-6">

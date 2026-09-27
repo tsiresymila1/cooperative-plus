@@ -1,13 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { Image, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { router } from "expo-router";
+import {
+  GoogleOneTapSignIn,
+  isCancelledResponse,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from "react-native-nitro-google-signin";
 import { ArrowRight, ChevronLeft, Mail, ShieldCheck } from "lucide-react-native";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { useColors } from "@/lib/colors";
 import { db } from "@/lib/db";
+
+const googleClientName = process.env.EXPO_PUBLIC_INSTANT_GOOGLE_CLIENT_NAME;
+const googleWebClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
+
+if (googleWebClientId) {
+  GoogleOneTapSignIn.configure({ webClientId: googleWebClientId });
+}
 
 export default function SignIn() {
   const insets = useSafeAreaInsets();
@@ -16,14 +30,15 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const emailRef = useRef<TextInput>(null);
   const codeRef = useRef<TextInput>(null);
 
-  // autoFocus fires before the entrance animation settles the layout, so the
-  // keyboard silently fails to raise on iOS — focus explicitly once mounted.
+  // Keep the provider choices visible on first render. The code input can
+  // safely receive focus once the user has explicitly chosen email login.
   useEffect(() => {
-    const t = setTimeout(() => (step === "email" ? emailRef : codeRef).current?.focus(), 350);
+    if (step !== "code") return;
+    const t = setTimeout(() => codeRef.current?.focus(), 350);
     return () => clearTimeout(t);
   }, [step]);
 
@@ -65,6 +80,41 @@ export default function SignIn() {
     }
   }
 
+  async function signInWithGoogle() {
+    if (!googleClientName || !googleWebClientId) {
+      setErr("La connexion Google n’est pas encore configurée.");
+      return;
+    }
+
+    setGoogleBusy(true);
+    setErr(null);
+    try {
+      await GoogleOneTapSignIn.checkPlayServices();
+      const result = await GoogleOneTapSignIn.presentExplicitSignIn();
+
+      if (isCancelledResponse(result)) return;
+      if (!isSuccessResponse(result) || !result.data.idToken) {
+        throw new Error("Jeton Google manquant");
+      }
+
+      await db.auth.signInWithIdToken({
+        idToken: result.data.idToken,
+        clientName: googleClientName,
+      });
+      router.back();
+    } catch (error) {
+      if (isErrorWithCode(error) && error.code === statusCodes.DEVELOPER_ERROR) {
+        setErr("Configuration Google Android invalide (package, client ID ou SHA-1).");
+      } else if (isErrorWithCode(error) && error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        setErr("Google Play Services est indisponible sur cet appareil.");
+      } else {
+        setErr("Échec de la connexion avec Google. Réessayez.");
+      }
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -78,7 +128,17 @@ export default function SignIn() {
         <Text className="font-display text-lg text-ink">Connexion</Text>
       </View>
 
-      <View className="flex-1 justify-center px-5 pb-16">
+      <ScrollView
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          paddingBottom: Math.max(insets.bottom + 24, 40),
+        }}
+      >
         {/* Brand mark */}
         <Animated.View entering={FadeIn.duration(400)} className="mb-8 items-center">
           {step === "email" ? (
@@ -100,10 +160,40 @@ export default function SignIn() {
 
         {step === "email" ? (
           <Animated.View entering={FadeInDown.delay(80).duration(420)}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Continuer avec Google"
+              disabled={busy || googleBusy}
+              onPress={signInWithGoogle}
+              className={cn(
+                "h-14 flex-row items-center justify-center gap-3 rounded-[4px] border border-ink/10 bg-paper px-4",
+                (googleBusy || busy) && "opacity-60",
+              )}
+            >
+              {googleBusy ? (
+                <ActivityIndicator color={c.ink} />
+              ) : (
+                <Image
+                  accessibilityIgnoresInvertColors
+                  resizeMode="contain"
+                  source={require("../assets/google-g-logo.png")}
+                  style={{ width: 24, height: 24 }}
+                />
+              )}
+              <Text className="font-body text-base font-medium text-ink">
+                {googleBusy ? "Connexion…" : "Continuer avec Google"}
+              </Text>
+            </Pressable>
+
+            <View className="my-2 flex-row items-center gap-3">
+              <View className="h-px flex-1 bg-ink/10" />
+              <Text className="font-code text-xs uppercase text-ink-soft/60">ou</Text>
+              <View className="h-px flex-1 bg-ink/10" />
+            </View>
+
             <View className="h-14 flex-row items-center gap-2 rounded-[4px] border border-ink/10 bg-paper px-4">
               <Mail size={18} color={c.inkSoft} />
               <TextInput
-                ref={emailRef}
                 value={email}
                 onChangeText={setEmail}
                 placeholder="vous@exemple.mg"
@@ -177,7 +267,7 @@ export default function SignIn() {
             </Pressable>
           </Animated.View>
         )}
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
