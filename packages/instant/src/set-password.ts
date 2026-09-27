@@ -6,18 +6,19 @@
 import { adminDb, id } from "./admin";
 import { hashPassword } from "./password";
 
-const [emailArg, password] = process.argv.slice(2);
-if (!emailArg || !password) {
+const [emailArg, passwordArg] = process.argv.slice(2);
+if (!emailArg || !passwordArg) {
   console.error("usage: set-password <email> <password>");
   process.exit(1);
 }
 const email = emailArg.toLowerCase();
+const password = passwordArg;
 
 async function main() {
   await adminDb.auth.createToken(email); // ensures the $user exists
   const r = await adminDb.query({ credentials: { $: { where: { email } } } });
   const cid = (r.credentials ?? [])[0]?.id ?? id();
-  await adminDb.transact(adminDb.tx.credentials[cid].update({ email, passwordHash: hashPassword(password), createdAt: Date.now() }));
+  await adminDb.transact(adminDb.tx.credentials[cid]!.update({ email, passwordHash: hashPassword(password), createdAt: Date.now() }));
   console.log(`✓ mot de passe défini pour ${email}`);
 }
 main().then(() => process.exit(0)).catch((e) => { console.error("✗", e?.message ?? e); process.exit(1); });

@@ -85,14 +85,14 @@ async function main() {
 
   // base entities
   const base = [
-    ...DESTS.map(([name, region, pop], i) => tx.destinations[uid("0a", i + 1)].update({ name, slug: name.toLowerCase().replace(/\s+/g, "-"), region, country: "MG", isPopular: pop, isGlobal: true, createdAt: now })),
+    ...DESTS.map(([name, region, pop], i) => tx.destinations[uid("0a", i + 1)]!.update({ name, slug: name.toLowerCase().replace(/\s+/g, "-"), region, country: "MG", isPopular: pop, isGlobal: true, createdAt: now })),
     ...PLAN_DEFS.map((p) => tx.plans[p.id]!.update({ code: p.code, name: p.name, priceAmount: p.priceAmount, currency: "MGA", interval: p.interval, maxVehicles: p.maxVehicles, maxRoutes: p.maxRoutes, maxAssistants: p.maxAssistants, maxTripsMonth: p.maxTripsMonth, transactionFeeBps: p.transactionFeeBps, isActive: true })),
-    ...COOPS.map((c) => tx.cooperatives[c.id].update({ slug: c.slug, legalName: `${c.name} Coopérative`, displayName: c.name, currency: "MGA", timezone: "Indian/Antananarivo", subscriptionStatus: c.status, cutoffHours: 2, refundPct: 50, paymentMethods: ["cash", "mobile_money", "card"], createdAt: now })),
+    ...COOPS.map((c) => tx.cooperatives[c.id]!.update({ slug: c.slug, legalName: `${c.name} Coopérative`, displayName: c.name, currency: "MGA", timezone: "Indian/Antananarivo", subscriptionStatus: c.status, cutoffHours: 2, refundPct: 50, paymentMethods: ["cash", "mobile_money", "card"], createdAt: now })),
     // enable all global destinations for each cooperative
-    ...COOPS.map((c) => tx.cooperatives[c.id].link({ enabledDestinations: DESTS.map((_, i) => uid("0a", i + 1)) })),
+    ...COOPS.map((c) => tx.cooperatives[c.id]!.link({ enabledDestinations: DESTS.map((_, i) => uid("0a", i + 1)) })),
     ...COOPS.map((c, i) => {
       const resolved = coopSeats[i]!;
-      let v = tx.vehicles[uid("0e", i + 1)].update({ registrationNo: `${1000 + i} TBA`, name: ["Mercedes Sprinter", "King Long Bus", "Toyota Hiace"][i]!, type: resolved.type, seatCount: resolved.seats, status: "active", createdAt: now }).link({ cooperative: c.id });
+      let v = tx.vehicles[uid("0e", i + 1)]!.update({ registrationNo: `${1000 + i} TBA`, name: ["Mercedes Sprinter", "King Long Bus", "Toyota Hiace"][i]!, type: resolved.type, seatCount: resolved.seats, status: "active", createdAt: now }).link({ cooperative: c.id });
       if (resolved.modelId) v = v.link({ model: resolved.modelId });
       return v;
     }),
@@ -101,7 +101,7 @@ async function main() {
 
   // routes
   await adminDb.transact(ROUTES.map((r, i) =>
-    tx.routes[uid("0d", i + 1)].update({ name: `${r.from} → ${r.to}`, basePrice: r.price, currency: "MGA", distanceKm: r.km, durationMin: r.dur, status: "active", createdAt: now })
+    tx.routes[uid("0d", i + 1)]!.update({ name: `${r.from} → ${r.to}`, basePrice: r.price, currency: "MGA", distanceKm: r.km, durationMin: r.dur, status: "active", createdAt: now })
       .link({ cooperative: COOPS[r.coop]!.id, origin: dIdx(r.from), destination: dIdx(r.to) })));
 
   // trip instances: each route × DAYS × 2 times
@@ -122,7 +122,7 @@ async function main() {
         const booked = 0; // real occupancy comes from real bookings (no fake)
         const resolved = coopSeats[r.coop]!;
         steps.push(
-          tx.tripInstances[uid("0f", tripN)].update({
+          tx.tripInstances[uid("0f", tripN)]!.update({
             originName: r.from, destName: r.to, departDate, departureAt,
             arrivalEstimateAt: departureAt + r.dur * 60000,
             routeName: `${r.from} → ${r.to}`, coopName: COOPS[r.coop]!.name,
