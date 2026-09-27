@@ -2,12 +2,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Mail } from "lucide-react";
 import PageBanner from "@/components/site/PageBanner";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Suppression des données · Cooperative Plus",
+export const metadata: Metadata = createPageMetadata({
+  title: "Suppression des données",
   description:
     "Comment demander la suppression de votre compte et de vos données personnelles dans l'application Cooperative Plus.",
-};
+  path: "/data-deletion",
+});
 
 const UPDATED = "24 juin 2026";
 const EMAIL = "tsiresymila@gmail.com";

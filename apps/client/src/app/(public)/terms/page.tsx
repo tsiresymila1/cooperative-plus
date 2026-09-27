@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import PageBanner from "@/components/site/PageBanner";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Conditions d'utilisation · Cooperative Plus",
+export const metadata: Metadata = createPageMetadata({
+  title: "Conditions d'utilisation",
   description: "Conditions générales d'utilisation de l'application de réservation Cooperative Plus.",
-};
+  path: "/terms",
+});
 
 const UPDATED = "24 juin 2026";
 

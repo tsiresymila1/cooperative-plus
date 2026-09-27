@@ -2,8 +2,15 @@ import PageBanner from "@/components/site/PageBanner";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Accordion from "@/components/ui/Accordion";
 import CtaButton from "@/components/ui/CtaButton";
+import { JsonLd } from "@/components/seo/json-ld";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "FAQ — Coopérative Plus" };
+export const metadata = createPageMetadata({
+  title: "FAQ — Réservation, paiement et voyage",
+  description:
+    "Toutes les réponses sur la réservation de taxi-brousse, le choix des sièges, les paiements, les billets et les annulations à Madagascar.",
+  path: "/faq",
+});
 
 const TAGS = ["Réservation", "Paiement", "Bagages", "Annulation"];
 
@@ -23,9 +30,23 @@ const PRICING: { q: string; a: string }[] = [
   { q: "Le prix affiché est-il par personne ?", a: "Oui, le prix indiqué est par adulte. Le montant total est calculé selon le nombre de places réservées." },
 ];
 
+const faqStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [...GENERAL, ...PRICING].map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: a,
+    },
+  })),
+};
+
 export default function FaqPage() {
   return (
     <main>
+      <JsonLd data={faqStructuredData} />
       <PageBanner title="FAQ" image="/wp-content/uploads/2025/04/inner_HEADER_02.jpg" />
 
       <section className="py-[110px] lg:py-[131px]">
