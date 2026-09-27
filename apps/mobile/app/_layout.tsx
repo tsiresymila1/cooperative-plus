@@ -1,5 +1,6 @@
 import "../global.css";
 import { useCallback, useEffect, useState } from "react";
+import * as Sentry from "@sentry/react-native";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
@@ -20,12 +21,25 @@ import { SelectionProvider } from "@/lib/selection";
 import { setupNotifications } from "@/lib/notifications";
 import { checkForAppUpdate } from "@/lib/in-app-updates";
 
+const sentryDsn =
+  process.env.EXPO_PUBLIC_SENTRY_DSN ??
+  "https://99f8191e7a4d6a0ca77a274481e5bd97@o4504649797271552.ingest.us.sentry.io/4512159877627904";
+
+Sentry.init({
+  dsn: sentryDsn,
+  environment:
+    process.env.EXPO_PUBLIC_SENTRY_ENVIRONMENT ?? (__DEV__ ? "development" : "production"),
+  sendDefaultPii: false,
+  tracesSampleRate: __DEV__ ? 1 : 0.1,
+  initialScope: { tags: { app: "mobile" } },
+});
+
 const queryClient = new QueryClient();
 
 // Keep the native splash up until fonts + onboarding check are ready.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function RootLayout() {
   const [fontsLoaded] = useFonts({
     BarlowCondensed_400Regular,
     BarlowCondensed_500Medium,
@@ -124,3 +138,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export default Sentry.wrap(RootLayout);

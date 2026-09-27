@@ -108,6 +108,12 @@ pnpm mobile                     # Expo (ajouter -- -c pour vider le cache)
 
 > Node 20 requis pour les commandes pnpm/Expo.
 
+## Observabilité Sentry
+
+Sentry est activé sur le client web, l’espace coopérative, l’administration et l’application mobile. Les événements partagent le même projet Sentry et portent un tag `app` (`client`, `coop`, `admin` ou `mobile`) pour faciliter le filtrage.
+
+Le DSN public est configuré par défaut. Pour obtenir des stack traces lisibles en production, définir `SENTRY_ORG`, `SENTRY_PROJECT` et le secret `SENTRY_AUTH_TOKEN` dans chaque projet Vercel ainsi que dans les secrets EAS. Ne jamais committer le jeton d’authentification.
+
 ## 📦 Build & déploiement mobile (Android)
 
 - **Local (sans EAS)** : `npx expo prebuild -p android --clean` puis `./gradlew :app:bundleRelease` (AAB) / `assembleRelease` (APK).
