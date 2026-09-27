@@ -92,7 +92,7 @@ export function CoopGuard({ slug, children }: { slug: string; children: React.Re
 
   if (authLoading || (user && !isGuest && isLoading)) return <Loading />;
   if (!user || isGuest)
-    return <SignInScreen title="Espace coopérative" subtitle="Connectez-vous pour gérer votre coopérative." allowPassword />;
+    return <SignInScreen title="Espace coopérative" subtitle="Connectez-vous pour gérer votre coopérative." allowPassword allowMagicCode={false} allowPasswordReset />;
 
   const me = data?.$users?.[0];
   const coop = data?.cooperatives?.[0];

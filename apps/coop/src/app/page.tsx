@@ -29,6 +29,8 @@ export default function HomePage() {
         title="Espace coopérative"
         subtitle="Connectez-vous pour gérer votre coopérative."
         allowPassword
+        allowMagicCode={false}
+        allowPasswordReset
       />
     );
   }
