@@ -40,7 +40,7 @@ export function AccountNav() {
           await db.auth.signOut();
           router.push("/");
         }}
-        className="ml-auto inline-flex shrink-0 items-center gap-2 border-b-2 border-transparent py-4 font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-navy/50 transition-colors duration-300 hover:text-sale"
+        className="ml-auto inline-flex shrink-0 cursor-pointer items-center gap-2 border-b-2 border-transparent py-4 font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-navy/50 transition-colors duration-300 hover:text-sale"
       >
         <LogOut size={17} strokeWidth={2} /> Déconnexion
       </button>
