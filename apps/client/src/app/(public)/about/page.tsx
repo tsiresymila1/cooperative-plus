@@ -4,8 +4,14 @@ import Counters from "@/components/sections/Counters";
 import Benefits from "@/components/sections/Benefits";
 import Testimonials from "@/components/sections/Testimonials";
 import AppPromo from "@/components/sections/AppPromo";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata = { title: "À propos — Coopérative Plus" };
+export const metadata = createPageMetadata({
+  title: "À propos",
+  description:
+    "Découvrez comment Coopérative Plus simplifie la réservation de taxi-brousse et relie les voyageurs aux coopératives de transport à Madagascar.",
+  path: "/about",
+});
 
 /* Template About layout: banner, then the homepage what-you-get / counters /
    benefits blocks (benefits in split layout), testimonials and app promo. */

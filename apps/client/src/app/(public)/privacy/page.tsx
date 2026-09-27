@@ -1,12 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import PageBanner from "@/components/site/PageBanner";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Politique de confidentialité · Cooperative Plus",
+export const metadata: Metadata = createPageMetadata({
+  title: "Politique de confidentialité",
   description:
     "Comment Cooperative Plus collecte, utilise et protège vos données personnelles lors de la réservation de taxi-brousse à Madagascar.",
-};
+  path: "/privacy",
+});
 
 const UPDATED = "24 juin 2026";
 

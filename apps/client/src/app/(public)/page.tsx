@@ -7,6 +7,14 @@ import Schedule from "@/components/sections/Schedule";
 import BusTravel from "@/components/sections/BusTravel";
 import TransportTrust from "@/components/sections/TransportTrust";
 import Faq from "@/components/sections/Faq";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "Réservez votre taxi-brousse à Madagascar",
+  description:
+    "Comparez les horaires des coopératives, choisissez votre siège et réservez votre trajet en taxi-brousse partout à Madagascar.",
+  path: "/",
+});
 
 export default function Home() {
   return (

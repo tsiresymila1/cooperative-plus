@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import GoTop from "@/components/site/GoTop";
 import { AccountNav } from "@/components/account-nav";
 import { AuthGate } from "@cp/ui";
+import { createPageMetadata } from "@/lib/seo";
+
+export const metadata: Metadata = createPageMetadata({
+  title: "Mon compte",
+  description: "Gérez votre profil et vos réservations Coopérative Plus.",
+  path: "/account/dashboard",
+  noIndex: true,
+});
 
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
