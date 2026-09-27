@@ -2,9 +2,12 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@cp/ui";
+import * as Sentry from "@sentry/nextjs";
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => { console.error(error); }, [error]);
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
   return (
     <main className="grid min-h-dvh place-items-center px-5 text-center">
       <div>
