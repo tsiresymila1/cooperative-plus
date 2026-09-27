@@ -21,6 +21,7 @@
 ## Expected gates per task class
 
 - Tooling and unit tasks: targeted Vitest command plus TypeScript typecheck.
+- Unit coverage includes validation, cryptography, password, subscription, and mobile-domain modules with a 90% floor for statements, branches, functions, and lines.
 - Integration tasks: targeted Vitest integration command plus full unit suite.
 - Web E2E tasks: Playwright Chromium suite against local servers.
 - Maestro tasks: flow-structure validation; real-device execution is recorded as manual verification when unavailable.

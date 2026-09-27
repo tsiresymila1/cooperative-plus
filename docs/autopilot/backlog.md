@@ -13,8 +13,8 @@
 
 ## Tasks (autopilot derives its queue from this)
 
-- `test-001`: Vitest foundation plus shared validation tests.
-- `test-002`: Cryptography, password, subscription, and mobile-domain unit tests.
+- [x] `test-001`: Vitest foundation plus shared validation tests.
+- [x] `test-002`: Cryptography, password, subscription, and mobile-domain unit tests.
 - `test-003`: Mobile payment boundaries plus Hono HTTP contract integration tests.
 - `test-004`: Playwright client/coop/admin smoke and validation tests.
 - `test-005`: Maestro onboarding and sign-in Android flows with stable accessibility identifiers.
