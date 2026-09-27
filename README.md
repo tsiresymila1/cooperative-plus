@@ -138,6 +138,7 @@ Config build : [`apps/mobile/eas.json`](apps/mobile/eas.json). Détails : voir l
 | 7 | [Folder structure](docs/07-FOLDER-STRUCTURE.md) |
 | 8 | [Wireframes](docs/08-WIREFRAMES.md) |
 | 9 | [Roadmap & monétisation](docs/09-ROADMAP-MONETIZATION.md) |
+| 10 | [Authentification](docs/10-AUTHENTICATION.md) |
 
 ## 🔒 Sécurité (notes)
 

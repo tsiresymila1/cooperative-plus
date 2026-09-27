@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, toast } from "@cp/ui";
 import PageBanner from "@/components/site/PageBanner";
+import {
+  GoogleSignInButton,
+  isGoogleSignInConfigured,
+} from "@/components/auth/google-sign-in-button";
 
 const FIELD =
   "h-[53px] w-full border border-navy/15 bg-white px-5 font-body text-[16px] text-navy outline-none transition-colors duration-300 focus:border-gold";
@@ -17,7 +21,11 @@ export default function SignInPage() {
 
 function SignIn() {
   const router = useRouter();
-  const next = useSearchParams().get("next") || "/account/dashboard";
+  const requestedNext = useSearchParams().get("next");
+  const next =
+    requestedNext?.startsWith("/") && !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/account/dashboard";
   const { user } = db.useAuth();
   useEffect(() => {
     if (user && !(user as { isGuest?: boolean }).isGuest) router.replace(next);
@@ -61,27 +69,44 @@ function SignIn() {
           </h2>
 
           {step === "email" ? (
-            <form onSubmit={sendCode} className="max-w-[640px]">
-              <div className="mb-6">
-                <label htmlFor="email" className={LABEL}>
-                  Adresse email <span className="text-sale">*</span>
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoFocus
-                  placeholder="vous@exemple.mg"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className={FIELD}
-                  required
-                />
-              </div>
-              <button type="submit" className={GOLD_BTN} disabled={loading}>
-                {loading ? "Envoi…" : "Recevoir le code"}
-              </button>
-            </form>
+            <div className="max-w-[640px]">
+              {isGoogleSignInConfigured ? (
+                <>
+                  <GoogleSignInButton
+                    onSignedIn={() => {
+                      toast.success("Connecté avec Google");
+                      router.replace(next);
+                    }}
+                  />
+                  <div className="my-7 flex max-w-[320px] items-center gap-3 text-[12px] uppercase tracking-[0.14em] text-navy/45">
+                    <span className="h-px flex-1 bg-navy/15" />
+                    ou
+                    <span className="h-px flex-1 bg-navy/15" />
+                  </div>
+                </>
+              ) : null}
+              <form onSubmit={sendCode}>
+                <div className="mb-6">
+                  <label htmlFor="email" className={LABEL}>
+                    Adresse email <span className="text-sale">*</span>
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoFocus
+                    placeholder="vous@exemple.mg"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className={FIELD}
+                    required
+                  />
+                </div>
+                <button type="submit" className={GOLD_BTN} disabled={loading}>
+                  {loading ? "Envoi…" : "Recevoir le code"}
+                </button>
+              </form>
+            </div>
           ) : (
             <form onSubmit={verify} className="max-w-[640px]">
               <div className="mb-6">
