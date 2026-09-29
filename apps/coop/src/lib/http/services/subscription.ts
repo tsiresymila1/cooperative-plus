@@ -116,19 +116,11 @@ export async function handleSubscriptionWebhook(body: PapiWebhookPayload): Promi
   const payment = payments?.[0];
   if (!payment) throw new HttpError(404, "Paiement introuvable");
 
-  const paymentMeta = (payment.meta as any) ?? {};
-  const storedTokenHash = paymentMeta.notificationTokenHash;
-  const legacyToken = paymentMeta.notificationToken;
-  const effectiveTokenHash =
-    typeof storedTokenHash === "string"
-      ? storedTokenHash
-      : typeof legacyToken === "string" && legacyToken
-        ? hashSecret(legacyToken)
-        : undefined;
+  const storedTokenHash = (payment.meta as any)?.notificationTokenHash;
   if (
-    !effectiveTokenHash ||
+    typeof storedTokenHash !== "string" ||
     !body.notificationToken ||
-    !verifySecret(body.notificationToken, effectiveTokenHash)
+    !verifySecret(body.notificationToken, storedTokenHash)
   )
     throw new HttpError(401, "notificationToken invalide");
 

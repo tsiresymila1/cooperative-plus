@@ -122,13 +122,13 @@ describe("client PAPI webhook authentication", () => {
     expect(instantAdmin.transact).toHaveBeenCalledOnce();
   });
 
-  it("temporarily accepts an exact legacy token during the migration window", async () => {
+  it("rejects a legacy raw token after the migration window", async () => {
     instantAdmin.query.mockResolvedValueOnce(bookingWithLegacyToken("legacy-token"));
 
     await expect(
       handleWebhook({ ...payload, notificationToken: "legacy-token" }),
-    ).resolves.toBeUndefined();
-    expect(instantAdmin.transact).toHaveBeenCalledOnce();
+    ).rejects.toMatchObject({ status: 401, message: "notificationToken invalide" });
+    expect(instantAdmin.transact).not.toHaveBeenCalled();
   });
 });
 

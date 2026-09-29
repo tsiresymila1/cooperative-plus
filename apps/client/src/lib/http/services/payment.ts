@@ -134,19 +134,11 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
   const payment = (booking.payments ?? [])[0];
 
   // Verify notificationToken to reject spoofed webhooks
-  const paymentMeta = (payment?.meta as any) ?? {};
-  const storedTokenHash = paymentMeta.notificationTokenHash;
-  const legacyToken = paymentMeta.notificationToken;
-  const effectiveTokenHash =
-    typeof storedTokenHash === "string"
-      ? storedTokenHash
-      : typeof legacyToken === "string" && legacyToken
-        ? hashSecret(legacyToken)
-        : undefined;
+  const storedTokenHash = (payment?.meta as any)?.notificationTokenHash;
   if (
-    !effectiveTokenHash ||
+    typeof storedTokenHash !== "string" ||
     !incomingToken ||
-    !verifySecret(incomingToken, effectiveTokenHash)
+    !verifySecret(incomingToken, storedTokenHash)
   )
     throw new HttpError(401, "notificationToken invalide");
 
