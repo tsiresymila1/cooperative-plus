@@ -1,5 +1,5 @@
 import { adminDb, id as newId } from "@cp/instant/admin";
-import { decrypt, isEncrypted } from "@cp/crypto";
+import { decrypt, hashSecret, isEncrypted, verifySecret } from "@cp/crypto";
 import { HttpError } from "../errors";
 
 const PAPI_URL = "https://app.papi.mg/dashboard/api/payment-links";
@@ -65,7 +65,13 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
 
   const papiData = await papiRes.json();
 
-  if (!papiRes.ok || !papiData?.data?.paymentLink)
+  const notificationToken = papiData?.data?.notificationToken;
+  if (
+    !papiRes.ok ||
+    !papiData?.data?.paymentLink ||
+    typeof notificationToken !== "string" ||
+    !notificationToken.trim()
+  )
     throw new HttpError(502, papiData?.message ?? "Erreur PAPI");
 
   const paymentId = newId();
@@ -80,7 +86,7 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
         providerRef: bookingReference,
         meta: {
           testMode: TEST_MODE,
-          notificationToken: papiData.data.notificationToken,
+          notificationTokenHash: hashSecret(notificationToken),
           // Stored for webhook to create tickets on SUCCESS (empty = tickets already exist)
           instanceId: resolvedInstanceId,
           coopId: resolvedCoopId,
@@ -127,13 +133,25 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
 
   const payment = (booking.payments ?? [])[0];
 
-  // Idempotency — already in terminal state, skip
-  if (payment?.status === "paid" || payment?.status === "failed") return;
-
   // Verify notificationToken to reject spoofed webhooks
-  const storedToken = (payment?.meta as any)?.notificationToken;
-  if (storedToken && incomingToken && storedToken !== incomingToken)
+  const paymentMeta = (payment?.meta as any) ?? {};
+  const storedTokenHash = paymentMeta.notificationTokenHash;
+  const legacyToken = paymentMeta.notificationToken;
+  const effectiveTokenHash =
+    typeof storedTokenHash === "string"
+      ? storedTokenHash
+      : typeof legacyToken === "string" && legacyToken
+        ? hashSecret(legacyToken)
+        : undefined;
+  if (
+    !effectiveTokenHash ||
+    !incomingToken ||
+    !verifySecret(incomingToken, effectiveTokenHash)
+  )
     throw new HttpError(401, "notificationToken invalide");
+
+  // Idempotency — already in terminal state, skip only after authentication.
+  if (payment?.status === "paid" || payment?.status === "failed") return;
 
   const paymentStatus =
     papiStatus === "SUCCESS" ? "paid" : papiStatus === "FAILED" ? "failed" : "pending";

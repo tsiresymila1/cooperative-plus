@@ -23,6 +23,7 @@ import {
   logActivity,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
+import { authenticatedHeaders } from "@/lib/http/client";
 
 const profileSchema = z.object({
   displayName: z.string().trim().min(1, "Nom requis"),
@@ -325,7 +326,7 @@ function PapiSection({ coopId, secrets }: { coopId: string; secrets: any }) {
     try {
       const res = await fetch("/api/secrets/papi-key", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await authenticatedHeaders()) },
         body: JSON.stringify({ coopId, papiApiKey: key, existingSecretId: secrets?.id }),
       });
       if (!res.ok) {

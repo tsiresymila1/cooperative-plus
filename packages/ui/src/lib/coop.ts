@@ -94,6 +94,12 @@ export const COOP_PERMISSIONS = [
   { key: "settings", label: "Paramètres" },
 ] as const;
 
+/** Team membership mutations are restricted to owners and platform admins. */
+export const canManageCoopTeam = (
+  role: string | null | undefined,
+  isPlatformAdmin: boolean,
+) => isPlatformAdmin || role === "owner";
+
 /** yyyy-mm-dd for an <input type="date"> default of today. */
 export const todayISO = () => new Date().toISOString().slice(0, 10);
 

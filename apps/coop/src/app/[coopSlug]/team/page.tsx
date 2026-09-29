@@ -15,11 +15,15 @@ import {
   memberRole,
   logActivity,
 } from "@cp/ui";
+import { useDeleteAssistant, useUpdateAssistant } from "@/lib/queries/account";
 
 export default function TeamPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const confirm = useConfirm();
+  const updateAssistant = useUpdateAssistant();
+  const deleteAssistant = useDeleteAssistant();
+  const canManage = isPlatformAdmin || role === "owner";
 
   const { data, isLoading } = db.useQuery({
     memberships: { $: { where: { "cooperative.id": coopId } }, user: {} },
@@ -36,9 +40,13 @@ export default function TeamPage() {
         tone: "danger",
       })
     ) {
-      await db.transact(db.tx.memberships[r.id].delete());
-      logActivity({ coopId, actorId: userId, action: "delete", entityType: "assistant", entityId: r.id, label: r.user?.email ?? r.user?.name });
-      toast.success("Membre retiré");
+      try {
+        await deleteAssistant.mutateAsync({ coopId, membershipId: r.id });
+        logActivity({ coopId, actorId: userId, action: "delete", entityType: "assistant", entityId: r.id, label: r.user?.email ?? r.user?.name });
+        toast.success("Membre retiré");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Échec du retrait");
+      }
     }
   };
 
@@ -77,19 +85,23 @@ export default function TeamPage() {
       key: "actions",
       header: "",
       render: (r) =>
-        r.role === "owner" ? null : (
+        r.role === "owner" || !canManage ? null : (
           <div className="flex justify-end gap-1">
             <Button
               size="sm"
               variant="ghost"
               onClick={async () => {
-                await db.transact(
-                  db.tx.memberships[r.id].update({
+                try {
+                  await updateAssistant.mutateAsync({
+                    coopId,
+                    membershipId: r.id,
                     status: r.status === "active" ? "disabled" : "active",
-                  }),
-                );
-                logActivity({ coopId, actorId: userId, action: "update", entityType: "assistant", entityId: r.id, label: r.user?.email ?? r.user?.name });
-                toast.success(r.status === "active" ? "Membre désactivé" : "Membre activé");
+                  });
+                  logActivity({ coopId, actorId: userId, action: "update", entityType: "assistant", entityId: r.id, label: r.user?.email ?? r.user?.name });
+                  toast.success(r.status === "active" ? "Membre désactivé" : "Membre activé");
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Échec de la mise à jour");
+                }
               }}
             >
               <Power size={14} /> {r.status === "active" ? "Désactiver" : "Activer"}
@@ -118,11 +130,11 @@ export default function TeamPage() {
           <span className="text-ink">Équipe</span>
         </>
       }
-      action={
+      action={canManage ? (
         <Button size="sm" onClick={() => router.push(`/${slug}/team/new`)}>
           <UserPlus size={16} /> Ajouter un assistant
         </Button>
-      }
+      ) : undefined}
     >
       <DataTable
         columns={columns}

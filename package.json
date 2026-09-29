@@ -14,6 +14,7 @@
     "test:e2e": "playwright test",
     "test:mobile": "maestro test apps/mobile/.maestro",
     "seed": "pnpm --filter @cp/instant seed",
+    "migrate:papi-tokens": "pnpm --filter @cp/instant migrate-papi-tokens",
     "db:push-schema": "instant-cli push schema --app feb5e50f-21d7-4880-9de5-49eba48f2a45 --yes",
     "db:push-perms": "instant-cli push perms --app feb5e50f-21d7-4880-9de5-49eba48f2a45 --yes",
     "dev:web": "turbo run dev --filter=@cp/client --filter=@cp/coop --filter=@cp/admin",

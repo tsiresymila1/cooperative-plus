@@ -19,7 +19,7 @@ import {
   useCoopPlan,
   usePaymentPopup,
 } from "@cp/ui";
-import { api } from "@/lib/http/client";
+import { api, authenticatedHeaders } from "@/lib/http/client";
 
 const STATUS: Record<string, { label: string; tone: "success" | "warning" | "danger" | "neutral" }> = {
   trialing: { label: "Essai gratuit", tone: "neutral" },
@@ -77,7 +77,10 @@ export default function AbonnementPage() {
     if (!targetId) return;
     setPaying(true);
     try {
-      const res = await api.subscription.initiate.$post({ json: { coopId, planId: targetId } });
+      const res = await api.subscription.initiate.$post(
+        { json: { coopId, planId: targetId } },
+        { headers: authenticatedHeaders },
+      );
       const data = await res.json();
       if (!res.ok || !("url" in data)) throw new Error((data as any)?.error ?? "Erreur");
       popup.open(data.url);
