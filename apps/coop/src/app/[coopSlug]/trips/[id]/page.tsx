@@ -548,7 +548,7 @@ export default function TripViewPage() {
         </>
       }
       action={
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href={`/${slug}/trips`}>
             <Button size="sm" variant="outline">
               <ArrowLeft size={16} /> Retour
