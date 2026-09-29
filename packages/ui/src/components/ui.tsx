@@ -59,9 +59,9 @@ export function ComponentCard({ title, desc, action, className, bodyClassName, c
   title?: string; desc?: string; action?: React.ReactNode; className?: string; bodyClassName?: string; children: React.ReactNode;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-line bg-paper", className)}>
+    <div className={cn("min-w-0 rounded-2xl border border-line bg-paper", className)}>
       {(title || action) && (
-        <div className="flex items-start justify-between gap-3 px-6 py-5">
+        <div className="flex flex-wrap items-start justify-between gap-3 px-6 py-5">
           <div>
             {title && <h3 className="text-base font-medium text-ink">{title}</h3>}
             {desc && <p className="mt-1 text-sm text-ink-soft">{desc}</p>}

@@ -582,18 +582,18 @@ export default function TripViewPage() {
       ) : !trip ? (
         <p className="text-ink-soft">Trajet introuvable.</p>
       ) : (
-        <div className="grid gap-6">
+        <div className="grid min-w-0 gap-6">
           {/* ---- Header ---- */}
-          <Card className="p-6">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-ink">
+          <Card className="p-4 sm:p-6">
+            <div className="flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:flex-wrap sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <h2 className="flex flex-wrap items-center gap-x-2 gap-y-1 font-display text-xl font-bold text-ink sm:text-2xl">
                   {trip.originName}
                   <ArrowRight size={20} className="text-laterite" />
                   {trip.destName}
                   {(trip as any).tag && <TagBadge name={(trip as any).tag.name} color={(trip as any).tag.color} />}
                 </h2>
-                <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-ink-soft">
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ink-soft">
                   <span className="inline-flex items-center gap-1.5">
                     <Calendar size={15} className="text-ink-soft/60" />
                     {fmtDateTime(trip.departureAt)}
@@ -612,12 +612,12 @@ export default function TripViewPage() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
                 <Badge tone={(tripStatus[trip.status]?.tone) ?? "neutral"}>
                   {tripStatus[trip.status]?.label ?? trip.status}
                 </Badge>
                 <Select value={trip.status} onValueChange={changeStatus}>
-                  <SelectTrigger className="h-9 w-44">
+                  <SelectTrigger className="h-9 w-44 max-w-full">
                     <span className="inline-flex items-center gap-2">
                       <Activity size={15} className="text-ink-soft/60" />
                       <SelectValue />
@@ -636,7 +636,7 @@ export default function TripViewPage() {
 
           </Card>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid min-w-0 gap-6 lg:grid-cols-2">
             {/* ---- Seat map view ---- */}
             <ComponentCard
               title="Places occupées"
@@ -781,13 +781,13 @@ export default function TripViewPage() {
           <ComponentCard
             title={`Manifeste des réservations (${visibleBookings.length}/${bookings.length})`}
             action={
-              <div className="relative">
+              <div className="relative w-full sm:w-auto">
                 <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
                 <Input
                   value={mSearch}
                   onChange={(e) => setMSearch(e.target.value)}
                   placeholder="Référence, nom, téléphone, siège…"
-                  className="h-9 w-72 pl-9"
+                  className="h-9 w-full pl-9 sm:w-72"
                 />
               </div>
             }
