@@ -16,7 +16,7 @@ const rules = {
     allow: {
       view: `(auth.id == data.id || ${admin})`,
       create: "true",
-      update: `(auth.id == data.id || ${admin})`,
+      update: `(${admin} || (auth.id == data.id && request.modifiedFields.all(field, field in ['name', 'phone', 'locale'])))`,
       delete: "false", // $users system entity — cannot be deleted; revoke access instead
     },
   },
@@ -49,13 +49,13 @@ const rules = {
   tripInstances: { allow: { view: "true", create: memberOrAdmin, update: memberOrAdmin, delete: memberOrAdmin } },
   plans: { allow: { view: "true", create: admin, update: admin, delete: admin } },
 
-  // Membership: visible to self or co-members/admin; managed by owner/admin
+  // Membership writes are server-only; owner/admin authorization is enforced by Hono.
   memberships: {
     allow: {
       view: `(auth.id == data.ref('user.id') || ${memberOrAdmin})`,
-      create: memberOrAdmin,
-      update: memberOrAdmin,
-      delete: memberOrAdmin,
+      create: "false",
+      update: "false",
+      delete: "false",
     },
   },
 
@@ -102,8 +102,8 @@ const rules = {
   // Platform analytics — admins read everyone; a user writes only their own row.
   visits: { allow: { view: admin, create: authed, update: `(${admin} || auth.id == data.userId)`, delete: admin } },
 
-  // Payment provider secrets — never public, coop members + admins only.
-  coopSecrets: { allow: { view: memberOrAdmin, create: memberOrAdmin, update: memberOrAdmin, delete: admin } },
+  // Provider secrets are readable by members/admins but writable only through the server.
+  coopSecrets: { allow: { view: memberOrAdmin, create: "false", update: "false", delete: "false" } },
 } satisfies InstantRules;
 
 export default rules;

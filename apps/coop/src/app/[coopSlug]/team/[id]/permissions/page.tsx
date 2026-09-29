@@ -15,12 +15,15 @@ import {
   COOP_PERMISSIONS,
   logActivity,
 } from "@cp/ui";
+import { useUpdateAssistant } from "@/lib/queries/account";
 
 export default function MemberPermissionsPage() {
   const { coopId, slug, coop, role, permissions, isPlatformAdmin, userId } = useCoop();
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const membershipId = params.id;
+  const updateAssistant = useUpdateAssistant();
+  const canManage = isPlatformAdmin || role === "owner";
 
   const { data, isLoading } = db.useQuery({
     memberships: { $: { where: { id: membershipId, "cooperative.id": coopId } }, user: {} },
@@ -44,7 +47,7 @@ export default function MemberPermissionsPage() {
   const submit = async () => {
     setSaving(true);
     try {
-      await db.transact(db.tx.memberships[membershipId].update({ permissions: perms }));
+      await updateAssistant.mutateAsync({ coopId, membershipId, permissions: perms });
       logActivity({ coopId, actorId: userId, action: "update", entityType: "assistant", entityId: membershipId, label: member?.user?.email ?? member?.user?.name });
       toast.success("Permissions mises à jour");
       router.push(`/${slug}/team`);
@@ -81,6 +84,8 @@ export default function MemberPermissionsPage() {
         <PageSkeleton />
       ) : !member ? (
         <p className="text-ink-soft">Membre introuvable.</p>
+      ) : !canManage || member.role === "owner" ? (
+        <p className="text-ink-soft">Seul un propriétaire peut gérer les permissions d&apos;un assistant.</p>
       ) : (
         <div className="mx-auto max-w-4xl space-y-6">
           <ComponentCard title="Permissions" desc={member.user?.email ?? "Actions autorisées pour ce membre."}>

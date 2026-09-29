@@ -1,6 +1,6 @@
 "use client";
 import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/http/client";
+import { api, authenticatedHeaders } from "@/lib/http/client";
 import type { CreateCoopInput, CreateCoopAccountInput } from "@/lib/http/services/cooperatives";
 
 async function unwrap<T>(res: Response, data: T): Promise<T> {
@@ -12,7 +12,7 @@ async function unwrap<T>(res: Response, data: T): Promise<T> {
 export function useCreateCooperative() {
   return useMutation({
     mutationFn: async (input: CreateCoopInput) => {
-      const res = await api.cooperatives.$post({ json: input });
+      const res = await api.cooperatives.$post({ json: input }, { headers: authenticatedHeaders });
       return unwrap(res, await res.json());
     },
   });
@@ -22,7 +22,10 @@ export function useCreateCooperative() {
 export function useCreateCoopAccount() {
   return useMutation({
     mutationFn: async (input: CreateCoopAccountInput) => {
-      const res = await api.cooperatives.account.$post({ json: input });
+      const res = await api.cooperatives.account.$post(
+        { json: input },
+        { headers: authenticatedHeaders },
+      );
       return unwrap(res, await res.json());
     },
   });
@@ -32,7 +35,10 @@ export function useCreateCoopAccount() {
 export function usePurgeCooperative() {
   return useMutation({
     mutationFn: async (coopId: string) => {
-      const res = await api.cooperatives.purge.$post({ json: { coopId } });
+      const res = await api.cooperatives.purge.$post(
+        { json: { coopId } },
+        { headers: authenticatedHeaders },
+      );
       return unwrap(res, await res.json());
     },
   });
@@ -42,7 +48,10 @@ export function usePurgeCooperative() {
 export function useDeleteCooperative() {
   return useMutation({
     mutationFn: async (coopId: string) => {
-      const res = await api.cooperatives.delete.$post({ json: { coopId } });
+      const res = await api.cooperatives.delete.$post(
+        { json: { coopId } },
+        { headers: authenticatedHeaders },
+      );
       return unwrap(res, await res.json());
     },
   });

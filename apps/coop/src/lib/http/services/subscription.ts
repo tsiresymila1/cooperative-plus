@@ -1,5 +1,5 @@
 import { adminDb, id as newId } from "@cp/instant/admin";
-import { decrypt, isEncrypted } from "@cp/crypto";
+import { decrypt, hashSecret, isEncrypted, verifySecret } from "@cp/crypto";
 import { nextPeriodEnd } from "@cp/instant/subscription";
 import { HttpError } from "../errors";
 
@@ -61,7 +61,13 @@ export async function initiateSubscriptionPayment(input: {
     }),
   });
   const papiData = await papiRes.json();
-  if (!papiRes.ok || !papiData?.data?.paymentLink)
+  const notificationToken = papiData?.data?.notificationToken;
+  if (
+    !papiRes.ok ||
+    !papiData?.data?.paymentLink ||
+    typeof notificationToken !== "string" ||
+    !notificationToken.trim()
+  )
     throw new HttpError(502, papiData?.message ?? "Erreur PAPI");
 
   const paymentId = newId();
@@ -78,7 +84,7 @@ export async function initiateSubscriptionPayment(input: {
           kind: "subscription",
           planId,
           interval: plan.interval ?? "month",
-          notificationToken: papiData.data.notificationToken,
+          notificationTokenHash: hashSecret(notificationToken),
           testMode: TEST_MODE,
         },
         createdAt: Date.now(),
@@ -109,11 +115,24 @@ export async function handleSubscriptionWebhook(body: PapiWebhookPayload): Promi
   });
   const payment = payments?.[0];
   if (!payment) throw new HttpError(404, "Paiement introuvable");
-  if (payment.status === "paid" || payment.status === "failed") return; // idempotent
 
-  const storedToken = (payment.meta as any)?.notificationToken;
-  if (storedToken && body.notificationToken && storedToken !== body.notificationToken)
+  const paymentMeta = (payment.meta as any) ?? {};
+  const storedTokenHash = paymentMeta.notificationTokenHash;
+  const legacyToken = paymentMeta.notificationToken;
+  const effectiveTokenHash =
+    typeof storedTokenHash === "string"
+      ? storedTokenHash
+      : typeof legacyToken === "string" && legacyToken
+        ? hashSecret(legacyToken)
+        : undefined;
+  if (
+    !effectiveTokenHash ||
+    !body.notificationToken ||
+    !verifySecret(body.notificationToken, effectiveTokenHash)
+  )
     throw new HttpError(401, "notificationToken invalide");
+
+  if (payment.status === "paid" || payment.status === "failed") return; // authenticated idempotency
 
   const meta = (payment.meta as any) ?? {};
   const sub = (payment as any).subscription;

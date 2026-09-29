@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { decrypt, encrypt, isEncrypted } from "./index";
+import { decrypt, encrypt, hashSecret, isEncrypted, verifySecret } from "./index";
 
 const VALID_KEY = "01".repeat(32);
 
@@ -59,5 +59,23 @@ describe("encrypted secrets", () => {
     expect(isEncrypted("iv:tag:ciphertext")).toBe(true);
     expect(isEncrypted("plain text")).toBe(false);
     expect(isEncrypted("too:many:format:parts")).toBe(false);
+  });
+});
+
+describe("one-way secret fingerprints", () => {
+  it("creates a deterministic SHA-256 digest without exposing the secret", () => {
+    const digest = hashSecret("papi-notification-token");
+
+    expect(digest).toMatch(/^[0-9a-f]{64}$/);
+    expect(digest).not.toContain("papi-notification-token");
+    expect(hashSecret("papi-notification-token")).toBe(digest);
+  });
+
+  it("compares a candidate against a valid digest", () => {
+    const digest = hashSecret("expected-token");
+
+    expect(verifySecret("expected-token", digest)).toBe(true);
+    expect(verifySecret("wrong-token", digest)).toBe(false);
+    expect(verifySecret("expected-token", "not-a-sha256-digest")).toBe(false);
   });
 });

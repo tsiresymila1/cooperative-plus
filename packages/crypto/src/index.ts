@@ -1,4 +1,10 @@
-import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
+import {
+  createCipheriv,
+  createDecipheriv,
+  createHash,
+  randomBytes,
+  timingSafeEqual,
+} from "crypto";
 
 const ALG = "aes-256-gcm";
 
@@ -33,4 +39,18 @@ export function decrypt(encrypted: string): string {
 /** Returns true if the string looks like an encrypted value (iv:tag:ct). */
 export function isEncrypted(value: string): boolean {
   return value.split(":").length === 3;
+}
+
+/** One-way SHA-256 fingerprint for secrets that only need equality checks. */
+export function hashSecret(secret: string): string {
+  return createHash("sha256").update(secret, "utf8").digest("hex");
+}
+
+/** Constant-time comparison of a candidate secret with a SHA-256 fingerprint. */
+export function verifySecret(secret: string, digest: string): boolean {
+  if (!/^[0-9a-f]{64}$/i.test(digest)) return false;
+  return timingSafeEqual(
+    Buffer.from(hashSecret(secret), "hex"),
+    Buffer.from(digest, "hex"),
+  );
 }

@@ -5,7 +5,17 @@
 ## What must be tested
 
 - Unit: schemas and boundaries, cryptographic round trips and corruption, password verification, seat maps, dates, countdowns, statuses, and payment result mapping.
-- Integration: malformed/unauthorized Hono requests and provider failures without live network or database traffic.
+- Integration: client, cooperative, and admin Hono contracts exercise valid payloads,
+  malformed requests, authorization failures, and provider errors with service boundaries
+  replaced by deterministic fakes and no live network or database traffic.
+- Security contracts verify bearer sessions, platform-admin and tenant permissions before
+  privileged mutations, while PAPI webhook tests reject missing or mismatched notification
+  tokens before any transaction.
+- Service-boundary tests prevent assistant-email identity takeover and cross-tenant PAPI
+  secret updates before any credential, encryption, or transaction side effect.
+- InstantDB rule regression tests keep platform-admin flags, memberships, and provider
+  secrets non-writable from browser clients; owner-authorized server contracts preserve
+  assistant creation, status, permission, and removal workflows.
 - E2E web: client search and sign-in entry points, coop password sign-in/reset entry points, admin sign-in and protected-route behavior.
 - E2E mobile: first launch/onboarding, sign-in entry, Google action visibility, invalid email feedback, and keyboard-safe primary actions.
 

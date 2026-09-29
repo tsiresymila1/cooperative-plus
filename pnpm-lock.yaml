@@ -517,6 +517,9 @@ importers:
 
   packages/instant:
     dependencies:
+      '@cp/crypto':
+        specifier: workspace:^
+        version: link:../crypto
       '@instantdb/admin':
         specifier: ^1.0.49
         version: 1.0.49

@@ -17,6 +17,7 @@ import {
   COOP_PERMISSIONS,
   useCoopPlan,
   logActivity,
+  canManageCoopTeam,
 } from "@cp/ui";
 import { Input } from "@cp/ui/shadcn";
 import { useCreateAssistant } from "@/lib/queries/account";
@@ -43,6 +44,30 @@ export default function NewTeamMemberPage() {
   const password = watch("password");
 
   const [perms, setPerms] = useState<string[]>([]);
+  const canManage = canManageCoopTeam(role, isPlatformAdmin);
+
+  if (!canManage) {
+    return (
+      <DashboardShell
+        nav={coopNav(slug, "team", { role, permissions, isPlatformAdmin })}
+        title="Ajouter un assistant"
+        tenant={coop.displayName}
+        logoUrl={coop.logoUrl}
+      >
+        <ComponentCard
+          title="Accès restreint"
+          desc="Seuls le propriétaire de la coopérative et les administrateurs de la plateforme peuvent ajouter un assistant."
+        >
+          <Link href={`/${slug}/team`}>
+            <Button size="sm" variant="outline">
+              <ArrowLeft size={16} /> Retour à l’équipe
+            </Button>
+          </Link>
+        </ComponentCard>
+      </DashboardShell>
+    );
+  }
+
   const togglePerm = (key: string) =>
     setPerms((p) => (p.includes(key) ? p.filter((x) => x !== key) : [...p, key]));
 
