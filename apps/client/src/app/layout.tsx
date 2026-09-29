@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Barlow_Condensed, Outfit } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers, Toaster } from "@cp/ui";
 import { Progress } from "@/components/progress";
@@ -95,6 +96,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Providers askConsentement>{children}</Providers>
         </Progress>
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
