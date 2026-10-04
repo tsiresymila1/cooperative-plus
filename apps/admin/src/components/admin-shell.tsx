@@ -10,6 +10,7 @@ const CRUMB_LABELS: Record<string, string> = {
   plans: "Abonnements",
   destinations: "Destinations",
   users: "Utilisateurs",
+  feedback: "Feedbacks",
   new: "Ajouter",
   edit: "Modifier",
   profile: "Mon compte",

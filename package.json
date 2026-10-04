@@ -28,7 +28,7 @@
     "@instantdb/core": "^1.0.49",
     "@types/node": "^22.10.0",
     "@vitest/coverage-v8": "^5.0.2",
-    "instant-cli": "^0.21.0",
+    "instant-cli": "^1.0.67",
     "turbo": "^2.3.0",
     "typescript": "^5.7.0",
     "vitest": "^5.0.2"

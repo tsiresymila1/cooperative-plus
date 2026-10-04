@@ -328,6 +328,32 @@ const schema = i.schema({
       createdAt: i.date().indexed(),
       lastSeenAt: i.date().indexed(),
     }),
+
+    productFeedbacks: i.entity({
+      source: i.string().indexed(),
+      category: i.string().indexed(),
+      name: i.string(),
+      email: i.string().indexed(),
+      message: i.string(),
+      screenshotUrl: i.string().optional(),
+      status: i.string().indexed(),
+      adminNote: i.string().optional(),
+      createdAt: i.date().indexed(),
+      updatedAt: i.date().indexed(),
+    }),
+
+    tripReviews: i.entity({
+      reviewKey: i.string().unique().indexed(),
+      name: i.string(),
+      email: i.string().indexed(),
+      rating: i.number().indexed(),
+      comment: i.string(),
+      screenshotUrl: i.string().optional(),
+      status: i.string().indexed(),
+      adminNote: i.string().optional(),
+      createdAt: i.date().indexed(),
+      updatedAt: i.date().indexed(),
+    }),
   },
 
   links: {
@@ -338,6 +364,14 @@ const schema = i.schema({
     membershipUser: { forward: { on: "memberships", has: "one", label: "user" }, reverse: { on: "$users", has: "many", label: "memberships" } },
 
     visitUser: { forward: { on: "visits", has: "one", label: "user" }, reverse: { on: "$users", has: "many", label: "visits" } },
+
+    productFeedbackUser: { forward: { on: "productFeedbacks", has: "one", label: "user" }, reverse: { on: "$users", has: "many", label: "productFeedbacks" } },
+    productFeedbackCoop: { forward: { on: "productFeedbacks", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "productFeedbacks" } },
+
+    tripReviewUser: { forward: { on: "tripReviews", has: "one", label: "user" }, reverse: { on: "$users", has: "many", label: "tripReviews" } },
+    tripReviewBooking: { forward: { on: "tripReviews", has: "one", label: "booking" }, reverse: { on: "bookings", has: "one", label: "review" } },
+    tripReviewInstance: { forward: { on: "tripReviews", has: "one", label: "tripInstance" }, reverse: { on: "tripInstances", has: "many", label: "reviews" } },
+    tripReviewCoop: { forward: { on: "tripReviews", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "tripReviews" } },
 
     subPlan: { forward: { on: "subscriptions", has: "one", label: "plan" }, reverse: { on: "plans", has: "many", label: "subscriptions" } },
     subCoop: { forward: { on: "subscriptions", has: "one", label: "cooperative" }, reverse: { on: "cooperatives", has: "many", label: "subscriptions" } },

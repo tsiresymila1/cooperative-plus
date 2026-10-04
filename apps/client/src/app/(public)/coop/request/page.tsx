@@ -2,14 +2,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, Building2, ArrowRight } from "lucide-react";
-import { db, Dialog, id, toast } from "@cp/ui";
+import { db, Dialog, Field, id, Input, Textarea, toast } from "@cp/ui";
 import PageBanner from "@/components/site/PageBanner";
 
 const empty = { displayName: "", legalName: "", region: "", contactName: "", email: "", phone: "", address: "", message: "" };
 
-const FIELD =
-  "h-[60px] w-full border border-navy/15 bg-white px-5 font-body text-[16px] text-navy outline-none transition-colors duration-300 placeholder:text-navy/35 focus:border-gold";
-const LABEL = "mb-2 block font-body text-[14px] text-navy";
 const GOLD_BTN =
   "inline-flex h-[60px] items-center justify-center gap-2 bg-gold px-8 font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:bg-navy hover:text-white disabled:opacity-60";
 
@@ -73,26 +70,26 @@ export default function CoopRequest() {
               </div>
 
               <div className="grid gap-5 border border-navy/10 bg-white p-8 lg:p-10">
-                <Field label="Nom de la coopérative *">
-                  <input
-                    className={FIELD}
+                <Field label="Nom de la coopérative *" variant="site">
+                  <Input
+                    variant="site"
                     value={form.displayName}
                     onChange={(e) => set("displayName", e.target.value)}
                     placeholder="Cooperative Plus"
                   />
                 </Field>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Raison sociale">
-                    <input
-                      className={FIELD}
+                  <Field label="Raison sociale" variant="site">
+                    <Input
+                      variant="site"
                       value={form.legalName}
                       onChange={(e) => set("legalName", e.target.value)}
                       placeholder="Cooperative SARL"
                     />
                   </Field>
-                  <Field label="Région">
-                    <input
-                      className={FIELD}
+                  <Field label="Région" variant="site">
+                    <Input
+                      variant="site"
                       value={form.region}
                       onChange={(e) => set("region", e.target.value)}
                       placeholder="Analamanga"
@@ -100,46 +97,47 @@ export default function CoopRequest() {
                   </Field>
                 </div>
                 <div className="grid gap-5 sm:grid-cols-2">
-                  <Field label="Personne de contact *">
-                    <input
-                      className={FIELD}
+                  <Field label="Personne de contact *" variant="site">
+                    <Input
+                      variant="site"
                       value={form.contactName}
                       onChange={(e) => set("contactName", e.target.value)}
                       placeholder="Rakoto Jean"
                     />
                   </Field>
-                  <Field label="Téléphone *">
-                    <input
-                      className={FIELD}
+                  <Field label="Téléphone *" variant="site">
+                    <Input
+                      variant="site"
                       value={form.phone}
                       onChange={(e) => set("phone", e.target.value)}
                       placeholder="034 00 000 00"
                     />
                   </Field>
                 </div>
-                <Field label="Email *">
-                  <input
-                    className={FIELD}
+                <Field label="Email *" variant="site">
+                  <Input
+                    variant="site"
                     type="email"
                     value={form.email}
                     onChange={(e) => set("email", e.target.value)}
                     placeholder="contact@coop.mg"
                   />
                 </Field>
-                <Field label="Adresse">
-                  <input
-                    className={FIELD}
+                <Field label="Adresse" variant="site">
+                  <Input
+                    variant="site"
                     value={form.address}
                     onChange={(e) => set("address", e.target.value)}
                     placeholder="Lot II… Antananarivo"
                   />
                 </Field>
-                <Field label="Message (optionnel)">
-                  <textarea
+                <Field label="Message (optionnel)" variant="site">
+                  <Textarea
+                    variant="site"
                     value={form.message}
                     onChange={(e) => set("message", e.target.value)}
                     rows={3}
-                    className={`${FIELD} h-auto resize-none py-3.5`}
+                    className="resize-none"
                     placeholder="Flotte, lignes desservies, volume…"
                   />
                 </Field>
@@ -183,14 +181,5 @@ export default function CoopRequest() {
         </div>
       </Dialog>
     </main>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className={LABEL}>{label}</span>
-      {children}
-    </label>
   );
 }

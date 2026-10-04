@@ -1,4 +1,4 @@
-import { BarChart3, Building2, Globe, Inbox, LayoutDashboard, Receipt, Tag, Users } from "lucide-react";
+import { BarChart3, Building2, Globe, Inbox, LayoutDashboard, MessageSquareText, Receipt, Tag, Users } from "lucide-react";
 import type { NavItem } from "./dashboard-shell";
 
 export function adminNav(active: string): NavItem[] {
@@ -17,6 +17,7 @@ export function adminNav(active: string): NavItem[] {
       ],
     },
     { key: "requests", group: "Réseau", href: "/admin/requests", label: "Demandes", icon: <Inbox size={18} /> },
+    { key: "feedback", group: "Pilotage", href: "/admin/feedback", label: "Feedbacks", icon: <MessageSquareText size={18} /> },
     { key: "plans", group: "Finances", href: "/admin/plans", label: "Abonnements", icon: <Receipt size={18} /> },
     { key: "destinations", group: "Catalogue", href: "/admin/destinations", label: "Destinations", icon: <Globe size={18} /> },
     { key: "tags", group: "Catalogue", href: "/admin/tags", label: "Tags trajets", icon: <Tag size={18} /> },

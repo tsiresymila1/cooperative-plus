@@ -126,6 +126,8 @@ function RootLayout() {
                     <Stack.Screen name="trip/[id]" options={{ presentation: "card" }} />
                     <Stack.Screen name="checkout" options={{ presentation: "card" }} />
                     <Stack.Screen name="confirmation/[id]" options={{ presentation: "card", gestureEnabled: false }} />
+                    <Stack.Screen name="feedback" options={{ presentation: "card" }} />
+                    <Stack.Screen name="review/[id]" options={{ presentation: "card" }} />
                     <Stack.Screen name="sign-in" options={{ presentation: "modal" }} />
                   </Stack>
                   <PortalHost />

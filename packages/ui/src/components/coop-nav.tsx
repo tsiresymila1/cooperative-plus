@@ -1,4 +1,4 @@
-import { Activity, Bus, CalendarClock, CarFront, CreditCard, IdCard, LayoutDashboard, MapPin, QrCode, Route, Settings, Tag, Ticket, Users, UserRound, BarChart3, Wallet } from "lucide-react";
+import { Activity, Bus, CalendarClock, CarFront, CreditCard, IdCard, LayoutDashboard, MapPin, MessageSquareText, QrCode, Route, Settings, Star, Tag, Ticket, Users, UserRound, BarChart3, Wallet } from "lucide-react";
 import type { NavItem } from "./dashboard-shell";
 
 type Access = { role?: string; permissions?: string[]; isPlatformAdmin?: boolean };
@@ -22,6 +22,8 @@ const NAV_PERM: Record<string, string | null> = {
   abonnement: "__owner", // sentinel: owner-only (no assistant permission grants it)
   activite: "__owner",
   settings: "settings",
+  reviews: "bookings",
+  feedback: null,
 };
 
 export function coopNav(slug: string, active: string, access?: Access): NavItem[] {
@@ -40,6 +42,8 @@ export function coopNav(slug: string, active: string, access?: Access): NavItem[
     { key: "tags", group: "Réseau", href: `${b}/tags`, label: "Tags trajets", icon: <Tag size={18} /> },
     { key: "payments", group: "Finances", href: `${b}/payments`, label: "Paiements", icon: <Wallet size={18} /> },
     { key: "reports", group: "Finances", href: `${b}/reports`, label: "Rapports", icon: <BarChart3 size={18} /> },
+    { key: "reviews", group: "Expérience", href: `${b}/reviews`, label: "Avis voyageurs", icon: <Star size={18} /> },
+    { key: "feedback", group: "Expérience", href: `${b}/feedback`, label: "Donner un feedback", icon: <MessageSquareText size={18} /> },
     { key: "team", group: "Gestion", href: `${b}/team`, label: "Équipe", icon: <Users size={18} /> },
     { key: "abonnement", group: "Gestion", href: `${b}/abonnement`, label: "Abonnement", icon: <CreditCard size={18} /> },
     { key: "activite", group: "Gestion", href: `${b}/activite`, label: "Activité", icon: <Activity size={18} /> },

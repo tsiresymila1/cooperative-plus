@@ -19,6 +19,8 @@ const SECTION_PERM: Record<string, string | null> = {
   abonnement: "__owner", // sentinel: no assistant permission grants it → owner-only
   activite: "__owner",
   settings: "settings",
+  reviews: "bookings",
+  feedback: null,
 };
 
 type CoopCtx = {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown, ZoomIn } from "react-native-reanimated";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, type Href } from "expo-router";
 import {
   Armchair,
   CheckCircle2,
@@ -10,6 +10,7 @@ import {
   Download,
   MapPin,
   Printer,
+  Star,
 } from "lucide-react-native";
 import QRCode from "react-native-qrcode-svg";
 import { Badge, Button, Spinner } from "@/components/ui";
@@ -36,6 +37,7 @@ export default function Confirmation() {
     bookings: {
       $: { where: { id: bookingId } },
       tickets: { tripVehicle: {} },
+      review: {},
       tripInstance: {
         cooperative: {},
         vehicle: { seatMaps: {} },
@@ -362,6 +364,15 @@ export default function Confirmation() {
           )}
 
           <View className="mt-5 gap-5">
+            {trip?.status === "arrived" && !booking.review ? (
+              <Button
+                variant="ink"
+                onPress={() => router.push(`/review/${booking.id}` as Href)}
+              >
+                <Star size={18} color="#D9A441" />
+                <Text className="font-body font-medium text-white">Évaluer ce trajet</Text>
+              </Button>
+            ) : null}
             <Button
               variant="outline"
               onPress={() => router.replace("/bookings")}

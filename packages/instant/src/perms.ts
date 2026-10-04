@@ -102,6 +102,11 @@ const rules = {
   // Platform analytics — admins read everyone; a user writes only their own row.
   visits: { allow: { view: admin, create: authed, update: `(${admin} || auth.id == data.userId)`, delete: admin } },
 
+  // Feedback creation is server-only so validation, spam checks and verified
+  // booking ownership cannot be bypassed by a direct client transaction.
+  productFeedbacks: { allow: { view: admin, create: "false", update: admin, delete: admin } },
+  tripReviews: { allow: { view: memberOrAdmin, create: "false", update: admin, delete: admin } },
+
   // Provider secrets are readable by members/admins but writable only through the server.
   coopSecrets: { allow: { view: memberOrAdmin, create: "false", update: "false", delete: "false" } },
 } satisfies InstantRules;

@@ -2,16 +2,13 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { db, toast } from "@cp/ui";
+import { db, Field, Input, toast } from "@cp/ui";
 import PageBanner from "@/components/site/PageBanner";
 import {
   GoogleSignInButton,
   isGoogleSignInConfigured,
 } from "@/components/auth/google-sign-in-button";
 
-const FIELD =
-  "h-[53px] w-full border border-navy/15 bg-white px-5 font-body text-[16px] text-navy outline-none transition-colors duration-300 focus:border-gold";
-const LABEL = "mb-2 block font-body text-[14px] text-navy";
 const GOLD_BTN =
   "h-[70px] bg-gold px-8 font-display text-[16px] font-semibold uppercase tracking-[0.5px] text-navy transition-colors duration-[250ms] hover:bg-navy hover:text-white disabled:opacity-60";
 
@@ -86,11 +83,9 @@ function SignIn() {
                 </>
               ) : null}
               <form onSubmit={sendCode}>
-                <div className="mb-6">
-                  <label htmlFor="email" className={LABEL}>
-                    Adresse email <span className="text-sale">*</span>
-                  </label>
-                  <input
+                <Field label="Adresse email *" variant="site" className="mb-6">
+                  <Input
+                    variant="site"
                     id="email"
                     name="email"
                     type="email"
@@ -98,10 +93,9 @@ function SignIn() {
                     placeholder="vous@exemple.mg"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={FIELD}
                     required
                   />
-                </div>
+                </Field>
                 <button type="submit" className={GOLD_BTN} disabled={loading}>
                   {loading ? "Envoi…" : "Recevoir le code"}
                 </button>
@@ -109,14 +103,12 @@ function SignIn() {
             </div>
           ) : (
             <form onSubmit={verify} className="max-w-[640px]">
-              <div className="mb-6">
-                <label htmlFor="code" className={LABEL}>
-                  Code de vérification <span className="text-sale">*</span>
-                </label>
+              <Field label="Code de vérification *" variant="site" className="mb-6">
                 <p className="mb-3 font-body text-[14px] text-navy/60">
                   Code à 6 chiffres envoyé à {email}.
                 </p>
-                <input
+                <Input
+                  variant="site"
                   id="code"
                   name="code"
                   inputMode="numeric"
@@ -125,10 +117,10 @@ function SignIn() {
                   maxLength={6}
                   value={code}
                   onChange={(e) => setCode(e.target.value)}
-                  className={`${FIELD} font-mono tracking-[0.4em]`}
+                  className="font-mono tracking-[0.4em]"
                   required
                 />
-              </div>
+              </Field>
               <button type="submit" className={GOLD_BTN} disabled={loading}>
                 {loading ? "Vérification…" : "Se connecter"}
               </button>

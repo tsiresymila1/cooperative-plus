@@ -6,6 +6,8 @@ import {
   createBookingSchema,
   createCooperativeSchema,
   destinationQuerySchema,
+  productFeedbackSchema,
+  tripReviewSchema,
   holdSeatsSchema,
   money,
   passengerSchema,
@@ -374,5 +376,68 @@ describe("createCooperativeSchema", () => {
     ["unsupported plan", { slug: "coop", legalName: "Legal", displayName: "Display", ownerEmail: "owner@example.test", planCode: "free" }],
   ])("rejects a cooperative with %s", (_case, cooperative) => {
     expect(createCooperativeSchema.safeParse(cooperative).success).toBe(false);
+  });
+});
+
+describe("feedback schemas", () => {
+  it("accepts a complete product feedback and trims its identity", () => {
+    expect(
+      productFeedbackSchema.parse({
+        source: "client_web",
+        category: "bug",
+        name: "  Mialy  ",
+        email: "  MIALY@example.test ",
+        message: "Le bouton de paiement ne répond pas.",
+        screenshotUrl: "https://files.example.test/feedback/bug.png",
+      }),
+    ).toEqual({
+      source: "client_web",
+      category: "bug",
+      name: "Mialy",
+      email: "mialy@example.test",
+      message: "Le bouton de paiement ne répond pas.",
+      screenshotUrl: "https://files.example.test/feedback/bug.png",
+    });
+  });
+
+  it.each([
+    ["unknown source", { source: "desktop", category: "bug", name: "Mialy", email: "mialy@example.test", message: "Un problème suffisamment détaillé" }],
+    ["unknown category", { source: "mobile", category: "praise", name: "Mialy", email: "mialy@example.test", message: "Un problème suffisamment détaillé" }],
+    ["missing name", { source: "mobile", category: "bug", name: "", email: "mialy@example.test", message: "Un problème suffisamment détaillé" }],
+    ["invalid email", { source: "mobile", category: "bug", name: "Mialy", email: "mialy", message: "Un problème suffisamment détaillé" }],
+    ["short message", { source: "mobile", category: "bug", name: "Mialy", email: "mialy@example.test", message: "court" }],
+    ["invalid screenshot", { source: "mobile", category: "bug", name: "Mialy", email: "mialy@example.test", message: "Un problème suffisamment détaillé", screenshotUrl: "not-a-url" }],
+  ])("rejects product feedback with %s", (_case, input) => {
+    expect(productFeedbackSchema.safeParse(input).success).toBe(false);
+  });
+
+  it("accepts a verified-trip review payload", () => {
+    expect(
+      tripReviewSchema.parse({
+        bookingReference: " cp-abc123 ",
+        name: " Mialy ",
+        email: " MIALY@example.test ",
+        rating: 5,
+        comment: "Voyage ponctuel et équipe accueillante.",
+      }),
+    ).toEqual({
+      bookingReference: "CP-ABC123",
+      name: "Mialy",
+      email: "mialy@example.test",
+      rating: 5,
+      comment: "Voyage ponctuel et équipe accueillante.",
+    });
+  });
+
+  it.each([0, 1.5, 6])("rejects the invalid trip rating %s", (rating) => {
+    expect(
+      tripReviewSchema.safeParse({
+        bookingReference: "CP-ABC123",
+        name: "Mialy",
+        email: "mialy@example.test",
+        rating,
+        comment: "Voyage ponctuel et équipe accueillante.",
+      }).success,
+    ).toBe(false);
   });
 });

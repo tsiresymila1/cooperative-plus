@@ -14,6 +14,7 @@ import {
   CreditCard,
   Bus,
   MapPin,
+  Star,
 } from "lucide-react";
 import {
   BrandLogo,
@@ -72,6 +73,7 @@ export default function Confirmation({
       $: { where: { reference } },
       tickets: { tripVehicle: {} },
       payments: {},
+      review: {},
       tripInstance: { cooperative: {}, vehicle: { seatMaps: {} }, tag: {} },
     },
   });
@@ -152,6 +154,7 @@ export default function Confirmation({
     no_show: "Absent",
   };
   const canPayOnline = status === "pending";
+  const canReview = trip?.status === "arrived" && !bk?.review && !dead;
   const statusTone = dead
     ? "bg-sale/15 text-sale"
     : status === "pending"
@@ -453,6 +456,11 @@ export default function Confirmation({
             <Link href="/account/bookings" className="block">
               <span className={btnOutline}>Mes réservations</span>
             </Link>
+            {canReview && (
+              <Link href={`/bookings/${reference}/review`} className="block">
+                <span className={btnGold}><Star size={16} /> Évaluer ce trajet</span>
+              </Link>
+            )}
             {status === "pending" && (
               <button className={btnDanger} onClick={cancelBooking}>
                 <X size={16} /> Annuler la réservation
