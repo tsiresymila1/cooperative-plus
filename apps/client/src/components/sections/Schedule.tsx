@@ -5,36 +5,11 @@ import Link from "next/link";
 import { ArrowRight, ChevronLeft, ChevronRight, MoveRight, Search , Ellipsis } from "lucide-react";
 import { db, fmtMoney, fmtTime } from "@cp/ui";
 import SectionHeading from "@/components/ui/SectionHeading";
+import { scheduleDays } from "./data";
 
 /* Band y4938..6212 at 1440; table block y5077 h1005.
    Day strip is a real tab control: switching a day filters live trips for that
    calendar date. Rows are real tripInstances (same markup as /search). */
-
-const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
-const MONTHS = ["JANV", "FÉVR", "MARS", "AVR", "MAI", "JUIN", "JUIL", "AOÛT", "SEPT", "OCT", "NOV", "DÉC"];
-// local Y-M-D (not toISOString — that shifts to UTC and breaks the day in +03:00)
-const dateKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-
-type WeekDay = { label: string; sub: string; key: string; today: boolean };
-
-// 7-day window centered on `now + offsetDays` — today always lands on the
-// 4th tab (index 3) when offsetDays is 0, regardless of which weekday it is.
-function weekDays(offsetDays: number, now = new Date()): WeekDay[] {
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(start.getDate() + offsetDays - 3);
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    const today = d.toDateString() === now.toDateString();
-    return {
-      label: today ? "Aujourd'hui" : DAYS[(d.getDay() + 6) % 7],
-      sub: today ? "" : `${String(d.getDate()).padStart(2, "0")} ${MONTHS[d.getMonth()]}`,
-      key: dateKey(d),
-      today,
-    };
-  });
-}
 
 function fmtDuration(min?: number | null) {
   if (!min || min <= 0) return null;
@@ -50,17 +25,12 @@ export default function Schedule({
   padding?: string;
 } = {}) {
   const [offset, setOffset] = useState(0);
-  const days = useMemo(() => weekDays(offset), [offset]);
-  const [active, setActive] = useState(() => {
-    const i = days.findIndex((d) => d.today);
-    return i >= 0 ? i : 3;
-  });
+  const days = useMemo(() => scheduleDays(new Date(), offset), [offset]);
+  const [active, setActive] = useState(0);
 
-  // Re-anchor the selected tab whenever the window shifts (offset changes):
-  // prefer today if it's in view, else the centered anchor day.
+  // Every window starts on its first day; the initial window starts today.
   useEffect(() => {
-    const i = days.findIndex((d) => d.today);
-    setActive(i >= 0 ? i : 3);
+    setActive(0);
   }, [days]);
 
   // Whole visible week in one query; grouped/filtered client-side by tab.
@@ -96,13 +66,14 @@ export default function Schedule({
       <div className="mx-auto max-w-7xl px-[15px]">
         <SectionHeading eyebrow="Heure de départ" title="Horaires récents" align="center" className="mb-[50px]" />
 
-        {/* Day tab strip — navy bar, active tab gold, week-by-week nav on either side */}
+        {/* Day tab strip — starts today and never allows navigation into the past. */}
         <div className="mb-[40px] flex items-stretch bg-navy">
           <button
             type="button"
-            onClick={() => setOffset((o) => o - 7)}
+            onClick={() => setOffset((current) => Math.max(0, current - 7))}
             aria-label="Semaine précédente"
-            className="flex w-[44px] shrink-0 items-center justify-center  cursor-pointer border-0 border-white/10 text-white transition-colors duration-300 hover:bg-white/10 md:w-[56px]"
+            disabled={offset === 0}
+            className="flex w-[44px] shrink-0 cursor-pointer items-center justify-center border-0 border-white/10 text-white transition-colors duration-300 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-transparent md:w-[56px]"
           >
             <ChevronLeft className="size-5 text-gold-nav" strokeWidth={2} />
           </button>
@@ -118,9 +89,9 @@ export default function Schedule({
                   i === active ? "bg-gold text-navy" : "text-white hover:bg-white/10"
                 }`}
               >
-                <span className="font-display text-[16px] font-semibold uppercase leading-none">{d.label}</span>
-                {d.sub ? (
-                  <span className="mt-2 font-body text-[12px] font-semibold uppercase tracking-[2px] opacity-60">{d.sub}</span>
+                <span className="font-display text-[16px] font-semibold uppercase leading-none">{d.day}</span>
+                {d.date ? (
+                  <span className="mt-2 font-body text-[12px] font-semibold uppercase tracking-[2px] opacity-60">{d.date}</span>
                 ) : null}
               </button>
             ))}

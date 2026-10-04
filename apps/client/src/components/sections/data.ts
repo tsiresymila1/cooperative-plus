@@ -99,25 +99,28 @@ export const COUNTERS = [
   { value: 67, label: "Départs par jour" },
 ];
 
-/* The source renders the current Mon-Sun week with today's tab labelled
-   "TODAY" — the scrape caught 31 AUG / 01 SEP / TODAY / 03 SEP on 2 Sep.
-   Hardcoding those dates made the clone drift from the source by a whole
-   section every day, so they are computed instead. */
-export type ScheduleDay = { day: string; date: string; today?: boolean };
+/* The public schedule only exposes future departures. Its initial window is
+   always today through J+6; later windows advance by seven days. */
+export type ScheduleDay = { day: string; date: string; today: boolean; key: string };
 
-export function scheduleDays(now: Date = new Date()): ScheduleDay[] {
+export function scheduleDays(now: Date = new Date(), offsetDays = 0): ScheduleDay[] {
   const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
   const MONTHS = ["JANV", "FÉVR", "MARS", "AVR", "MAI", "JUIN", "JUIL", "AOÛT", "SEPT", "OCT", "NOV", "DÉC"];
-  const monday = new Date(now);
-  // getDay(): 0 = Sunday, so shift back to the Monday of this week
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  return DAYS.map((day, i) => {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const start = new Date(today);
+  start.setDate(start.getDate() + Math.max(0, offsetDays));
+
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
     const isToday = d.toDateString() === now.toDateString();
-    return isToday
-      ? { day: "Aujourd'hui", date: "", today: true }
-      : { day, date: `${String(d.getDate()).padStart(2, "0")} ${MONTHS[d.getMonth()]}` };
+    return {
+      day: isToday ? "Aujourd'hui" : DAYS[(d.getDay() + 6) % 7]!,
+      date: isToday ? "" : `${String(d.getDate()).padStart(2, "0")} ${MONTHS[d.getMonth()]}`,
+      today: isToday,
+      key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
+    };
   });
 }
 
