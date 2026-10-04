@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, ChevronRight, User, LogOut, Ticket } from "lucide-react";
+import { Menu, X, ChevronRight, User, LogOut, Ticket, MessageSquareText } from "lucide-react";
 import { Logo, db, useConfirm } from "@cp/ui";
 import { NAV } from "./nav";
 
@@ -117,6 +117,12 @@ export default function Header() {
                   >
                     <Ticket className="size-4" /> Mes réservations
                   </Link>
+                  <Link
+                    href="/feedback"
+                    className="flex items-center gap-2.5 px-4 py-2.5 text-[14px] text-navy hover:bg-gold hover:text-navy"
+                  >
+                    <MessageSquareText className="size-4" /> Donner un feedback
+                  </Link>
                   <button
                     onClick={async () => {
                       if (
@@ -196,6 +202,15 @@ export default function Header() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  href="/feedback"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center justify-between py-2.5 text-[15px] font-medium text-navy transition-colors hover:text-gold"
+                >
+                  Donner un feedback <ChevronRight className="size-4 text-navy/40" />
+                </Link>
+              </li>
               <li className="pt-3">
                 {authed ? (
                   <Link

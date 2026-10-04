@@ -9,6 +9,7 @@ const COLS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "Rechercher un trajet", href: "/search" },
       { label: "Mes réservations", href: "/account/bookings" },
       { label: "Mon compte", href: "/account/dashboard" },
+      { label: "Donner un feedback", href: "/feedback" },
     ],
   },
   {

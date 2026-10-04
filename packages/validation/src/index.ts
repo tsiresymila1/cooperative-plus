@@ -53,6 +53,33 @@ export const paySchema = z.object({
 });
 export const refundSchema = z.object({ amount: money, reason: z.string().min(1) });
 
+/* Feedback */
+const feedbackIdentity = {
+  name: z.string().trim().min(2).max(120),
+  email: z.string().trim().toLowerCase().email().max(254),
+};
+
+const feedbackScreenshot = z.string().url().max(2_048).optional();
+
+export const productFeedbackSchema = z.object({
+  source: z.enum(["client_web", "coop_web", "mobile"]),
+  category: z.enum(["bug", "suggestion", "difficulty", "other"]),
+  ...feedbackIdentity,
+  message: z.string().trim().min(10).max(4_000),
+  screenshotUrl: feedbackScreenshot,
+  cooperativeId: uuid.optional(),
+});
+export type ProductFeedbackInput = z.infer<typeof productFeedbackSchema>;
+
+export const tripReviewSchema = z.object({
+  bookingReference: z.string().trim().min(3).max(40).transform((value) => value.toUpperCase()),
+  ...feedbackIdentity,
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().trim().min(10).max(4_000),
+  screenshotUrl: feedbackScreenshot,
+});
+export type TripReviewInput = z.infer<typeof tripReviewSchema>;
+
 /* Fleet */
 const seatCell = z.object({
   row: z.number().int(),

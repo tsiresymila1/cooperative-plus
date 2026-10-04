@@ -3,9 +3,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Banknote, CreditCard, Smartphone, Lock } from "lucide-react";
-import { slotSeatKey, isValidPhone } from "@cp/ui";
-import { toast } from "@cp/ui";
-import { db, id } from "@cp/ui";
+import { db, Field, id, Input, isValidPhone, slotSeatKey, toast } from "@cp/ui";
 import { useBookingDraft } from "@/lib/booking-store";
 import { cn, fmtMoney } from "@cp/ui";
 
@@ -29,11 +27,6 @@ const ref = () => "CP-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
 const btnGold =
   "inline-flex h-14 w-full items-center justify-center gap-2 px-6 font-display text-[15px] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 bg-gold text-navy hover:bg-navy hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gold disabled:hover:text-navy";
-const fieldCls =
-  "h-12 w-full border border-navy/15 bg-white px-4 font-body text-[15px] text-navy outline-none transition-colors placeholder:text-navy/30 focus:border-gold";
-const labelCls =
-  "mb-2 block font-body text-[11px] font-semibold uppercase tracking-[1.5px] text-navy/50";
-
 export default function Checkout({ params }: { params: Promise<{ id: string }> }) {
   const { id: instanceId } = use(params);
   const router = useRouter();
@@ -184,18 +177,15 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
             <div className="border border-navy/10 bg-white p-6">
               <h2 className="mb-5 font-display text-2xl font-semibold uppercase tracking-[-0.5px] text-navy">Contact</h2>
               <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block">
-                  <span className={labelCls}>Nom</span>
-                  <input className={fieldCls} value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} required />
-                </label>
-                <label className="block">
-                  <span className={labelCls}>Téléphone</span>
-                  <input className={fieldCls} inputMode="tel" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} required />
-                </label>
-                <label className="block sm:col-span-2">
-                  <span className={labelCls}>Email (optionnel)</span>
-                  <input className={fieldCls} type="email" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
-                </label>
+                <Field label="Nom" variant="site">
+                  <Input variant="site" value={contact.name} onChange={(e) => setContact({ ...contact, name: e.target.value })} required />
+                </Field>
+                <Field label="Téléphone" variant="site">
+                  <Input variant="site" inputMode="tel" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} required />
+                </Field>
+                <Field label="Email (optionnel)" variant="site" className="sm:col-span-2">
+                  <Input variant="site" type="email" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
+                </Field>
               </div>
             </div>
 
@@ -205,7 +195,7 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
                 {seats.map((s) => (
                   <div key={s} className="grid grid-cols-[56px_1fr] gap-3">
                     <div className="flex h-12 items-center justify-center bg-navy/[.05] font-display text-lg font-semibold text-navy">{s}</div>
-                    <input className={fieldCls} placeholder={`Nom passager siège ${s}`} value={passengers[s] ?? ""} onChange={(e) => setPassengers({ ...passengers, [s]: e.target.value })} />
+                    <Input variant="site" placeholder={`Nom passager siège ${s}`} value={passengers[s] ?? ""} onChange={(e) => setPassengers({ ...passengers, [s]: e.target.value })} />
                   </div>
                 ))}
               </div>

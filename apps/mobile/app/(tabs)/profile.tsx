@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { ScrollView, Switch, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import { router } from "expo-router";
-import { LogOut, Moon, Ticket as TicketIcon } from "lucide-react-native";
+import { router, type Href } from "expo-router";
+import { LogOut, MessageSquareText, Moon, Ticket as TicketIcon } from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useColorScheme } from "nativewind";
 import { Button, Card, Field, Input, Spinner } from "@/components/ui";
@@ -70,12 +70,20 @@ export default function Profile() {
       {authLoading ? (
         <Spinner />
       ) : !user ? (
-        <EmptyState
-          title="Connectez-vous"
-          message="Vous n'êtes pas connecté."
-          actionLabel="Se connecter"
-          onAction={() => router.push("/sign-in")}
-        />
+        <View className="flex-1">
+          <EmptyState
+            title="Connectez-vous"
+            message="Vous n'êtes pas connecté."
+            actionLabel="Se connecter"
+            onAction={() => router.push("/sign-in")}
+          />
+          <View className="absolute inset-x-5 bottom-8">
+            <Button variant="outline" onPress={() => router.push("/feedback" as Href)}>
+              <MessageSquareText size={18} color="#14314C" />
+              <Text className="font-body font-medium text-ink">Donner un feedback sans compte</Text>
+            </Button>
+          </View>
+        </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
           <Animated.View entering={FadeIn.duration(400)}>
@@ -119,6 +127,10 @@ export default function Profile() {
             <Button variant="outline" onPress={() => router.push("/bookings")}>
               <TicketIcon size={18} color="#14314C" />
               <Text className="font-body font-medium text-ink">Mes réservations</Text>
+            </Button>
+            <Button variant="outline" className="mt-2" onPress={() => router.push("/feedback" as Href)}>
+              <MessageSquareText size={18} color="#14314C" />
+              <Text className="font-body font-medium text-ink">Donner un feedback</Text>
             </Button>
             <Button variant="ghost" className="mt-2" onPress={() => setConfirmOut(true)}>
               <LogOut size={18} color="#c2902f" />

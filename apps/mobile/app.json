@@ -42,6 +42,7 @@
         }
       ],
       "expo-web-browser",
+      "expo-image-picker",
       [
         "expo-build-properties",
         {
