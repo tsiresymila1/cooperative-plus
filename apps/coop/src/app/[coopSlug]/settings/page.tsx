@@ -175,6 +175,11 @@ function ProfileSections({ coop, coopId, userId }: { coop: any; coopId: string; 
           <Field label="Adresse" error={errors.address?.message}>
             <Input {...register("address")} />
           </Field>
+          <div className="flex justify-end">
+            <Button size="sm" onClick={save} disabled={isSubmitting}>
+              {isSubmitting ? "…" : "Enregistrer"}
+            </Button>
+          </div>
         </div>
       </ComponentCard>
 
