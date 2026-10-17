@@ -1,4 +1,5 @@
 "use client";
+import { useDeleteUser } from "@/lib/queries/users";
 import { AdminShell } from "@/components/admin-shell";
 import { useMemo, useState } from "react";
 import { ChevronRight, Pencil, Trash2, Shield, ShieldOff } from "lucide-react";
@@ -44,6 +45,7 @@ export default function UsersPage() {
   const { userId: myId } = useAdmin();
   const { data, isLoading } = db.useQuery({ $users: {} });
   const confirm = useConfirm();
+  const deleteUser = useDeleteUser();
 
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
@@ -63,25 +65,18 @@ export default function UsersPage() {
     finally { setSaving(false); }
   };
 
-  // $users can't be deleted (system entity) — revoke access: drop login + memberships.
   const handleDelete = async (u: User) => {
     if (u.id === myId) { toast.error("Vous ne pouvez pas supprimer votre propre compte."); return; }
     const ok = await confirm({
       title: "Supprimer cet utilisateur ?",
-      message: `${u.email} — ses identifiants et adhésions seront supprimés, l'accès révoqué. Irréversible.`,
+      message: `${u.email} — le compte, ses identifiants et ses adhésions seront supprimés. Irréversible.`,
       confirmLabel: "Supprimer",
       tone: "danger",
     });
     if (!ok) return;
     try {
-      const cred = await db.queryOnce({ credentials: { $: { where: { email: u.email } } } });
-      const mem = await db.queryOnce({ memberships: { $: { where: { "user.id": u.id } } } });
-      const txs: any[] = [];
-      for (const c of cred.data?.credentials ?? []) txs.push(tx.credentials[c.id].delete());
-      for (const m of mem.data?.memberships ?? []) txs.push(tx.memberships[m.id].delete());
-      if (u.isPlatformAdmin) txs.push(tx.$users[u.id].update({ isPlatformAdmin: false }));
-      if (txs.length) await db.transact(txs);
-      toast.success("Utilisateur supprimé (accès révoqué).");
+      await deleteUser.mutateAsync(u.id);
+      toast.success("Utilisateur supprimé.");
     } catch (e: any) { toast.error(e?.message ?? "Échec."); }
   };
 
