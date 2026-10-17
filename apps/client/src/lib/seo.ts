@@ -6,7 +6,7 @@ export const DEFAULT_DESCRIPTION =
   "Comparez les départs de taxi-brousse à Madagascar, choisissez votre siège et réservez votre trajet en ligne simplement.";
 
 const SOCIAL_IMAGE = {
-  url: "/hero.png",
+  url: "/hero.jpg",
   width: 1376,
   height: 768,
   alt: "Un autocar sur la route avec Coopérative Plus",

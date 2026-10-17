@@ -7,6 +7,7 @@ import Schedule from "@/components/sections/Schedule";
 import BusTravel from "@/components/sections/BusTravel";
 import TransportTrust from "@/components/sections/TransportTrust";
 import Faq from "@/components/sections/Faq";
+import { HomeMotion } from "@/components/home-motion";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
@@ -19,29 +20,30 @@ export const metadata = createPageMetadata({
 export default function Home() {
   return (
     <main>
+      <HomeMotion />
       <Hero />
-      <div className="reveal">
+      <div>
         <Destinations />
       </div>
-      <div className="reveal">
+      <div>
         <WhatYouGet />
       </div>
-      <div className="reveal">
+      <div>
         <Benefits />
       </div>
-      <div className="reveal">
+      <div>
         <Counters />
       </div>
-      <div className="reveal">
+      <div>
         <Schedule />
       </div>
-      <div className="reveal">
+      <div>
         <BusTravel />
       </div>
-      <div className="reveal">
+      <div>
         <TransportTrust />
       </div>
-      <div className="reveal">
+      <div>
         <Faq />
       </div>
     </main>
