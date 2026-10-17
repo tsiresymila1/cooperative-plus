@@ -57,7 +57,7 @@ export default function ToursHero() {
       </svg>
 
       <Image
-        src="/wp-content/uploads/2025/05/bus_new-1.png"
+        src="/wp-content/uploads/2025/05/bus_new-1.webp"
         alt=""
         width={1420}
         height={756}

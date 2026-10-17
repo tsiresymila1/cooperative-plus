@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Map as MapIcon } from "lucide-react";
 import { db, notDeleted } from "@cp/ui";
@@ -47,6 +48,23 @@ function cityImg(imageUrl: string | undefined, name: string) {
   return CITY_PHOTOS[name.trim().toLowerCase()] ?? "";
 }
 
+// Local photos go through next/image (resized + WebP/AVIF, lazy). Remote
+// imageUrl values aren't in next.config remotePatterns, so keep the CSS fallback.
+function CityPhoto({ src }: { src: string }) {
+  const cls = "absolute inset-0 transition-transform duration-[1200ms] ease-out group-hover:scale-[1.12]";
+  if (src.startsWith("/"))
+    return (
+      <Image
+        src={src}
+        alt=""
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        className={`${cls} object-cover`}
+      />
+    );
+  return <span className={`${cls} bg-cover bg-center`} style={src ? { backgroundImage: `url('${src}')` } : undefined} />;
+}
+
 /* Template "Popular destinations" band — same layout; real Coopérative Plus
    destinations. Branded gradient cards (no stock photos) + custom marker icon. */
 export default function Destinations({
@@ -85,12 +103,7 @@ export default function Destinations({
               className="group relative block h-[357px] overflow-hidden bg-navy ring-1 ring-navy/10 transition-shadow duration-500 hover:ring-2 hover:ring-gold/70 hover:shadow-[0_24px_50px_-24px_rgba(20,49,76,.55)] lg:h-[490px]"
             >
               {/* Real city photo with a slow zoom on hover, lightly warmed */}
-              <span
-                className="absolute inset-0 bg-cover bg-center transition-transform duration-[1200ms] ease-out group-hover:scale-[1.12]"
-                style={{
-                  backgroundImage: `url('${cityImg(d.imageUrl, d.name)}')`,
-                }}
-              />
+              <CityPhoto src={cityImg(d.imageUrl, d.name)} />
               {/* Warm gold tint for cohesion + navy bottom for legibility */}
               <span className="absolute inset-0 bg-gold/10 mix-blend-multiply" />
               <span className="absolute inset-0 bg-gradient-to-t from-navy via-navy/35 to-transparent opacity-90" />
