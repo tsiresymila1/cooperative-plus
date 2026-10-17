@@ -31,7 +31,7 @@ export function ConfirmRoot() {
           onClick={() => done(false)}>
           <motion.div initial={{ scale: 0.95, y: 8 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-sm rounded-md border border-ink/10 bg-[#f5f5f5] p-6 text-center shadow-[0_10px_28px_-16px_rgba(15,23,42,.28)]">
+            className="w-full max-w-sm rounded-md border border-[var(--color-line,rgba(0,0,0,.1))] bg-[var(--color-paper,#f5f5f5)] p-6 text-center shadow-[0_10px_28px_-16px_rgba(15,23,42,.28)]">
             <div className={`mx-auto grid h-12 w-12 place-items-center rounded-full ${req.tone === "danger" ? "bg-laterite/10 text-laterite" : "bg-ink/8 text-ink"}`}>
               <AlertTriangle size={22} />
             </div>
