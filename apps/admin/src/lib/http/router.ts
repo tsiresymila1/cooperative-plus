@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { authRoute } from "./routes/auth";
 import { cooperativeRoute } from "./routes/cooperatives";
+import { userRoute } from "./routes/users";
 import { HttpError } from "./errors";
 
 /**
@@ -17,7 +18,8 @@ const app = new Hono()
     return c.json({ error: err instanceof Error ? err.message : "Erreur serveur" }, 500);
   })
   .route("/auth", authRoute)
-  .route("/cooperatives", cooperativeRoute);
+  .route("/cooperatives", cooperativeRoute)
+  .route("/users", userRoute);
 
 export { app };
 export type AppType = typeof app;
