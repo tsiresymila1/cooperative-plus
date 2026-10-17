@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/hero.png",
+        url: "/hero.jpg",
         width: 1376,
         height: 768,
         alt: "Un autocar sur la route avec Coopérative Plus",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Taxi-brousse à Madagascar | Coopérative Plus",
     description: DEFAULT_DESCRIPTION,
-    images: ["/hero.png"],
+    images: ["/hero.jpg"],
   },
   robots: {
     index: true,
