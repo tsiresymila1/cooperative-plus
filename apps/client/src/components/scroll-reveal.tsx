@@ -15,6 +15,12 @@ export function ScrollReveal() {
       document
         .querySelectorAll<HTMLElement>(".reveal:not(.reveal-show)")
         .forEach((e) => e.classList.add("reveal-show"));
+    // Fallback only touches what is already on screen, so below-the-fold
+    // content still animates in when scrolled to.
+    const revealVisible = () =>
+      document.querySelectorAll<HTMLElement>(".reveal:not(.reveal-show)").forEach((e) => {
+        if (e.getBoundingClientRect().top < window.innerHeight) e.classList.add("reveal-show");
+      });
 
     let io: IntersectionObserver | null = null;
 
@@ -40,8 +46,8 @@ export function ScrollReveal() {
     };
 
     const raf = requestAnimationFrame(setup);
-    // Safety net: if the observer never fires (prod edge cases), reveal anyway.
-    const fallback = setTimeout(revealAll, 1500);
+    // Safety net: if the observer never fires (prod edge cases), reveal what is on screen.
+    const fallback = setTimeout(revealVisible, 1500);
 
     return () => {
       cancelAnimationFrame(raf);
