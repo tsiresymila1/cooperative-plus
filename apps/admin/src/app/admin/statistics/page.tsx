@@ -32,6 +32,7 @@ export default function StatisticsPage() {
     $users: {},
     cooperatives: {},
     visits: {},
+    siteVisits: {}, // ponytail: loads all rows; switch to per-day queries if volume grows
     tripInstances: { $: { where: { departDate: todayKey } } },
     bookings: { tripInstance: {} },
   });
@@ -55,7 +56,13 @@ export default function StatisticsPage() {
     const visits = [...((data?.visits ?? []) as Visit[])].sort(
       (a, b) => (b.lastSeenAt ?? 0) - (a.lastSeenAt ?? 0),
     );
+    const sv = (data?.siteVisits ?? []) as { day: string; visitorId: string }[];
+    const weekAgo = dateKey(new Date(Date.now() - 6 * 864e5));
+    const uniq = (rows: typeof sv) => new Set(rows.map((r) => r.visitorId)).size;
     return {
+      visitorsToday: sv.filter((r) => r.day === dateKey(new Date())).length,
+      visitors7d: uniq(sv.filter((r) => r.day >= weekAgo)),
+      visitorsTotal: uniq(sv),
       users: users.length,
       coops: coops.length,
       activeCoops: activeCoops.length,
@@ -69,6 +76,8 @@ export default function StatisticsPage() {
   const v = (n: number) => (isLoading ? "—" : String(n));
 
   const stats = [
+    { id: "vtoday", icon: <Globe size={22} />, label: "Visiteurs aujourd'hui", value: v(m.visitorsToday), hint: "Visiteurs uniques (avec consentement)", tone: "baobab" as const },
+    { id: "v7d", icon: <Globe size={22} />, label: "Visiteurs (7 jours)", value: v(m.visitors7d), hint: `${v(m.visitorsTotal)} au total`, tone: "ink" as const },
     { id: "users", icon: <Users size={22} />, label: "Utilisateurs de la plateforme", value: v(m.users), hint: `${v(m.tracked)} suivis (IP)`, tone: "ink" as const },
     { id: "coops", icon: <Building2 size={22} />, label: "Coopératives", value: v(m.coops), hint: `${v(m.activeCoops)} active(s)`, tone: "laterite" as const },
     { id: "trips", icon: <Route size={22} />, label: "Trajets aujourd'hui", value: v(m.tripsToday), hint: "Programmés ce jour", tone: "baobab" as const },

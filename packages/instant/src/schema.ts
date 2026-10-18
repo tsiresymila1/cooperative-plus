@@ -329,6 +329,16 @@ const schema = i.schema({
       lastSeenAt: i.date().indexed(),
     }),
 
+    // Anonymous visitor counter — one row per visitor per day (key = day_visitorId),
+    // written only by the client server API. No IP / geo stored.
+    siteVisits: i.entity({
+      key: i.string().unique().indexed(),
+      day: i.string().indexed(),
+      visitorId: i.string().indexed(),
+      path: i.string().optional(),
+      createdAt: i.date().indexed(),
+    }),
+
     productFeedbacks: i.entity({
       source: i.string().indexed(),
       category: i.string().indexed(),
