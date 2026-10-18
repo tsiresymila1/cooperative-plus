@@ -102,6 +102,9 @@ const rules = {
   // Platform analytics — admins read everyone; a user writes only their own row.
   visits: { allow: { view: admin, create: authed, update: `(${admin} || auth.id == data.userId)`, delete: admin } },
 
+  // Anonymous visitor counter: server-only writes, platform admins read.
+  siteVisits: { allow: { view: admin, create: "false", update: "false", delete: "false" } },
+
   // Feedback creation is server-only so validation, spam checks and verified
   // booking ownership cannot be bypassed by a direct client transaction.
   productFeedbacks: { allow: { view: admin, create: "false", update: admin, delete: admin } },

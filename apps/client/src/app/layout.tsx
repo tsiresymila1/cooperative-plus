@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Providers, Toaster } from "@cp/ui";
 import { Progress } from "@/components/progress";
+import { SiteVisitTracker } from "@/components/site-visit-tracker";
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -93,6 +94,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="antialiased">
         <JsonLd data={websiteStructuredData} />
         <ScrollReveal />
+        <SiteVisitTracker />
         <SmoothScroll />
         <Progress>
           <Providers askConsentement>{children}</Providers>
