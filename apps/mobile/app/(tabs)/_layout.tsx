@@ -1,7 +1,7 @@
 import { View } from "react-native";
 import { Tabs } from "expo-router";
 import { useColorScheme } from "nativewind";
-import { Home, Info, Ticket, User } from "lucide-react-native";
+import { Home, Info, Settings, Ticket, User } from "lucide-react-native";
 import { cn } from "@/lib/cn";
 
 function TabIcon({ Icon, color, focused }: { Icon: typeof Home; color: string; focused: boolean }) {
@@ -12,12 +12,27 @@ function TabIcon({ Icon, color, focused }: { Icon: typeof Home; color: string; f
   );
 }
 
+function ReservationTabIcon({ focused }: { focused: boolean }) {
+  return (
+    <View
+      className={cn(
+        "-mt-4 h-14 w-14 items-center justify-center rounded-full border-4 border-paper bg-laterite",
+        focused && "scale-105",
+      )}
+      style={{ elevation: 8, shadowColor: "#000", shadowOpacity: 0.18, shadowRadius: 8, shadowOffset: { width: 0, height: 3 } }}
+    >
+      <Ticket size={24} color="#ffffff" />
+    </View>
+  );
+}
+
 export default function TabsLayout() {
   const dark = useColorScheme().colorScheme === "dark";
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        animation: "shift",
         tabBarActiveTintColor: dark ? "#e6bd6e" : "#D9A441",
         tabBarInactiveTintColor: dark ? "#6b7280" : "#9aa3c0",
         tabBarStyle: {
@@ -44,13 +59,6 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="bookings"
-        options={{
-          title: "Réservations",
-          tabBarIcon: ({ color, focused }) => <TabIcon Icon={Ticket} color={color} focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
           title: "Profil",
@@ -58,10 +66,24 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="bookings"
+        options={{
+          title: "Réservations",
+          tabBarIcon: ({ focused }) => <ReservationTabIcon focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
         name="about"
         options={{
           title: "À propos",
           tabBarIcon: ({ color, focused }) => <TabIcon Icon={Info} color={color} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: "Réglages",
+          tabBarIcon: ({ color, focused }) => <TabIcon Icon={Settings} color={color} focused={focused} />,
         }}
       />
     </Tabs>

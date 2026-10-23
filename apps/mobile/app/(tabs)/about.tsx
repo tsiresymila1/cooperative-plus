@@ -172,9 +172,9 @@ export default function About() {
             <ContactRow
               Icon={Globe}
               label="Site web"
-              value="cooperativeplus.mg"
+              value="coop-plus.site"
               onPress={() =>
-                Linking.openURL("https://cooperativeplus.vercel.app").catch(
+                Linking.openURL("https://www.coop-plus.site").catch(
                   () => {},
                 )
               }

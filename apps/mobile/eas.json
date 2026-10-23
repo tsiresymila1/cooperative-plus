@@ -9,7 +9,10 @@
       "distribution": "internal",
       "env": {
         "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45",
-        "EXPO_PUBLIC_API_URL": "https://cooperativeplus.vercel.app"
+        "EXPO_PUBLIC_INSTANT_GOOGLE_CLIENT_NAME": "google-android",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "608690908685-qkm4fhn7010ls8srr0i87pe45nouag77.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_URL": "https://www.coop-plus.site",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://99f8191e7a4d6a0ca77a274481e5bd97@o4504649797271552.ingest.us.sentry.io/4512159877627904"
       }
     },
     "preview": {
@@ -17,7 +20,10 @@
       "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45",
-        "EXPO_PUBLIC_API_URL": "https://cooperativeplus.vercel.app"
+        "EXPO_PUBLIC_INSTANT_GOOGLE_CLIENT_NAME": "google-android",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "608690908685-qkm4fhn7010ls8srr0i87pe45nouag77.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_URL": "https://www.coop-plus.site",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://99f8191e7a4d6a0ca77a274481e5bd97@o4504649797271552.ingest.us.sentry.io/4512159877627904"
       }
     },
     "production": {
@@ -25,7 +31,10 @@
       "android": { "buildType": "app-bundle" },
       "env": {
         "EXPO_PUBLIC_INSTANT_APP_ID": "feb5e50f-21d7-4880-9de5-49eba48f2a45",
-        "EXPO_PUBLIC_API_URL": "https://cooperativeplus.vercel.app"
+        "EXPO_PUBLIC_INSTANT_GOOGLE_CLIENT_NAME": "google-android",
+        "EXPO_PUBLIC_GOOGLE_CLIENT_ID": "608690908685-qkm4fhn7010ls8srr0i87pe45nouag77.apps.googleusercontent.com",
+        "EXPO_PUBLIC_API_URL": "https://www.coop-plus.site",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://99f8191e7a4d6a0ca77a274481e5bd97@o4504649797271552.ingest.us.sentry.io/4512159877627904"
       }
     }
   },
