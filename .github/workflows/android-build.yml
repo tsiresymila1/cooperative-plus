@@ -21,6 +21,14 @@ jobs:
     env:
       # Public by design (shipped in the bundle) — safe to keep here.
       EXPO_PUBLIC_INSTANT_APP_ID: feb5e50f-21d7-4880-9de5-49eba48f2a45
+      EXPO_PUBLIC_INSTANT_GOOGLE_CLIENT_NAME: google-android
+      EXPO_PUBLIC_GOOGLE_CLIENT_ID: 608690908685-qkm4fhn7010ls8srr0i87pe45nouag77.apps.googleusercontent.com
+      EXPO_PUBLIC_API_URL: https://www.coop-plus.site
+      EXPO_PUBLIC_SENTRY_DSN: https://99f8191e7a4d6a0ca77a274481e5bd97@o4504649797271552.ingest.us.sentry.io/4512159877627904
+      EXPO_PUBLIC_SENTRY_ENVIRONMENT: production
+      SENTRY_ORG: digi-talent
+      SENTRY_PROJECT: coop-plus
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 

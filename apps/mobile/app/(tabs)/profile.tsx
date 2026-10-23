@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { ScrollView, Switch, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
-import { router, type Href } from "expo-router";
-import { LogOut, MessageSquareText, Moon, Ticket as TicketIcon } from "lucide-react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useColorScheme } from "nativewind";
+import { router } from "expo-router";
+import { LogOut, Ticket as TicketIcon } from "lucide-react-native";
 import { Button, Card, Field, Input, Spinner } from "@/components/ui";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { db } from "@/lib/db";
@@ -24,13 +22,6 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [confirmOut, setConfirmOut] = useState(false);
-  const { colorScheme, setColorScheme } = useColorScheme();
-  const dark = colorScheme === "dark";
-  const toggleTheme = (v: boolean) => {
-    const next = v ? "dark" : "light";
-    setColorScheme(next);
-    AsyncStorage.setItem("cp-theme", next);
-  };
 
   useEffect(() => {
     if (profile) {
@@ -77,12 +68,6 @@ export default function Profile() {
             actionLabel="Se connecter"
             onAction={() => router.push("/sign-in")}
           />
-          <View className="absolute inset-x-5 bottom-8">
-            <Button variant="outline" onPress={() => router.push("/feedback" as Href)}>
-              <MessageSquareText size={18} color="#14314C" />
-              <Text className="font-body font-medium text-ink">Donner un feedback sans compte</Text>
-            </Button>
-          </View>
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
@@ -111,26 +96,9 @@ export default function Profile() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(120).duration(420)} className="mt-5">
-            <Text className="mb-2 font-display text-lg text-ink">Apparence</Text>
-            <Card>
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2.5">
-                  <Moon size={18} color={dark ? "#D9A441" : "#475569"} />
-                  <Text className="font-body text-base text-ink">Thème sombre</Text>
-                </View>
-                <Switch value={dark} onValueChange={toggleTheme} thumbColor="#475569"  trackColor={{ true: "#D9A441", false: "#D9A441" }} />
-              </View>
-            </Card>
-          </Animated.View>
-
-          <Animated.View entering={FadeInDown.delay(160).duration(420)} className="mt-5">
             <Button variant="outline" onPress={() => router.push("/bookings")}>
               <TicketIcon size={18} color="#14314C" />
               <Text className="font-body font-medium text-ink">Mes réservations</Text>
-            </Button>
-            <Button variant="outline" className="mt-2" onPress={() => router.push("/feedback" as Href)}>
-              <MessageSquareText size={18} color="#14314C" />
-              <Text className="font-body font-medium text-ink">Donner un feedback</Text>
             </Button>
             <Button variant="ghost" className="mt-2" onPress={() => setConfirmOut(true)}>
               <LogOut size={18} color="#c2902f" />
