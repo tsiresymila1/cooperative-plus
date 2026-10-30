@@ -29,6 +29,8 @@ jobs:
       SENTRY_ORG: digi-talent
       SENTRY_PROJECT: coop-plus
       SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # Without the secret the upload 401s and fails the build — skip it instead.
+      SENTRY_DISABLE_AUTO_UPLOAD: ${{ secrets.SENTRY_AUTH_TOKEN == '' && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
 
