@@ -500,6 +500,9 @@ importers:
       '@babel/core':
         specifier: ^7.29.7
         version: 7.29.7
+      '@sentry/cli':
+        specifier: 2.58.4
+        version: 2.58.4
       '@tailwindcss/postcss':
         specifier: ^4.3.1
         version: 4.3.1
