@@ -35,7 +35,7 @@ async function main() {
 
   await adminDb.transact(
     adminDb.tx.memberships[mId]!
-      .update({ role: "owner", status: "active", permissions: [], createdAt: Date.now() })
+      .update({ role: "owner", status: "active", permissions: [], access: { cooperativeId: coop.id, role: "owner", status: "active", permissions: [] }, createdAt: Date.now() })
       .link({ user: user.id, cooperative: coop.id }),
   );
   console.log(`✓ ${email} is now an owner of "${coop.displayName}" (${slug}).`);

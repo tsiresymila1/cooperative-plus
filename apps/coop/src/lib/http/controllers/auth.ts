@@ -5,7 +5,7 @@ import { passwordSignIn, requestPasswordReset, resetPassword } from "../services
 
 const passwordSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(1).max(128),
 });
 
 const forgotPasswordSchema = z.object({

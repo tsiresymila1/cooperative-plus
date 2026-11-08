@@ -60,7 +60,7 @@ export default function DriversPage() {
 
   async function onAvatar(file: File) {
     try {
-      const res = await db.storage.uploadFile(`coops/${coopId}/drivers/${Date.now()}-${file.name}`, file);
+      const res = await db.storage.uploadFile(`users/${(await db.getAuth())!.id}/public/coops/${coopId}/drivers/${Date.now()}-${file.name}`, file);
       const q = await db.queryOnce({ $files: { $: { where: { id: (res as any).data.id } } } });
       const url = q.data?.$files?.[0]?.url;
       if (url) setValue("avatarUrl", url);

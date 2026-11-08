@@ -1,3 +1,4 @@
+vi.mock("@cp/instant/rate-limit", () => ({ consumeRateLimit: vi.fn().mockResolvedValue(true) }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const paymentService = vi.hoisted(() => ({
@@ -11,6 +12,7 @@ const feedbackService = vi.hoisted(() => ({
   uploadFeedbackScreenshot: vi.fn(),
 }));
 
+vi.mock("./services/session", () => ({ requireUser: vi.fn().mockResolvedValue("user-1") }));
 vi.mock("./services/payment", () => paymentService);
 vi.mock("./services/feedback", () => feedbackService);
 
@@ -48,14 +50,7 @@ describe("client HTTP router", () => {
     await expect(response.json()).resolves.toEqual({
       url: "https://checkout.test.invalid/payment-1",
     });
-    expect(paymentService.initiatePayment).toHaveBeenCalledWith({
-      bookingReference: "CP-ABC123",
-      instanceId: undefined,
-      coopId: "coop-1",
-      holdIds: undefined,
-      seatMeta: [{ label: "A1", passengerName: "Mialy", price: 25_000 }],
-      tripVehicleId: null,
-    });
+    expect(paymentService.initiatePayment).toHaveBeenCalledWith({ bookingReference: "CP-ABC123", userId: "user-1" });;
   });
 
   it("rejects malformed payment input before the service boundary", async () => {

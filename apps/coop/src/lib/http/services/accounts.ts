@@ -79,7 +79,7 @@ export async function createAssistant(input: CreateAssistantInput): Promise<{ ok
     const memId = newId();
     await adminDb.transact(
       adminDb.tx.memberships[memId]
-        .update({ role: "assistant", permissions, status: "active", createdAt: Date.now() })
+        .update({ role: "assistant", permissions, status: "active", access: { cooperativeId: input.coopId, role: "assistant", permissions, status: "active" }, createdAt: Date.now() })
         .link({ cooperative: input.coopId, user: existingUser.id }),
     );
     return { ok: true };
@@ -100,7 +100,7 @@ export async function createAssistant(input: CreateAssistantInput): Promise<{ ok
   const memId = newId();
   chunks.push(
     adminDb.tx.memberships[memId]
-      .update({ role: "assistant", permissions, status: "active", createdAt: now })
+      .update({ role: "assistant", permissions, status: "active", access: { cooperativeId: input.coopId, role: "assistant", permissions, status: "active" }, createdAt: now })
       .link({ cooperative: input.coopId, user: user.id }),
   );
 
@@ -110,8 +110,9 @@ export async function createAssistant(input: CreateAssistantInput): Promise<{ ok
 
 /** Update only mutable fields of an assistant membership owned by the cooperative. */
 export async function updateAssistant(input: UpdateAssistantInput): Promise<{ ok: true }> {
-  await findManagedAssistant(input.coopId, input.membershipId);
+  const member = await findManagedAssistant(input.coopId, input.membershipId);
   const update = {
+    access: { cooperativeId: input.coopId, role: member.role, status: input.status ?? member.status, permissions: input.permissions ?? member.permissions },
     ...(input.status ? { status: input.status } : {}),
     ...(input.permissions ? { permissions: input.permissions } : {}),
   };

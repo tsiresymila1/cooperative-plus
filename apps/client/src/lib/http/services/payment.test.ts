@@ -20,8 +20,8 @@ const instantAdmin = vi.hoisted(() => ({
         update: (data: unknown) => ({ namespace: "bookings", id: String(id), data }),
       }),
     }),
-    tickets: {},
-    seatHolds: {},
+    tickets: new Proxy({}, { get: (_, id) => ({ update: (data: unknown) => ({ link: (links: unknown) => ({ namespace: "tickets", id, data, links }) }) }) }),
+    seatHolds: new Proxy({}, { get: (_, id) => ({ delete: () => ({ namespace: "seatHolds", id, deleted: true }) }) }),
   },
 }));
 
@@ -44,6 +44,7 @@ const payload = {
 
 function bookingWithTokenHash(notificationTokenHash?: string) {
   return {
+    payments: [],
     bookings: [
       {
         id: "booking-1",
@@ -62,6 +63,7 @@ function bookingWithTokenHash(notificationTokenHash?: string) {
 
 function bookingWithLegacyToken(notificationToken: string) {
   return {
+    payments: [],
     bookings: [
       {
         id: "booking-1",
@@ -84,7 +86,7 @@ describe("client PAPI webhook authentication", () => {
   });
 
   it("rejects a webhook when no notification token was persisted", async () => {
-    instantAdmin.query.mockResolvedValueOnce(bookingWithTokenHash());
+    instantAdmin.query.mockResolvedValue(bookingWithTokenHash());
 
     await expect(
       handleWebhook({ ...payload, notificationToken: "test-incoming-token" }),
@@ -93,7 +95,7 @@ describe("client PAPI webhook authentication", () => {
   });
 
   it("rejects a webhook when its notification token is missing", async () => {
-    instantAdmin.query.mockResolvedValueOnce(bookingWithTokenHash(hashSecret("test-stored-token")));
+    instantAdmin.query.mockResolvedValue(bookingWithTokenHash(hashSecret("test-stored-token")));
 
     await expect(handleWebhook(payload)).rejects.toMatchObject({
       status: 401,
@@ -103,7 +105,7 @@ describe("client PAPI webhook authentication", () => {
   });
 
   it("rejects a mismatched notification token", async () => {
-    instantAdmin.query.mockResolvedValueOnce(bookingWithTokenHash(hashSecret("test-stored-token")));
+    instantAdmin.query.mockResolvedValue(bookingWithTokenHash(hashSecret("test-stored-token")));
 
     await expect(
       handleWebhook({ ...payload, notificationToken: "test-other-token" }),
@@ -112,7 +114,7 @@ describe("client PAPI webhook authentication", () => {
   });
 
   it("accepts the exact token matching the stored fingerprint", async () => {
-    instantAdmin.query.mockResolvedValueOnce(
+    instantAdmin.query.mockResolvedValue(
       bookingWithTokenHash(hashSecret("test-stored-token")),
     );
 
@@ -123,7 +125,7 @@ describe("client PAPI webhook authentication", () => {
   });
 
   it("rejects a legacy raw token after the migration window", async () => {
-    instantAdmin.query.mockResolvedValueOnce(bookingWithLegacyToken("legacy-token"));
+    instantAdmin.query.mockResolvedValue(bookingWithLegacyToken("legacy-token"));
 
     await expect(
       handleWebhook({ ...payload, notificationToken: "legacy-token" }),
@@ -141,7 +143,8 @@ describe("client PAPI payment initiation", () => {
     currency: "MGA",
     contactName: "Test Rider",
     cooperative: { id: "coop-1", secrets: { papiApiKey: "test-papi-key" } },
-    tripInstance: { id: "instance-1" },
+    customer: { id: "user-1" }, tickets: [{ id: "ticket-1" }], payments: [], seatCount: 1,
+    tripInstance: { id: "instance-1", price: 25_000, currency: "MGA" },
   };
 
   beforeEach(() => {
@@ -156,7 +159,7 @@ describe("client PAPI payment initiation", () => {
       json: vi.fn().mockResolvedValue({ data: { paymentLink: "https://pay.test/1" } }),
     }));
 
-    await expect(initiatePayment({ bookingReference: booking.reference })).rejects.toMatchObject({
+    await expect(initiatePayment({ bookingReference: booking.reference, userId: "user-1" })).rejects.toMatchObject({
       status: 502,
     });
     expect(instantAdmin.transact).not.toHaveBeenCalled();
@@ -170,7 +173,7 @@ describe("client PAPI payment initiation", () => {
       }),
     }));
 
-    await expect(initiatePayment({ bookingReference: booking.reference })).resolves.toEqual({
+    await expect(initiatePayment({ bookingReference: booking.reference, userId: "user-1" })).resolves.toEqual({
       url: "https://pay.test/1",
     });
     expect(instantAdmin.transact).toHaveBeenCalledWith(
@@ -184,5 +187,60 @@ describe("client PAPI payment initiation", () => {
     );
     const transaction = instantAdmin.transact.mock.calls[0]?.[0];
     expect(JSON.stringify(transaction)).not.toContain("provider-secret");
+  });
+});
+
+
+describe("payment state transitions", () => {
+  const payment = { id: "payment-current", amount: 25_000, currency: "MGA", status: "pending",
+    meta: { notificationTokenHash: hashSecret("valid-token"), seatMeta: [] },
+    booking: { id: "booking-1", status: "pending", tickets: [] } };
+  beforeEach(() => { vi.resetAllMocks(); instantAdmin.transact.mockResolvedValue({}); });
+  it("uses the matching attempt instead of the first payment", async () => {
+    instantAdmin.query.mockResolvedValue({ payments: [
+      { ...payment, id: "old-payment", meta: { notificationTokenHash: hashSecret("old-token") } }, payment,
+    ] });
+    await handleWebhook({ ...payload, notificationToken: "valid-token" });
+    expect(instantAdmin.transact.mock.calls[0][0][0].id).toBe("payment-current");
+  });
+  it.each([{ amount: 1 }, { currency: "EUR" }])("rejects a mismatched payment %j", async extra => {
+    instantAdmin.query.mockResolvedValue({ payments: [payment] });
+    await expect(handleWebhook({ ...payload, ...extra, notificationToken: "valid-token" })).rejects.toMatchObject({ status: 409 });
+    expect(instantAdmin.transact).not.toHaveBeenCalled();
+  });
+  it("acknowledges authenticated duplicates without reissuing tickets", async () => {
+    instantAdmin.query.mockResolvedValue({ payments: [{ ...payment, status: "paid" }] });
+    await handleWebhook({ ...payload, notificationToken: "valid-token" });
+    expect(instantAdmin.transact).not.toHaveBeenCalled();
+  });
+  it("does not reset a paid booking when an older attempt fails", async () => {
+    instantAdmin.query.mockResolvedValue({ payments: [{ ...payment, booking: { ...payment.booking, status: "paid" } }] });
+    await handleWebhook({ ...payload, paymentStatus: "FAILED", notificationToken: "valid-token" });
+    expect(instantAdmin.transact.mock.calls[0][0].find((c: any) => c.namespace === "bookings").data.status).toBe("paid");
+  });
+  it("records late money without resurrecting a cancelled reservation's tickets", async () => {
+    instantAdmin.query.mockResolvedValue({ payments: [{ ...payment, booking: { ...payment.booking, status: "cancelled" } }] });
+    await handleWebhook({ ...payload, notificationToken: "valid-token" });
+    const chunks = instantAdmin.transact.mock.calls[0][0];
+    expect(chunks[0].data.status).toBe("paid");
+    expect(chunks[1].data.status).toBe("payment_review");
+    expect(chunks.some((c: any) => c.namespace === "tickets")).toBe(false);
+  });
+  it("retains the receipt when a seat conflict rejects ticket creation", async () => {
+    instantAdmin.query.mockResolvedValueOnce({ payments: [{ ...payment, meta: { ...payment.meta,
+      instanceId: "trip", seatMeta: [{ label: "1", passengerName: "Rider", price: 25_000, ticketId: "stable-ticket" }],
+    } }] }).mockResolvedValueOnce({ tickets: [] });
+    instantAdmin.transact.mockRejectedValueOnce(new Error("seatKey already used"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    await handleWebhook({ ...payload, notificationToken: "valid-token" });
+    const receipt = instantAdmin.transact.mock.calls[1][0];
+    expect(receipt[0].data).toMatchObject({ status: "paid", meta: { allocationError: true } });
+    expect(receipt[1].data.status).toBe("payment_review");
+  });
+  it("rejects paying another user's reservation before calling PAPI", async () => {
+    instantAdmin.query.mockResolvedValue({ bookings: [{ id: "booking", customer: { id: "other-user" } }] });
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    await expect(initiatePayment({ bookingReference: "CP-TEST", userId: "user" })).rejects.toMatchObject({ status: 403 });
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

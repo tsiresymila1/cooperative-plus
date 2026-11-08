@@ -1,3 +1,4 @@
+import { cleanRateLimits } from "@cp/instant/rate-limit";
 import { adminDb } from "@cp/instant/admin";
 import { dueStatus } from "@cp/instant/subscription";
 
@@ -9,10 +10,11 @@ export const runtime = "nodejs"; // adminDb (admin token) needs Node
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
-  if (secret && req.headers.get("authorization") !== `Bearer ${secret}`)
+  if (!secret || req.headers.get("authorization") !== `Bearer ${secret}`)
     return new Response("Unauthorized", { status: 401 });
 
   const now = Date.now();
+  await cleanRateLimits(now);
   const { subscriptions } = await adminDb.query({ subscriptions: { cooperative: {} } });
 
   const chunks: any[] = [];

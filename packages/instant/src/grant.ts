@@ -16,10 +16,7 @@ if (!emailArg || !roleArg) {
 const email = emailArg;
 const role = roleArg;
 
-const ASSISTANT_PERMS = [
-  "booking.create", "booking.update", "booking.cancel", "booking.checkin",
-  "payment.cash.collect", "payment.proof.upload", "trip.view", "report.view",
-];
+const ASSISTANT_PERMS = ["bookings", "payments", "trips"];
 
 async function findUser() {
   const r = await adminDb.query({ $users: { $: { where: { email } } } });
@@ -47,6 +44,7 @@ async function main() {
     const mid = m.memberships[0]?.id ?? id();
     await adminDb.transact(
       adminDb.tx.memberships[mid]!.update({
+        access: { cooperativeId: coop.id, role, status: "active", permissions: role === "assistant" ? ASSISTANT_PERMS : [] },
         role, status: "active", permissions: role === "assistant" ? ASSISTANT_PERMS : [], createdAt: Date.now(),
       }).link({ user: user.id, cooperative: coop.id }),
     );

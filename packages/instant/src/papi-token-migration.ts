@@ -20,8 +20,8 @@ export function migratePapiTokenMeta(meta: unknown): Record<string, unknown> | n
   return { ...rest, notificationTokenHash: validExistingHash };
 }
 
-export function selectPapiTokenMigrations(
-  payments: Array<{ id: string; meta?: unknown }>,
+export function selectPapiTokenMigrations<T extends { id: string; meta?: unknown }>(
+  payments: T[],
 ): Array<{ id: string; meta: Record<string, unknown> }> {
   return payments.flatMap((payment) => {
     const meta = migratePapiTokenMeta(payment.meta);

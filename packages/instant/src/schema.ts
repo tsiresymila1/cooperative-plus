@@ -8,6 +8,7 @@ import { i } from "@instantdb/core";
  */
 const schema = i.schema({
   entities: {
+    rateLimits: i.entity({ key: i.string().unique().indexed(), bucket: i.string().indexed(), createdAt: i.date().indexed() }),
     $users: i.entity({
       email: i.string().unique().indexed(),
       name: i.string().optional(),
@@ -49,6 +50,7 @@ const schema = i.schema({
     }),
 
     memberships: i.entity({
+      access: i.json().optional(), // server-maintained permission snapshot for correlated CEL checks
       role: i.string().indexed(),
       permissions: i.json(),
       status: i.string().indexed(),
@@ -234,6 +236,10 @@ const schema = i.schema({
     }),
 
     bookings: i.entity({
+      reservationKey: i.string().unique().indexed().optional(),
+      seatMeta: i.json().optional(),
+      holdIds: i.json().optional(),
+      tripVehicleId: i.string().optional(),
       reference: i.string().unique().indexed(),
       source: i.string().indexed(),
       contactName: i.string(),

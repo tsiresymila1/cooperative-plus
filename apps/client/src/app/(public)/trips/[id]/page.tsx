@@ -1,15 +1,15 @@
 "use client";
+import { bookingRequest } from "@cp/ui";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Bus, Loader2, MapPin, ShieldCheck } from "lucide-react";
 import { CoopLogo, TagBadge } from "@cp/ui";
-import { SeatSelector, type Cell, tripSlots, slotSeatKey } from "@cp/ui";
+import { SeatSelector, type Cell, tripSlots } from "@cp/ui";
 import { toast } from "@cp/ui";
-import { db, id } from "@cp/ui";
+import { db } from "@cp/ui";
 import { useBookingDraft } from "@/lib/booking-store";
 import { fmtMoney } from "@cp/ui";
 
-const HOLD_MS = 5 * 60 * 1000;
 const DEAD = ["cancelled", "expired", "refunded"];
 
 const btnGold =
@@ -120,38 +120,10 @@ export default function TripDetail({
     }
     setReserving(true);
     try {
-      // Clear my own / expired holds on these seats (same slot) first.
-      const nowMs = Date.now();
-      const stale = (slot.holds ?? []).filter(
-        (h: any) =>
-          draft.seats.includes(h.seatLabel) &&
-          (h.sessionToken === user!.id || +new Date(h.expiresAt) <= nowMs),
-      );
-      if (stale.length)
-        await db.transact(
-          stale.map((h: any) => db.tx.seatHolds[h.id].delete()),
-        );
-
-      const holds: Record<string, string> = {};
-      const steps = draft.seats.map((label) => {
-        const hid = id();
-        holds[label] = hid;
-        return db.tx.seatHolds[hid]
-          .update({
-            seatKey: slotSeatKey(slot.id, label),
-            seatLabel: label,
-            expiresAt: Date.now() + HOLD_MS,
-            createdAt: Date.now(),
-            sessionToken: user!.id,
-          })
-          .link({
-            tripInstance: instanceId,
-            cooperative: trip.cooperative?.id ?? undefined,
-            user: user!.id,
-            ...(slot.isVirtual ? {} : { tripVehicle: slot.id }),
-          });
+      const result = await bookingRequest<{ seats: { holdId: string; seatLabel: string }[] }>("booking/hold", {
+        instanceId, tripVehicleId: slot.isVirtual ? null : slot.id, labels: draft.seats,
       });
-      await db.transact(steps);
+      const holds = Object.fromEntries(result.seats.map(s => [s.seatLabel, s.holdId]));
       draft.setHolds(holds);
       router.push(`/trips/${instanceId}/checkout`);
     } catch {

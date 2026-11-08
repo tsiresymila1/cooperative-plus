@@ -175,12 +175,14 @@ export default function Confirmation() {
           >
             <CheckCircle2 size={56} color="#62b22e" />
             <Text className="mt-3 font-display text-2xl text-ink">
-              Réservation confirmée
+              {booking.status === "payment_review" ? "Paiement à vérifier" : booking.status === "pending" ? "Réservation enregistrée" : "Réservation confirmée"}
             </Text>
             <Text className="mt-1 font-code text-sm text-ink-soft/90 font-bold">
               {booking.reference}
             </Text>
           </Animated.View>
+
+          {booking.status === "payment_review" && <Text className="mt-3 font-body text-sm text-ink-soft">Paiement reçu. Contactez la coopérative pour confirmer vos places ou demander un remboursement.</Text>}
 
           {/* Ticket — single card for the whole booking (image layout) */}
           <Animated.View

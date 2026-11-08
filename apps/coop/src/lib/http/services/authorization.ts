@@ -42,14 +42,17 @@ async function requireUserCoopAccess(
   coopId: string,
   rule: CoopAccessRule,
 ): Promise<void> {
-  const { $users, memberships } = await adminDb.query({
+  const { $users, memberships, cooperatives } = await adminDb.query({
     $users: { $: { where: { id: userId } } },
+    cooperatives: { $: { where: { id: coopId } } },
     memberships: {
       $: { where: { "user.id": userId, "cooperative.id": coopId } },
     },
   });
 
   if ($users?.[0]?.isPlatformAdmin) return;
+
+  if (cooperatives?.[0]?.subscriptionStatus === "suspended") throw new HttpError(403, "Coopérative suspendue.");
 
   const membership = (memberships ?? []).find((candidate) => candidate.status === "active");
   if (!membership) throw new HttpError(403, "Accès à cette coopérative refusé.");

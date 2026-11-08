@@ -201,6 +201,7 @@ describe("assistant membership management", () => {
       memberships: [
         {
           id: "assistant-membership",
+          status: "active",
           role: "assistant",
           cooperative: { id: "coop-1" },
         },
@@ -217,7 +218,7 @@ describe("assistant membership management", () => {
     expect(instantAdmin.transact).toHaveBeenCalledWith({
       namespace: "memberships",
       id: "assistant-membership",
-      data: { permissions: ["bookings", "team"] },
+      data: { permissions: ["bookings", "team"], access: { cooperativeId: "coop-1", role: "assistant", status: "active", permissions: ["bookings", "team"] } },
       link: expect.any(Function),
     });
   });
@@ -227,6 +228,7 @@ describe("assistant membership management", () => {
       memberships: [
         {
           id: "assistant-membership",
+          status: "active",
           role: "assistant",
           cooperative: { id: "coop-1" },
         },

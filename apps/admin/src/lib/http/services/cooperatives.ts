@@ -52,7 +52,7 @@ export async function createCooperative(input: CreateCoopInput): Promise<{ ok: t
     const { credentials } = await adminDb.query({ credentials: { $: { where: { email: ownerEmail } } } });
     const credId = credentials?.[0]?.id ?? id();
     chunks.push(adminDb.tx.credentials[credId].update({ email: ownerEmail, passwordHash: hashPassword(ownerPassword), createdAt: now }));
-    chunks.push(adminDb.tx.memberships[id()].update({ role: "owner", permissions: [], status: "active", createdAt: now }).link({ cooperative: coopId, user: user.id }));
+    chunks.push(adminDb.tx.memberships[id()].update({ role: "owner", permissions: [], status: "active", access: { cooperativeId: coopId, role: "owner", permissions: [], status: "active" }, createdAt: now }).link({ cooperative: coopId, user: user.id }));
   }
 
   await adminDb.transact(chunks);
@@ -60,9 +60,9 @@ export async function createCooperative(input: CreateCoopInput): Promise<{ ok: t
 }
 
 // Operational (activity) namespaces — what clients/coops generate at runtime.
-const OPERATIONAL = ["tickets", "payments", "refunds", "bookings", "holds", "tripInstances", "tripTemplates"] as const;
+const OPERATIONAL = ["tickets", "payments", "refunds", "bookings", "holds", "tripVehicles", "tripInstances", "tripTemplates"] as const;
 // Config the coop set up (deleted only on full delete, kept on purge).
-const CONFIG = ["seatMaps", "vehicles", "routes", "destinations", "tags"] as const;
+const CONFIG = ["seatMaps", "vehicles", "routes", "destinations", "tags", "drivers", "vehicleModels"] as const;
 
 async function commitBatched(chunks: any[]) {
   for (let i = 0; i < chunks.length; i += 100) {
@@ -71,9 +71,9 @@ async function commitBatched(chunks: any[]) {
 }
 
 const COOP_GRAPH = {
-  tripInstances: {}, tripTemplates: {}, bookings: {}, tickets: {}, payments: {}, refunds: {}, holds: {},
-  routes: {}, vehicles: {}, seatMaps: {}, destinations: {}, tags: {}, subscriptions: {}, requests: {},
-  members: { user: {} },
+  tripInstances: { vehicles: {} }, tripTemplates: {}, bookings: {}, tickets: {}, payments: {}, refunds: {}, holds: {},
+  drivers: {}, vehicleModels: {}, routes: {}, vehicles: {}, seatMaps: {}, destinations: {}, tags: {}, subscriptions: {}, requests: {},
+  members: { user: {} }, secrets: {},
 } as const;
 
 /** Reset a cooperative to "freshly created" — wipe all trips, bookings, payments,
@@ -83,9 +83,10 @@ export async function purgeCooperative(coopId: string): Promise<{ ok: true; dele
   const coop: any = cooperatives?.[0];
   if (!coop) throw new HttpError(404, "Coopérative introuvable.");
 
+  coop.tripVehicles = (coop.tripInstances ?? []).flatMap((t: any) => t.vehicles ?? []);
   const chunks: any[] = [];
   for (const ns of OPERATIONAL) {
-    for (const it of (coop[ns] ?? [])) chunks.push((adminDb.tx as any)[ns][it.id].delete());
+    for (const it of (coop[ns] ?? [])) chunks.push((adminDb.tx as any)[ns === "holds" ? "seatHolds" : ns][it.id].delete());
   }
   await commitBatched(chunks);
   return { ok: true, deleted: chunks.length };
@@ -99,20 +100,14 @@ export async function deleteCooperative(coopId: string): Promise<{ ok: true; del
   const coop: any = cooperatives?.[0];
   if (!coop) throw new HttpError(404, "Coopérative introuvable.");
 
+  coop.tripVehicles = (coop.tripInstances ?? []).flatMap((t: any) => t.vehicles ?? []);
   const chunks: any[] = [];
+  if (coop.secrets?.id) chunks.push(adminDb.tx.coopSecrets[coop.secrets.id].delete());
   for (const ns of [...OPERATIONAL, ...CONFIG, "subscriptions", "requests"] as const) {
-    for (const it of (coop[ns] ?? [])) chunks.push((adminDb.tx as any)[ns][it.id].delete());
+    for (const it of (coop[ns] ?? [])) chunks.push((adminDb.tx as any)[ns === "holds" ? "seatHolds" : ns][it.id].delete());
   }
-  // Memberships + their login credentials (revoke owner & assistant access).
-  const emails = new Set<string>();
-  for (const m of (coop.members ?? [])) {
-    chunks.push(adminDb.tx.memberships[m.id].delete());
-    if (m.user?.email) emails.add(String(m.user.email).toLowerCase());
-  }
-  if (emails.size) {
-    const { credentials } = await adminDb.query({ credentials: { $: { where: { email: { $in: [...emails] } } } } });
-    for (const c of (credentials ?? [])) chunks.push(adminDb.tx.credentials[c.id].delete());
-  }
+  // Identities are shared between cooperatives; remove only these memberships.
+  for (const m of (coop.members ?? [])) chunks.push(adminDb.tx.memberships[m.id].delete());
   chunks.push(adminDb.tx.cooperatives[coopId].delete());
 
   await commitBatched(chunks);
@@ -144,7 +139,7 @@ export async function createCoopAccount(input: CreateCoopAccountInput): Promise<
   chunks.push(adminDb.tx.credentials[credId].update({ email, passwordHash: hashPassword(input.password), createdAt: now }));
   const { memberships } = await adminDb.query({ memberships: { $: { where: { "user.id": user.id, "cooperative.id": input.coopId } } } });
   const memId = memberships?.[0]?.id ?? id();
-  chunks.push(adminDb.tx.memberships[memId].update({ role, permissions: [], status: "active", createdAt: memberships?.[0]?.createdAt ?? now }).link({ cooperative: input.coopId, user: user.id }));
+  chunks.push(adminDb.tx.memberships[memId].update({ role, permissions: [], status: "active", access: { cooperativeId: input.coopId, role, permissions: [], status: "active" }, createdAt: memberships?.[0]?.createdAt ?? now }).link({ cooperative: input.coopId, user: user.id }));
 
   await adminDb.transact(chunks);
   return { ok: true };

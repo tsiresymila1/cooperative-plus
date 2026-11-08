@@ -33,3 +33,5 @@ export * from "./lib/subscription-client";
 export * from "./lib/use-payment-popup";
 export * from "./lib/activity";
 export * from "./lib/feedback-client";
+
+export * from "./lib/booking-client";

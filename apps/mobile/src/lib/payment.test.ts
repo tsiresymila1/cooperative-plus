@@ -7,64 +7,7 @@ const webBrowser = vi.hoisted(() => ({
 vi.mock("expo-web-browser", () => webBrowser);
 vi.stubEnv("EXPO_PUBLIC_API_URL", "https://mobile.test.invalid");
 
-const { initiatePapi, openPapi } = await import("./payment");
-
-describe("initiatePapi", () => {
-  const fetchMock = vi.fn();
-
-  beforeEach(() => {
-    fetchMock.mockReset();
-    vi.stubGlobal("fetch", fetchMock);
-  });
-
-  it("posts the booking details and returns the hosted payment URL", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: true,
-      json: vi.fn().mockResolvedValue({ url: "https://checkout.test.invalid/payment-1" }),
-    });
-
-    const input = {
-      bookingReference: "CP-ABC123",
-      instanceId: "trip-1",
-      coopId: "coop-1",
-      holdIds: ["hold-1"],
-      seatMeta: [{ label: "A1", passengerName: "Mialy", price: 25_000 }],
-      tripVehicleId: "vehicle-1",
-    };
-
-    await expect(initiatePapi(input)).resolves.toBe("https://checkout.test.invalid/payment-1");
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://mobile.test.invalid/api/payment/initiate",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      },
-    );
-  });
-
-  it("surfaces the provider error returned by the server", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockResolvedValue({ error: "Paiement refusé" }),
-    });
-
-    await expect(initiatePapi({ bookingReference: "CP-FAILED" })).rejects.toThrow(
-      "Paiement refusé",
-    );
-  });
-
-  it("uses a stable fallback when the response is not JSON", async () => {
-    fetchMock.mockResolvedValueOnce({
-      ok: false,
-      json: vi.fn().mockRejectedValue(new SyntaxError("invalid json")),
-    });
-
-    await expect(initiatePapi({ bookingReference: "CP-BADJSON" })).rejects.toThrow(
-      "Paiement en ligne indisponible",
-    );
-  });
-});
+const { openPapi } = await import("./payment");
 
 describe("openPapi", () => {
   beforeEach(() => {

@@ -138,7 +138,7 @@ function ProfileSections({ coop, coopId, userId }: { coop: any; coopId: string; 
 
   const onLogo = async (file: File) => {
     try {
-      const res = await db.storage.uploadFile(`coops/${coopId}/logo-${Date.now()}-${file.name}`, file);
+      const res = await db.storage.uploadFile(`users/${(await db.getAuth())!.id}/public/coops/${coopId}/logo-${Date.now()}-${file.name}`, file);
       const q = await db.queryOnce({ $files: { $: { where: { id: (res as any).data.id } } } });
       const url = q.data?.$files?.[0]?.url;
       if (url) await db.transact(db.tx.cooperatives[coopId].update({ logoUrl: url }));

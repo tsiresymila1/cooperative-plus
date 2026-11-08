@@ -64,6 +64,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Validate before publishing
+        run: pnpm run typecheck && pnpm test
+
       # versionCode: from manual input, else derived from the tag's run number.
       - name: Set versionCode
         working-directory: apps/mobile
@@ -137,11 +140,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.ver.outputs.tag }}
         run: |
+          RELEASE_ARGS=()
+          if [[ "$TAG" == *-* ]]; then RELEASE_ARGS+=(--prerelease); fi
           for i in 1 2 3; do
             if gh release view "$TAG" >/dev/null 2>&1; then
               gh release upload "$TAG" "cooperative-plus_${TAG}.apk" "cooperative-plus_${TAG}.aab" --clobber && exit 0
             else
-              gh release create "$TAG" "cooperative-plus_${TAG}.apk" "cooperative-plus_${TAG}.aab" --title "$TAG" --generate-notes && exit 0
+              gh release create "$TAG" "cooperative-plus_${TAG}.apk" "cooperative-plus_${TAG}.aab" --title "$TAG" --generate-notes "${RELEASE_ARGS[@]}" && exit 0
             fi
             echo "Attempt $i failed, retrying in 20s..."
             sleep 20
@@ -151,6 +156,7 @@ jobs:
   # ── Deploy: upload the built AAB to the Play Store (internal track). ──
   # Runs after `build`; skipped automatically when the Play secret is absent.
   deploy:
+    if: ${{ !contains(needs.build.outputs.tag, '-') }}
     needs: build
     runs-on: ubuntu-latest
     env:

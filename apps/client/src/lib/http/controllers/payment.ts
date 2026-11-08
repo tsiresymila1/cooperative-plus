@@ -1,28 +1,16 @@
+import { requireUser } from "../services/session";
 import { z } from "zod";
 import { factory } from "../factory";
 import { jsonBody } from "../validate";
 import { initiatePayment, handleWebhook } from "../services/payment";
 
-const seatMetaSchema = z.object({
-  label: z.string(),
-  passengerName: z.string(),
-  price: z.number(),
-});
-
-const initiateSchema = z.object({
-  bookingReference: z.string().min(1),
-  instanceId: z.string().optional(),
-  coopId: z.string().nullable().optional(),
-  holdIds: z.array(z.string()).optional(),
-  seatMeta: z.array(seatMetaSchema).optional(),
-  tripVehicleId: z.string().nullable().optional(),
-});
+const initiateSchema = z.object({ bookingReference: z.string().min(1).max(100) });
 
 export const initiateHandler = factory.createHandlers(
   jsonBody(initiateSchema),
   async (c) => {
-    const { bookingReference, instanceId, coopId, holdIds, seatMeta, tripVehicleId } = c.req.valid("json");
-    const result = await initiatePayment({ bookingReference, instanceId, coopId: coopId ?? null, holdIds, seatMeta, tripVehicleId: tripVehicleId ?? null });
+    const userId = await requireUser(c.req.header("Authorization"));
+    const result = await initiatePayment({ bookingReference: c.req.valid("json").bookingReference, userId });
     return c.json(result);
   },
 );

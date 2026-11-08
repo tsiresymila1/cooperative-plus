@@ -34,6 +34,7 @@ export const tripStatus: Record<string, { label: string; tone: Tone }> = {
 
 export const bookingStatus: Record<string, { label: string; tone: Tone }> = {
   pending: { label: "en attente", tone: "warning" },
+  payment_review: { label: "paiement à vérifier", tone: "warning" },
   confirmed: { label: "confirmé", tone: "success" },
   paid: { label: "payé", tone: "success" },
   cancelled: { label: "annulé", tone: "danger" },

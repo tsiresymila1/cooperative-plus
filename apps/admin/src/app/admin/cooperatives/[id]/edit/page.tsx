@@ -284,7 +284,7 @@ function InfoSections({ coop, plans, sub }: { coop: any; plans: any[]; sub: any 
 
   const onLogo = async (file: File) => {
     try {
-      const res = await db.storage.uploadFile(`coops/${coop.id}/logo-${Date.now()}-${file.name}`, file);
+      const res = await db.storage.uploadFile(`users/${(await db.getAuth())!.id}/public/coops/${coop.id}/logo-${Date.now()}-${file.name}`, file);
       const q = await db.queryOnce({ $files: { $: { where: { id: (res as any).data.id } } } });
       const url = q.data?.$files?.[0]?.url;
       if (url) await db.transact(tx.cooperatives[coop.id].update({ logoUrl: url }));

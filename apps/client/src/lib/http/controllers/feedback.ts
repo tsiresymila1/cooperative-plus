@@ -22,6 +22,7 @@ export const feedbackUploadHandler = factory.createHandlers(async (c) => {
   const form = await c.req.parseBody();
   const file = form.file;
   if (!(file instanceof File)) throw new HttpError(400, "Une image est requise.");
+  if (file.size > 5 * 1024 * 1024) throw new HttpError(400, "L’image doit peser au maximum 5 Mo.");
   const result = await uploadFeedbackScreenshot({
     bytes: new Uint8Array(await file.arrayBuffer()),
     contentType: file.type,

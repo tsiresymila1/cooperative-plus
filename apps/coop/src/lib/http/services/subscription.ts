@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { adminDb, id as newId } from "@cp/instant/admin";
 import { decrypt, hashSecret, isEncrypted, verifySecret } from "@cp/crypto";
 import { nextPeriodEnd } from "@cp/instant/subscription";
@@ -40,8 +41,8 @@ export async function initiateSubscriptionPayment(input: {
   // Short ref — PAPI's paymentreference column is small. Include the coop slug
   // (capped) for readability on the PAPI dashboard; webhook still matches on
   // providerRef, so uniqueness comes from the random suffix.
-  const slug = String(coop.slug ?? "coop").slice(0, 16);
-  const reference = `SUB-${slug}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+  const slug = String(coop.slug ?? "coop").slice(0, 8);
+  const reference = `SUB-${slug}-${randomUUID().replaceAll("-", "").slice(0, 12).toUpperCase()}`;
   const sub = (coop.subscriptions ?? [])[0];
 
   const papiRes = await fetch(PAPI_URL, {
@@ -124,7 +125,10 @@ export async function handleSubscriptionWebhook(body: PapiWebhookPayload): Promi
   )
     throw new HttpError(401, "notificationToken invalide");
 
-  if (payment.status === "paid" || payment.status === "failed") return; // authenticated idempotency
+  if (payment.status === "paid") return; // authenticated idempotency
+
+  if (papiStatus === "SUCCESS" && ((body.amount != null && body.amount !== payment.amount) || (body.currency != null && body.currency !== payment.currency)))
+    throw new HttpError(409, "Montant ou devise du paiement incorrect.");
 
   const meta = (payment.meta as any) ?? {};
   const sub = (payment as any).subscription;
@@ -139,8 +143,8 @@ export async function handleSubscriptionWebhook(body: PapiWebhookPayload): Promi
         status: "paid",
         paidAt: Date.now(),
         ...(body.amount != null ? { amount: body.amount } : {}),
-        ...(body.paymentReference ? { providerRef: body.paymentReference } : {}),
-        meta: { ...meta, merchantRef: reference, papiMessage: body.message },
+
+        meta: { ...meta, merchantRef: reference, papiMessage: body.message, ...(body.paymentReference ? { providerPaymentRef: body.paymentReference } : {}) },
       }),
     );
     if (sub?.id) {

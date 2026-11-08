@@ -1,4 +1,5 @@
 "use client";
+import { bookingRequest } from "@cp/ui";
 import { use, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -50,17 +51,7 @@ export default function Confirmation({
   const payOnline = async () => {
     setPaying(true);
     try {
-      const res = await fetch("/api/payment/initiate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingReference: reference }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.error ?? "Erreur paiement");
-        setPaying(false);
-        return;
-      }
+      const data = await bookingRequest<{ url: string }>("payment/initiate", { bookingReference: reference });
       window.location.href = data.url;
     } catch {
       toast.error("Erreur réseau");
@@ -110,7 +101,10 @@ export default function Confirmation({
   const status = bk?.status ?? "";
   const dead = ["cancelled", "expired", "refunded", "no_show"].includes(status);
   const awaitingPayment = status === "pending" && paymentParam === "success";
-  const head = dead
+  const head = status === "payment_review"
+    ? { Icon: Clock, wrap: "bg-gold/15 text-gold", title: "Paiement reçu · réservation à vérifier",
+        sub: "Contactez la coopérative pour confirmer vos places ou demander un remboursement." }
+    : dead
     ? {
         Icon: XCircle,
         wrap: "bg-sale/15 text-sale",
@@ -144,6 +138,7 @@ export default function Confirmation({
             sub: "Présentez le QR code à l'embarquement.",
           };
   const STATUS_FR: Record<string, string> = {
+    payment_review: "Paiement à vérifier",
     pending: "En attente",
     confirmed: "Confirmé",
     paid: "Payé",

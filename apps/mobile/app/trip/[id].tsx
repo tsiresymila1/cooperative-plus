@@ -1,3 +1,4 @@
+import { bookingRequest } from "@/lib/booking";
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,15 +19,13 @@ import { TagBadge } from "@/components/tag-badge";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
 import { cn, fmtMoney } from "@/lib/cn";
-import { db, id, type Chunk } from "@/lib/db";
+import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { useSelection, type HeldSeat } from "@/lib/selection";
 import {
   fmtDateKey,
   fmtTime,
-  HOLD_DURATION_MS,
   parseSeatLayout,
-  seatKeyFor,
   seatLabel,
   type SeatCell,
 } from "@/lib/domain";
@@ -115,47 +114,10 @@ export default function TripDetail() {
     if (selectedLabels.length === 0) return;
 
     setHolding(true);
-    const expiresAt = Date.now() + HOLD_DURATION_MS;
-    const created: HeldSeat[] = [];
     try {
-      // seatKey is .unique(): an EXPIRED hold left behind by an abandoned
-      // session still occupies the key and would block re-holding the (now free)
-      // seat. Fetch those stale holds so we can clear them in the same tx.
-      const { data: stale } = await db.queryOnce({
-        tripInstances: {
-          $: { where: { id: trip.id } },
-          holds: { $: { where: { expiresAt: { $lte: new Date() } } } },
-        },
+      const { seats: created, expiresAt } = await bookingRequest<{ seats: HeldSeat[]; expiresAt: number }>("booking/hold", {
+        instanceId: trip.id, tripVehicleId: slot.isVirtual ? null : slot.id, labels: selectedLabels,
       });
-      const staleByLabel = new Map<string, string>();
-      for (const h of stale?.tripInstances?.[0]?.holds ?? [])
-        staleByLabel.set(h.seatLabel, h.id);
-
-      // Create one hold per seat. A duplicate create on an ACTIVE key throws
-      // (seat just taken by someone else).
-      for (const label of selectedLabels) {
-        const holdId = id();
-        const seatKey = seatKeyFor(slot.id, label);
-        const chunks: Chunk[] = [];
-        const staleId = staleByLabel.get(label);
-        if (staleId) chunks.push(db.tx.seatHolds[staleId]!.delete());
-        chunks.push(
-          db.tx.seatHolds[holdId]!.update({
-            seatKey,
-            seatLabel: label,
-            expiresAt,
-            createdAt: Date.now(),
-          }).link({ tripInstance: trip.id, user: user.id, ...(slot.isVirtual ? {} : { tripVehicle: slot.id }) }),
-        );
-        if (trip.cooperative?.id) {
-          chunks.push(
-            db.tx.seatHolds[holdId]!.link({ cooperative: trip.cooperative.id }),
-          );
-        }
-        await db.transact(chunks);
-        created.push({ holdId, seatLabel: label, seatKey });
-      }
-
       setSelection({
         tripInstanceId: trip.id,
         tripVehicleId: slot.isVirtual ? null : slot.id,
@@ -173,12 +135,6 @@ export default function TripDetail() {
       });
       router.push("/checkout");
     } catch (e) {
-      // Roll back any holds we did manage to create, then inform the user.
-      if (created.length > 0) {
-        await db
-          .transact(created.map((h) => db.tx.seatHolds[h.holdId]!.delete()))
-          .catch(() => {});
-      }
       setSelected({});
       console.warn("[trip] hold failed:", e);
       setNotice({

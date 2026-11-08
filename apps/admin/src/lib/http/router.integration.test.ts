@@ -1,3 +1,4 @@
+vi.mock("@cp/instant/rate-limit", () => ({ consumeRateLimit: vi.fn().mockResolvedValue(true) }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const authService = vi.hoisted(() => ({ passwordSignIn: vi.fn() }));

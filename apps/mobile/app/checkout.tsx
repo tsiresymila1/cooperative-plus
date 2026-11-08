@@ -1,3 +1,4 @@
+import { bookingRequest } from "@/lib/booking";
 import { useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -10,12 +11,12 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MessageDialog, type Notice } from "@/components/ui/message-dialog";
 import { useColors } from "@/lib/colors";
 import { scheduleDepartureReminders } from "@/lib/notifications";
-import { initiatePapi, openPapi } from "@/lib/payment";
+import { openPapi } from "@/lib/payment";
 import { cn, fmtMoney } from "@/lib/cn";
-import { db, id, type Chunk } from "@/lib/db";
+import { db } from "@/lib/db";
 import { useAuth } from "@/lib/auth";
 import { useSelection } from "@/lib/selection";
-import { fmtCountdown, makeQrToken, makeReference } from "@/lib/domain";
+import { fmtCountdown } from "@/lib/domain";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 const isValidPhone = (s: string) => {
@@ -87,9 +88,9 @@ export default function Checkout() {
     Array.isArray(summaryTrip?.cooperative?.paymentMethods) && (summaryTrip!.cooperative!.paymentMethods as string[]).length
       ? (summaryTrip!.cooperative!.paymentMethods as string[])
       : ["mobile_money", "card", "cash"];
-  const methods = accepted.map((key) => ({ key, ...metaFor(key) }));
+  const methods = accepted.filter(key => ["cash", "mobile_money"].includes(key)).map((key) => ({ key, ...metaFor(key) }));
   useEffect(() => {
-    if (methods.length && !accepted.includes(method)) setMethod(methods[0]!.key);
+    if (methods.length && !methods.some(m => m.key === method)) setMethod(methods[0]!.key);
   }, [accepted.join(",")]);
 
   // Release the server-side seat holds (so the seats free up immediately).
@@ -154,155 +155,26 @@ export default function Checkout() {
   async function confirm() {
     if (!selection || !canSubmit) return;
     if (!isValidPhone(phone)) {
-      setConfirmOpen(false);
+      if (!methods.length) { setNotice({ title: "Paiement indisponible", message: "Aucun moyen de paiement disponible." }); return; }
+    setConfirmOpen(false);
       setNotice({ title: "Numéro invalide", message: "Vérifiez le numéro de téléphone du passager." });
       return;
     }
+    if (!methods.length) { setNotice({ title: "Paiement indisponible", message: "Aucun moyen de paiement disponible." }); return; }
     setConfirmOpen(false);
     setSubmitting(true);
 
-    const bookingId = id();
-    const paymentId = id();
-    const reference = makeReference();
-    const now = Date.now();
-    const isOnline = method === "mobile_money"; // PAPI hosted payment
-    const isCash = method === "cash";
-    const chosen = metaFor(method);
-
     try {
-      // ── Online (Mobile Money via PAPI) ─────────────────────────────────
-      // Booking stays `pending` and the seat holds are extended to the payment
-      // window. NO tickets here: the PAPI webhook (client web app) issues them
-      // on SUCCESS. The confirmation screen reflects the status in real time.
-      if (isOnline) {
-        const holdExpiresAt = now + 30 * 60 * 1000; // PAPI validDuration = 30 min
-        const holdIds = selection.seats.map((s) => s.holdId);
-        const seatMeta = selection.seats.map((s) => ({
-          label: s.seatLabel,
-          passengerName: name.trim(),
-          price: selection.price,
-        }));
-
-        let booking = db.tx.bookings[bookingId]!
-          .update({
-            reference,
-            source: "mobile",
-            contactName: name.trim(),
-            contactPhone: phone.trim(),
-            contactEmail: email.trim() || undefined,
-            seatCount,
-            totalAmount: total,
-            currency: selection.currency,
-            status: "pending",
-            holdExpiresAt,
-            createdAt: now,
-          })
-          .link({ tripInstance: selection.tripInstanceId });
-        if (user?.id) booking = booking.link({ customer: user.id });
-        if (selection.cooperativeId) booking = booking.link({ cooperative: selection.cooperativeId });
-
-        // Extend the holds to the payment window. `update` upserts, so include the
-        // required attrs — the hold may have been GC'd after the 5-min selection TTL.
-        const online: Chunk[] = [booking];
-        for (const seat of selection.seats) {
-          online.push(
-            db.tx.seatHolds[seat.holdId]!.update({
-              seatKey: seat.seatKey,
-              seatLabel: seat.seatLabel,
-              expiresAt: holdExpiresAt,
-              createdAt: now,
-            }),
-          );
-        }
-        await db.transact(online);
-
-        const url = await initiatePapi({
-          bookingReference: reference,
-          instanceId: selection.tripInstanceId,
-          coopId: selection.cooperativeId ?? null,
-          holdIds,
-          seatMeta,
-          tripVehicleId: selection.tripVehicleId ?? null,
-        });
-
-        // Holds are intentionally kept (webhook consumes them) — don't release on unmount.
-        completedRef.current = true;
-        scheduleDepartureReminders({
-          route: `${selection.originName} → ${selection.destName}`,
-          departureAt: selection.departureAt,
-          reference,
-        }).catch(() => {});
-        setSelection(null);
+      const { bookingId, reference } = await bookingRequest<{ bookingId: string; reference: string }>("booking/create", {
+        instanceId: selection.tripInstanceId, tripVehicleId: selection.tripVehicleId ?? null,
+        holdIds: selection.seats.map(s => s.holdId), seats: selection.seats.map(s => ({ label: s.seatLabel, passengerName: name.trim() })),
+        contactName: name.trim(), contactPhone: phone.trim(), contactEmail: email.trim(), method, source: "mobile",
+      });
+      completedRef.current = true;
+      if (method === "mobile_money") {
+        const { url } = await bookingRequest<{ url: string }>("payment/initiate", { bookingReference: reference });
         await openPapi(url);
-        router.replace({ pathname: "/confirmation/[id]", params: { id: bookingId } });
-        return;
       }
-
-      // ── Offline (cash / card) ──────────────────────────────────────────
-      // Booking (+ customer / cooperative links).
-      let booking = db.tx.bookings[bookingId]!
-        .update({
-          reference,
-          source: "mobile",
-          contactName: name.trim(),
-          contactPhone: phone.trim(),
-          contactEmail: email.trim() || undefined,
-          seatCount,
-          totalAmount: total,
-          currency: selection.currency,
-          status: isCash ? "pending" : "confirmed",
-          createdAt: now,
-        })
-        .link({ tripInstance: selection.tripInstanceId });
-      if (user?.id) booking = booking.link({ customer: user.id });
-      if (selection.cooperativeId) booking = booking.link({ cooperative: selection.cooperativeId });
-
-      // Payment.
-      let payment = db.tx.payments[paymentId]!
-        .update({
-          method,
-          provider: chosen.provider,
-          amount: total,
-          currency: selection.currency,
-          status: isCash ? "pending" : "paid",
-          paidAt: isCash ? undefined : now,
-          createdAt: now,
-        })
-        .link({ booking: bookingId });
-      if (selection.cooperativeId) payment = payment.link({ cooperative: selection.cooperativeId });
-
-      // One atomic transaction: booking + payment + tickets (unique seatKey =
-      // hard overbooking guard) + hold cleanup. We do NOT touch tripInstances:
-      // riders lack update perms on it, and tickets are the source of truth for
-      // occupancy (availability is derived from the ticket count).
-      const chunks: Chunk[] = [booking, payment];
-
-      // Tickets — one per held seat, each with a unique seatKey + qrToken.
-      for (const seat of selection.seats) {
-        const ticketId = id();
-        let t = db.tx.tickets[ticketId]!
-          .update({
-            seatKey: seat.seatKey,
-            seatLabel: seat.seatLabel,
-            passengerName: name.trim(),
-            passengerPhone: phone.trim() || undefined,
-            price: selection.price,
-            qrToken: makeQrToken(),
-            createdAt: now,
-          })
-          .link({ booking: bookingId, tripInstance: selection.tripInstanceId });
-        if (selection.cooperativeId) t = t.link({ cooperative: selection.cooperativeId });
-        if (selection.tripVehicleId) t = t.link({ tripVehicle: selection.tripVehicleId });
-        chunks.push(t);
-      }
-
-      // Drop the now-consumed holds.
-      for (const seat of selection.seats) {
-        chunks.push(db.tx.seatHolds[seat.holdId]!.delete());
-      }
-
-      await db.transact(chunks);
-
       // Local departure reminders (24h + 1h before) — no server / no push token.
       scheduleDepartureReminders({
         route: `${selection.originName} → ${selection.destName}`,

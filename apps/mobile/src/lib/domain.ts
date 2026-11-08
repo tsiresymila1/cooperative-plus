@@ -164,6 +164,8 @@ export function bookingStatusFr(status: string): { label: string; tone: BadgeTon
       return { label: "Payé", tone: "success" };
     case "confirmed":
       return { label: "Confirmé", tone: "success" };
+    case "payment_review":
+      return { label: "Paiement à vérifier", tone: "warning" };
     case "pending":
       return { label: "À payer à bord", tone: "warning" };
     case "cancelled":

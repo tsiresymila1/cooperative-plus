@@ -7,39 +7,43 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 const PAPI_FALLBACK_KEY = process.env.PAPI_API_KEY;
 const TEST_MODE = process.env.PAPI_TEST_MODE === "true";
 
-type SeatMeta = { label: string; passengerName: string; price: number };
+type SeatMeta = { label: string; passengerName: string; price: number; ticketId?: string };
 
-type InitiateInput = {
-  bookingReference: string;
-  instanceId?: string;
-  coopId?: string | null;
-  holdIds?: string[];
-  seatMeta?: SeatMeta[];
-  tripVehicleId?: string | null;
-};
+type InitiateInput = { bookingReference: string; userId: string };
 
 export async function initiatePayment(input: InitiateInput): Promise<{ url: string }> {
-  const { bookingReference, instanceId, coopId, holdIds = [], seatMeta = [], tripVehicleId = null } = input;
-
+  const { bookingReference, userId } = input;
   const { bookings } = await adminDb.query({
     bookings: {
       $: { where: { reference: bookingReference } },
       cooperative: { secrets: {} },
-      tripInstance: {},
+      tripInstance: {}, customer: {}, tickets: {}, payments: {},
     },
   });
 
   const booking = bookings?.[0];
   if (!booking) throw new HttpError(404, "Réservation introuvable");
-  if (["confirmed", "paid"].includes(booking.status))
-    throw new HttpError(409, "Réservation déjà payée");
-
-  const resolvedInstanceId = instanceId ?? (booking as any).tripInstance?.id ?? "";
-  const resolvedCoopId = coopId ?? (booking as any).cooperative?.id ?? null;
-
+  if (booking.customer?.id !== userId) throw new HttpError(403, "Cette réservation ne vous appartient pas.");
+  if (booking.status !== "pending") throw new HttpError(409, "Réservation non payable.");
+  const instance = booking.tripInstance;
+  if (!instance || !Number.isSafeInteger(instance.price) || instance.price < 0 ||
+      booking.totalAmount !== instance.price * booking.seatCount || booking.currency !== instance.currency)
+    throw new HttpError(409, "Le tarif doit être vérifié par la coopérative.");
+  const resolvedInstanceId = instance.id;
+  const resolvedCoopId = booking.cooperative?.id;
+  const tripVehicleId = booking.tripVehicleId ?? null;
+  const seatMeta = (booking.seatMeta ?? []) as SeatMeta[];
+  const holdIds = (booking.holdIds ?? []) as string[];
+  if (!booking.tickets.length && (!seatMeta.length || !booking.holdExpiresAt || +new Date(booking.holdExpiresAt) <= Date.now()))
+    throw new HttpError(409, "Votre réservation a expiré.");
+  const existing = booking.payments.find(p => p.status === "pending" && (p.meta as any)?.paymentUrl &&
+    (p.meta as any)?.validUntil > Date.now());
+  if (existing) return { url: (existing.meta as any).paymentUrl };
+  const paymentId = newId();
+  const merchantRef = `PAY-${paymentId.replaceAll("-", "").slice(0, 16)}`;
   const coop = (booking as any).cooperative;
   const rawKey = (coop?.secrets as any)?.papiApiKey ?? PAPI_FALLBACK_KEY;
-const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
+  const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
   if (!papiApiKey)
     throw new HttpError(422, "Paiement en ligne non configuré pour cette coopérative");
 
@@ -47,10 +51,11 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
   const papiRes = await fetch(PAPI_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json", Token: papiApiKey },
+    signal: AbortSignal.timeout(15_000),
     body: JSON.stringify({
       amount: booking.totalAmount,
       clientName: booking.contactName,
-      reference: bookingReference,
+      reference: merchantRef,
       description: `Réservation ${bookingReference}`,
       successUrl: `${APP_URL}/bookings/${bookingReference}?payment=success`,
       failureUrl: `${APP_URL}/bookings/${bookingReference}?payment=failed`,
@@ -74,7 +79,6 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
   )
     throw new HttpError(502, papiData?.message ?? "Erreur PAPI");
 
-  const paymentId = newId();
   await adminDb.transact(
     adminDb.tx.payments[paymentId]
       .update({
@@ -83,15 +87,16 @@ const papiApiKey = rawKey && isEncrypted(rawKey) ? decrypt(rawKey) : rawKey;
         amount: booking.totalAmount,
         currency: booking.currency,
         status: "pending",
-        providerRef: bookingReference,
+        providerRef: merchantRef,
         meta: {
           testMode: TEST_MODE,
+          merchantRef, paymentUrl: papiData.data.paymentLink, validUntil: Date.now() + 30 * 60_000,
           notificationTokenHash: hashSecret(notificationToken),
           // Stored for webhook to create tickets on SUCCESS (empty = tickets already exist)
           instanceId: resolvedInstanceId,
           coopId: resolvedCoopId,
           holdIds,
-          seatMeta,
+          seatMeta: booking.tickets.length ? [] : seatMeta.map(s => ({ ...s, ticketId: newId() })),
           tripVehicleId,
         },
         createdAt: Date.now(),
@@ -124,31 +129,36 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
 
   if (!reference || !papiStatus) throw new HttpError(400, "Payload invalide");
 
-  const { bookings } = await adminDb.query({
-    bookings: { $: { where: { reference } }, payments: {} },
+  const { payments } = await adminDb.query({ payments: { $: { where: { providerRef: reference } }, booking: { tickets: {} } } });
+  // Older payment links used the booking reference rather than a per-attempt reference.
+  const legacy = payments.length ? [] : (await adminDb.query({ bookings: { $: { where: { reference } }, payments: {}, tickets: {} } })).bookings;
+  const candidates = payments.length ? payments : (legacy[0]?.payments ?? []);
+  const payment = candidates.find(p => {
+    const hash = (p.meta as any)?.notificationTokenHash;
+    return typeof hash === "string" && typeof incomingToken === "string" && verifySecret(incomingToken, hash);
   });
-
-  const booking = bookings?.[0];
+  if (!payment) throw new HttpError(401, "notificationToken invalide");
+  const booking = (payment as any).booking ?? legacy[0];
   if (!booking) throw new HttpError(404, "Réservation introuvable");
-
-  const payment = (booking.payments ?? [])[0];
-
-  // Verify notificationToken to reject spoofed webhooks
-  const storedTokenHash = (payment?.meta as any)?.notificationTokenHash;
-  if (
-    typeof storedTokenHash !== "string" ||
-    !incomingToken ||
-    !verifySecret(incomingToken, storedTokenHash)
-  )
-    throw new HttpError(401, "notificationToken invalide");
-
+  if (!["SUCCESS", "FAILED", "PENDING"].includes(papiStatus)) throw new HttpError(400, "Statut invalide");
+  if (papiStatus === "SUCCESS" && ((body.amount != null && body.amount !== payment.amount) ||
+      (body.currency != null && body.currency !== payment.currency)))
+    throw new HttpError(409, "Montant ou devise du paiement incorrect.");
   // Idempotency — already in terminal state, skip only after authentication.
-  if (payment?.status === "paid" || payment?.status === "failed") return;
+  if (payment?.status === "paid") return;
 
   const paymentStatus =
     papiStatus === "SUCCESS" ? "paid" : papiStatus === "FAILED" ? "failed" : "pending";
   const bookingStatus =
-    papiStatus === "SUCCESS" ? "paid" : papiStatus === "FAILED" ? "pending" : booking.status;
+    papiStatus === "SUCCESS" ? "paid" : booking.status;
+
+  if (papiStatus === "SUCCESS" && ["cancelled", "expired", "refunded", "paid", "confirmed"].includes(booking.status)) {
+    await adminDb.transact([
+      adminDb.tx.payments[payment.id].update({ status: "paid", paidAt: Date.now(), meta: { ...(payment.meta as any), allocationError: true } }),
+      adminDb.tx.bookings[booking.id].update({ status: "payment_review" }),
+    ]);
+    return;
+  }
 
   const chunks: any[] = [];
 
@@ -159,8 +169,6 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
         // Overwrite with exact amount PAPI confirms (catches rounding edge cases)
         ...(body.amount != null ? { amount: body.amount } : {}),
         ...(body.currency ? { currency: body.currency } : {}),
-        // Store PAPI's own transaction reference for reconciliation
-        ...(body.paymentReference ? { providerRef: body.paymentReference } : {}),
         ...(papiStatus === "SUCCESS" ? { paidAt: Date.now() } : {}),
         meta: {
           ...(payment.meta ?? {}),
@@ -171,6 +179,7 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
           payerPhone: body.payerPhone,
           papiMessage: body.message,
           merchantRef: reference,
+          ...(body.paymentReference ? { providerPaymentRef: body.paymentReference } : {}),
         },
       }),
     );
@@ -188,7 +197,7 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
     const slotId = tripVehicleId || instanceId;
 
     for (const seat of seatMeta) {
-      const ticketId = newId();
+      const ticketId = seat.ticketId ?? newId();
       chunks.push(
         adminDb.tx.tickets[ticketId]
           .update({
@@ -214,5 +223,18 @@ export async function handleWebhook(body: PapiWebhookPayload): Promise<void> {
   }
 
   chunks.push(adminDb.tx.bookings[booking.id].update({ status: bookingStatus }));
-  await adminDb.transact(chunks);
+  try {
+    await adminDb.transact(chunks);
+  } catch (error) {
+    if (papiStatus !== "SUCCESS") throw error;
+    const { tickets } = await adminDb.query({ tickets: { $: { where: { "booking.id": booking.id } } } });
+    const expected = ((payment.meta as any)?.seatMeta ?? []).map((s: SeatMeta) => s.ticketId);
+    if (expected.length && expected.every((ticketId: string) => tickets.some(t => t.id === ticketId))) return;
+    await adminDb.transact([
+      adminDb.tx.payments[payment.id].update({ status: "paid", paidAt: Date.now(),
+        meta: { ...(payment.meta as any), merchantRef: reference, allocationError: true } }),
+      adminDb.tx.bookings[booking.id].update({ status: "payment_review" }),
+    ]);
+    console.error("Paid booking requires manual allocation/refund", { bookingId: booking.id, paymentId: payment.id });
+  }
 }

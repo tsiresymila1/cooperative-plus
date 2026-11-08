@@ -8,6 +8,7 @@
     "./schema": "./src/schema.ts",
     "./perms": "./src/perms.ts",
     "./admin": "./src/admin.ts",
+    "./rate-limit": "./src/rate-limit.ts",
     "./password": "./src/password.ts",
     "./subscription": "./src/subscription.ts"
   },
@@ -19,6 +20,7 @@
     "make-owner": "tsx src/make-owner.ts",
     "grant": "tsx src/grant.ts",
     "set-password": "tsx src/set-password.ts",
+    "migrate-membership-access": "tsx --env-file=../../.env src/migrate-membership-access.ts",
     "migrate-papi-tokens": "tsx --env-file=../../.env src/migrate-papi-notification-tokens.ts"
   },
   "dependencies": {

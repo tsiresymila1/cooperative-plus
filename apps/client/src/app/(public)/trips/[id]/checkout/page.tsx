@@ -1,9 +1,10 @@
 "use client";
+import { bookingRequest } from "@cp/ui";
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
 import { Banknote, CreditCard, Smartphone, Lock } from "lucide-react";
-import { db, Field, id, Input, isValidPhone, slotSeatKey, toast } from "@cp/ui";
+import { db, Field, Input, isValidPhone, toast } from "@cp/ui";
 import { useBookingDraft } from "@/lib/booking-store";
 import { cn, fmtMoney } from "@cp/ui";
 
@@ -22,8 +23,6 @@ const buildMethods = (accepted: string[]) =>
     const meta = METHOD_META[id] ?? { provider: "manual", desc: "", icon: Banknote };
     return { id, provider: meta.provider, label: methodLabel(id), desc: meta.desc, icon: meta.icon };
   });
-
-const ref = () => "CP-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 
 const btnGold =
   "inline-flex h-14 w-full items-center justify-center gap-2 px-6 font-display text-[15px] font-semibold uppercase tracking-[0.5px] transition-colors duration-200 bg-gold text-navy hover:bg-navy hover:text-white disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-gold disabled:hover:text-navy";
@@ -47,13 +46,13 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
     Array.isArray(trip?.cooperative?.paymentMethods) && trip.cooperative.paymentMethods.length
       ? (trip.cooperative.paymentMethods as string[])
       : ["cash", "mobile_money", "card"];
-  const methods = buildMethods(accepted);
+  const methods = buildMethods(accepted.filter(m => ["cash", "mobile_money"].includes(m)));
 
   // Default the selected method to the first accepted one once known, and
   // reset if the current selection is no longer offered.
   useEffect(() => {
     if (!accepted.length) return;
-    if (!method || !accepted.includes(method)) setMethod(accepted[0]);
+    if (!method || !methods.some(m => m.id === method)) setMethod(methods[0]?.id ?? "");
   }, [accepted.join(","), method]);
 
   const seats = [...draft.seats].sort();
@@ -95,60 +94,22 @@ export default function Checkout({ params }: { params: Promise<{ id: string }> }
   }
 
   const total = (trip?.price ?? draft.price) * seats.length;
-  const m = methods.find((x) => x.id === method) ?? methods[0];
 
   const pay = async () => {
     if (!trip) return;
+    if (!methods.length) { toast.error("Aucun moyen de paiement disponible."); return; }
     if (!isValidPhone(contact.phone)) { toast.error("Numéro de téléphone invalide"); return; }
     setLoading(true);
-    const reference = ref();
-    const bookingId = id();
     const isOnline = method === "mobile_money";
-    // PAPI validDuration = 30 min — holds stay active until payment confirmed or expired
-    const holdExpiresAt = Date.now() + 30 * 60 * 1000;
-    const holdIds = Object.values(draft.holds);
-    const coopId = draft.coopId;
-    // Seat/passenger info passed to initiate API → stored in payment.meta for webhook
-    const seatMeta = seats.map((label) => ({
-      label,
-      passengerName: passengers[label] || contact.name,
-      price: trip.price,
-    }));
     try {
-      await db.transact([
-        db.tx.bookings[bookingId].update({
-          reference, source: "customer", contactName: contact.name, contactPhone: contact.phone,
-          contactEmail: contact.email || undefined, seatCount: seats.length, totalAmount: total,
-          currency: trip.currency, status: "pending", createdAt: Date.now(),
-          ...(isOnline ? { holdExpiresAt } : {}),
-        }).link({ cooperative: draft.coopId ?? undefined, tripInstance: instanceId, customer: user?.id }),
-        // Online: extend holds to match payment window — seats blocked until paid or expired.
-        // Cash: create tickets + delete holds immediately.
-        ...(!isOnline ? [
-          ...seats.map((label) =>
-            db.tx.tickets[id()].update({
-              seatKey: slotSeatKey(draft.slotId ?? instanceId, label), seatLabel: label,
-              passengerName: passengers[label] || contact.name, price: trip.price,
-              qrToken: id(), createdAt: Date.now(),
-            }).link({ booking: bookingId, cooperative: draft.coopId ?? undefined, tripInstance: instanceId, ...(draft.slotIsVirtual || !draft.slotId ? {} : { tripVehicle: draft.slotId }) })),
-          ...holdIds.map((hid) => db.tx.seatHolds[hid].delete()),
-        ] : [
-          ...holdIds.map((hid) => db.tx.seatHolds[hid].update({ expiresAt: holdExpiresAt })),
-        ]),
-      ]);
+      const { reference } = await bookingRequest<{ reference: string }>("booking/create", {
+        instanceId, tripVehicleId: draft.slotIsVirtual ? null : draft.slotId,
+        holdIds: Object.values(draft.holds), seats: seats.map(label => ({ label, passengerName: passengers[label] || contact.name })),
+        contactName: contact.name, contactPhone: contact.phone, contactEmail: contact.email,
+        method, source: "customer",
+      });
       if (isOnline) {
-        const res = await fetch("/api/payment/initiate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bookingReference: reference, seatMeta, holdIds, instanceId, coopId, tripVehicleId: draft.slotIsVirtual ? null : draft.slotId }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          draft.reset();
-          toast.error(data.error ?? "Erreur paiement en ligne");
-          router.push(`/bookings/${reference}`);
-          return;
-        }
+        const data = await bookingRequest<{ url: string }>("payment/initiate", { bookingReference: reference });
         // Don't reset draft before redirect — would flash "Aucun siège" during navigation.
         // Draft clears naturally when user leaves the page.
         window.location.href = data.url;
