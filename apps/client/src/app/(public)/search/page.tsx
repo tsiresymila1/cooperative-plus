@@ -33,7 +33,8 @@ function SearchInner() {
   // not silently default to one fake Antananarivo → Mahajanga search.
   const from = sp.get("from") || "";
   const to = sp.get("to") || "";
-  const date = toDate(sp.get("date"));
+  const dateParam = sp.get("date");
+  const date = toDate(dateParam);
   const pax = Number(sp.get("pax")) || 1;
   const [sort, setSort] = useState<"depart" | "price" | "seats">("depart");
 
@@ -45,7 +46,7 @@ function SearchInner() {
         where: {
           ...(from ? { originName: from } : {}),
           ...(to ? { destName: to } : {}),
-          departDate: dk,
+          ...(dateParam ? { departDate: dk } : {}),
           status: "scheduled",
         },
         order: { departureAt: "asc" },

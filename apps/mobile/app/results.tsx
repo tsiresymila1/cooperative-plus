@@ -30,7 +30,7 @@ export default function Results() {
   const { isLoading, error, data } = db.useQuery({
     tripInstances: {
       $: {
-        where: { originName: origin, destName: dest, departDate: date, status: "scheduled" },
+        where: { originName: origin, destName: dest, ...(date ? { departDate: date } : {}), status: "scheduled" },
         order: { departureAt: "asc" },
       },
       route: {},
@@ -70,7 +70,7 @@ export default function Results() {
           <Text className="flex-1 font-display text-2xl text-laterite" numberOfLines={1}>{dest}</Text>
         </View>
         <Text className="mt-1.5 font-code text-xs text-white/70">
-          {fmtDateKey(date)}
+          {date ? fmtDateKey(date) : "Toutes les dates"}
           {!isLoading && !error ? ` · ${trips.length} départ${trips.length > 1 ? "s" : ""}` : ""}
         </Text>
       </View>
