@@ -126,8 +126,8 @@ export default function TripDetail({
       const holds = Object.fromEntries(result.seats.map(s => [s.seatLabel, s.holdId]));
       draft.setHolds(holds);
       router.push(`/trips/${instanceId}/checkout`);
-    } catch {
-      toast.error("Un siège vient d'être réservé. Vérifiez votre sélection.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Impossible de réserver ces sièges.");
       setReserving(false);
     }
   };

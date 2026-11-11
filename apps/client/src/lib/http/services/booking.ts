@@ -41,7 +41,7 @@ export async function holdSeats(userId: string, input: { instanceId: string; tri
     const { seatHolds, tickets } = await adminDb.query({
       seatHolds: { $: { where: { seatKey } }, user: {} }, tickets: { $: { where: { seatKey } } },
     });
-    if (tickets.length || seatHolds.some(h => +new Date(h.expiresAt) > now && h.user?.id !== userId))
+    if (tickets.length || seatHolds.some(h => +new Date(h.expiresAt) > now && (h.user?.id ?? h.sessionToken) !== userId))
       throw new HttpError(409, "Un siège vient d'être réservé.");
     for (const h of seatHolds) chunks.push(adminDb.tx.seatHolds[h.id].delete());
     const holdId = id();
