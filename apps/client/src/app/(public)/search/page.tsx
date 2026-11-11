@@ -37,6 +37,8 @@ function SearchInner() {
   const date = toDate(dateParam);
   const pax = Number(sp.get("pax")) || 1;
   const [sort, setSort] = useState<"depart" | "price" | "seats">("depart");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   const dk = dateKey(date);
   // live results react to from/to/date — origin/dest filters only apply when set.
@@ -73,6 +75,8 @@ function SearchInner() {
         : sort === "seats" ? b.avail - a.avail
           : +new Date(a.departureAt) - +new Date(b.departureAt));
   }, [data, pax, sort, now]);
+  const pageCount = Math.ceil(results.length / pageSize);
+  const visibleResults = results.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <main>
@@ -101,7 +105,7 @@ function SearchInner() {
                 <span className="ml-3 font-body text-[14px] font-light normal-case text-navy/60">{from} → {to}</span>
               ) : null}
             </p>
-            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+            <Select value={sort} onValueChange={(v) => { setSort(v as typeof sort); setPage(1); }}>
               <SelectTrigger className="h-10 w-48 rounded-none border-navy/10 font-body text-[14px] text-navy"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="depart">Heure de départ</SelectItem>
@@ -123,7 +127,7 @@ function SearchInner() {
             </div>
           ) : (
             <ul className="space-y-[14px]">
-              {results.map((t) => {
+              {visibleResults.map((t) => {
                 const duration = fmtDuration((t as any).route?.durationMin) ?? t.coopName;
                 return (
                   <li
@@ -182,6 +186,13 @@ function SearchInner() {
                 );
               })}
             </ul>
+          )}
+          {!isLoading && pageCount > 1 && (
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <button disabled={page === 1} onClick={() => setPage(page - 1)} className="border border-navy/15 px-4 py-2 font-display text-sm uppercase text-navy disabled:opacity-40">Précédent</button>
+              <span className="font-body text-sm text-navy/60">Page {page} / {pageCount}</span>
+              <button disabled={page === pageCount} onClick={() => setPage(page + 1)} className="border border-navy/15 px-4 py-2 font-display text-sm uppercase text-navy disabled:opacity-40">Suivant</button>
+            </div>
           )}
         </div>
       </section>

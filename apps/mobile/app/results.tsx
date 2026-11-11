@@ -1,4 +1,5 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
+import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { router, useLocalSearchParams } from "expo-router";
@@ -26,6 +27,7 @@ export default function Results() {
   const origin = params.origin ?? "";
   const dest = params.dest ?? "";
   const date = params.date ?? "";
+  const [visibleCount, setVisibleCount] = useState(10);
 
   const { isLoading, error, data } = db.useQuery({
     tripInstances: {
@@ -93,7 +95,7 @@ export default function Results() {
             </View>
           ) : (
             <>
-              {trips.map((t, i) => {
+              {trips.slice(0, visibleCount).map((t, i) => {
                 const booked = liveTickets(t).length;
                 const full = booked >= t.seatsTotal;
                 return (
@@ -160,6 +162,11 @@ export default function Results() {
                   </Animated.View>
                 );
               })}
+              {visibleCount < trips.length && (
+                <Pressable onPress={() => setVisibleCount((count) => count + 10)} className="mt-3 items-center rounded-xl bg-paper py-4">
+                  <Text className="font-display text-sm uppercase text-ink">Charger plus</Text>
+                </Pressable>
+              )}
             </>
           )}
         </ScrollView>
