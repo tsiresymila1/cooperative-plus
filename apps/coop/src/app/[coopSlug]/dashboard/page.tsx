@@ -101,6 +101,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-12 gap-4 md:gap-6">
           {/* KPI metric grid */}
           <div className="col-span-12 grid grid-cols-2 gap-4 md:gap-6 lg:grid-cols-4">
+            <Link href={`/${slug}/payments`} className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laterite">
             <StatCard
               label="Revenus du jour"
               value={fmtMoney(revenueToday)}
@@ -109,6 +110,8 @@ export default function DashboardPage() {
               hint={revenueYday > 0 ? `${Math.abs(Math.round(((revenueToday - revenueYday) / revenueYday) * 100))}%` : undefined}
               trend={revenueToday >= revenueYday ? "up" : "down"}
             />
+            </Link>
+            <Link href={`/${slug}/bookings`} className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laterite">
             <StatCard
               label="Réservations du jour"
               value={String(resToday)}
@@ -116,18 +119,23 @@ export default function DashboardPage() {
               hint={`${upcoming.length} à venir`}
               trend="up"
             />
+            </Link>
+            <Link href={`/${slug}/trips`} className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laterite">
             <StatCard
               label="Taux d'occupation"
               value={`${occupancy}%`}
               icon={<Activity size={22} />}
               hint={`${seatsBooked}/${seatsTotal} places`}
             />
+            </Link>
+            <Link href={`/${slug}/vehicles`} className="block rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-laterite">
             <StatCard
               label="Véhicules actifs"
               value={`${activeVehicles} / ${vehicles.length}`}
               icon={<Bus size={22} />}
               hint={maintenance > 0 ? `${maintenance} en maintenance` : "Tous opérationnels"}
             />
+            </Link>
           </div>
 
           {/* left column */}
