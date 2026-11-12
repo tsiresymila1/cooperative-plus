@@ -33,8 +33,15 @@ export function DashboardShell(props: ShellProps) {
 }
 
 function ShellInner({ nav, title, subtitle, action, children, tenant, logoUrl, footer, breadcrumb, kicker }: ShellProps) {
-  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  const { isExpanded, isHovered, isMobileOpen, toggleMobileSidebar } = useSidebar();
+  const pathname = usePathname();
   const suspended = useCoopOptional()?.coop?.subscriptionStatus === "suspended";
+
+  useEffect(() => {
+    if (isMobileOpen) toggleMobileSidebar();
+  // Close the drawer after navigating to a page on mobile.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   // Dynamic left margin on the content column mirrors TailAdmin's (admin)/layout.tsx.
   const mainMargin = isMobileOpen
